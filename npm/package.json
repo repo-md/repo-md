@@ -1,5 +1,5 @@
 {
-  "name": "repomd",
+  "name": "repo-md",
   "version": "0.0.1",
   "type": "module",
   "main": "./repomd.js",
@@ -20,24 +20,28 @@
     "cli",
     "README.md"
   ],
-  "description": "Lightweight TypeScript client library for consuming JSON content APIs",
+  "description": "API client for consuming content from your repo.md projects",
   "keywords": [
+    "repo.md",
+    "cms",
     "content",
     "api",
     "json",
     "typescript",
-    "search",
-    "cli",
-    "scaffold",
-    "generator"
+    "search"
   ],
-  "author": "",
+  "author": "repo.md",
+  "website": "https://repo.md",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/repo-md/repo-md.git"
+  },
+  "sideEffects": false,
   "dependencies": {
     "minisearch": "^6.3.0",
     "commander": "^11.1.0",
     "quick-lru": "^6.1.1"
   },
-  "sideEffects": false,
   "private": false
 }
