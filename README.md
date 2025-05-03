@@ -1,6 +1,6 @@
 # Repo.md
 
-A lightweight JavaScript client library for fetching and working with content stored in the repo.md API. The library provides easy access to posts, media, and other content stored in your repo.md projects.
+A lightweight JavaScript client library for fetching and working with content stored in the [repo.md](https://repo.md) API. The library provides easy access to posts, media, and other content stored in your [repo.md](https://repo.md) projects.
 
 ## Installation
 
@@ -114,6 +114,12 @@ const jsonData = await repo.fetchR2Json("/custom-data.json");
 ## Using with Web Frameworks
 
 RepoMD provides built-in configurations for common web frameworks to help with media proxying during development.
+
+### Media Proxying
+
+By default, your media and images are proxied to appear on your own domain (e.g., `yoursite.com/image/file.jpg`), which nicely keeps all loaded assets under your own branded URL. The caching and versioning logic is all handled in the [repo.md](https://repo.md) system.
+
+If you aren't using one of our premade templates, you'll need to add a proxy configuration to your project. Here's how to do it in different frameworks:
 
 ### Media Path
 
