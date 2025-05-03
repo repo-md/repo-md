@@ -74,7 +74,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1>RepoMD Demo</h1>
+      <h1>Repo.md API Demo</h1>
       
       <ConfigPanel
         projectId={projectId}
