@@ -51,6 +51,19 @@ fi
 echo "Package contents:"
 find dist -type f | sort
 
+# Check for duplicates in the npm pack output
+echo "\nChecking for potential issues in the package..."
+cd dist && npm pack --dry-run | grep -i readme
+
+if [ $? -eq 0 ]; then
+  echo "\n⚠️  Warning: Multiple README files detected in the package."
+  echo "This could mean the README is being included twice in different locations."
+  echo "Check package.json 'files' field and the copy-to-dist.js script."
+else
+  echo "\n✅ No duplicate README files detected in the package."
+fi
+cd ..
+
 echo ""
 echo "Done! The dist folder is now ready for npm distribution."
 echo ""

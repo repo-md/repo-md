@@ -29,13 +29,16 @@
     "build-npm": "bash npm/build-npm.sh",
     "publish-npm": "npm run build-npm && cd dist && npm publish",
     "preview-npm": "npm run build && npm pack --dry-run",
+    "inspect-package": "cd dist && npm pack --dry-run",
     "npm-whoami": "npm whoami || echo 'Not logged in to npm'",
     "version-bump-patch": "npm version patch --no-git-tag-version && cd npm && npm version patch --no-git-tag-version && cd ..",
     "version-bump-minor": "npm version minor --no-git-tag-version && cd npm && npm version minor --no-git-tag-version && cd ..",
     "version-bump-major": "npm version major --no-git-tag-version && cd npm && npm version major --no-git-tag-version && cd .."
   },
-  "description": "Lightweight TypeScript client library for consuming JSON content APIs",
+  "description": "API client for consuming content from your repo.md projects",
   "keywords": [
+    "repo.md",
+    "cms",
     "content",
     "api",
     "json",

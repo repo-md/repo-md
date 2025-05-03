@@ -17,7 +17,8 @@
   "files": [
     "*.js",
     "*.d.ts",
-    "cli"
+    "cli",
+    "README.md"
   ],
   "description": "Lightweight TypeScript client library for consuming JSON content APIs",
   "keywords": [
