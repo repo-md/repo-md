@@ -16,6 +16,7 @@
     "build:lib": "vite build",
     "build:cli": "vite build --config cli.vite.config.ts",
     "build:demo": "cd src/demo && npm install && npm run build",
+    "build:demo:pages": "npm run build:demo && touch demo/.nojekyll",
     "clean": "rimraf dist",
     "dev": "vite",
     "dev:demo": "cd src/demo && npm run dev",
