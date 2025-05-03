@@ -534,23 +534,25 @@ class RepoMD {
     };
     return await handleMediaRequest(request, getResolvedR2MediaUrl);
   }
+
+  /**
+   * Creates an OpenAI tool handler that uses this RepoMD instance
+   * @returns {Function} - Handler function for OpenAI tool calls
+   */
+  createOpenAiToolHandler() {
+    // Import the function on demand to avoid circular dependencies
+    const { createOpenAiToolHandler } = require('./openai/OpenAiToolHandler.js');
+    return createOpenAiToolHandler(this);
+  }
 }
 
-// Import OpenAI classes
-import {
-  OpenAiToolHandler,
-  createOpenAiToolHandler,
-  handleOpenAiRequest,
-} from "./openai/OpenAiToolHandler.js";
+// Import tool specs for OpenAI 
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
-// Export all framework snippets and OpenAI classes
+// Export framework snippets and RepoMD class
 export {
   RepoMD,
   frameworkSnippets,
-  OpenAiToolHandler,
-  createOpenAiToolHandler,
-  handleOpenAiRequest,
   OpenAiToolSpec,
   toolSpecs,
 };

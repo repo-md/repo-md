@@ -3,16 +3,16 @@
  * This file defines the handler that connects OpenAI tool calls to the RepoMD API client
  */
 
-import { RepoMD } from "../index.js";
-
 /**
  * Creates a handler for OpenAI tool calls that connects to the RepoMD client
- * @param {Object} options - Configuration options for the RepoMD client
+ * @param {Object} repoMD - An instance of the RepoMD client
+ * @param {Object} options - Additional options (unused, kept for backward compatibility)
  * @returns {Function} - Handler function for OpenAI tool calls
  */
-export const createOpenAiToolHandler = (options = {}) => {
-  // Initialize RepoMD client with provided options
-  const repoMD = new RepoMD(options);
+export const createOpenAiToolHandler = (repoMD, options = {}) => {
+  if (!repoMD) {
+    throw new Error('RepoMD instance is required for OpenAiToolHandler');
+  }
 
   /**
    * Handler for OpenAI tool calls
@@ -80,27 +80,38 @@ export const createOpenAiToolHandler = (options = {}) => {
   };
 };
 
+// Import the RepoMD to maintain backward compatibility
+import { RepoMD } from "../index.js";
+
 /**
  * Example usage of the OpenAI Tool Handler with the RepoMD client
+ * Maintained for backward compatibility
  */
-export const OpenAiToolHandler = createOpenAiToolHandler({
-  org: "iplanwebsites",
-  orgSlug: "iplanwebsites",
-  project: "tbd",
-  projectId: "680e97604a0559a192640d2c",
-  projectSlug: "undefined-project-slug",
-  rev: "latest",
-  debug: false,
-});
+export const OpenAiToolHandler = (() => {
+  const repoMD = new RepoMD({
+    org: "iplanwebsites",
+    orgSlug: "iplanwebsites",
+    project: "tbd",
+    projectId: "680e97604a0559a192640d2c",
+    projectSlug: "undefined-project-slug",
+    rev: "latest",
+    debug: false,
+  });
+  return createOpenAiToolHandler(repoMD);
+})();
 
 /**
  * Integrated function to handle OpenAI API requests with the RepoMD tools
  * @param {Object} request - The OpenAI API request
- * @param {Object} options - Configuration options for the RepoMD client
+ * @param {Object} repoMD - An instance of RepoMD (if not provided, one will be created with the given options)
+ * @param {Object} options - Configuration options for creating a new RepoMD client (used only if repoMD is not provided)
  * @returns {Promise<Object>} - The response to send back to OpenAI
  */
-export const handleOpenAiRequest = async (request, options = {}) => {
-  const toolHandler = createOpenAiToolHandler(options);
+export const handleOpenAiRequest = async (request, repoMD = null, options = {}) => {
+  // If repoMD instance is not provided, create one using the options
+  const repoMDInstance = repoMD || new RepoMD(options);
+  
+  const toolHandler = createOpenAiToolHandler(repoMDInstance);
 
   // Extract tool calls from the request
   const toolCalls =
