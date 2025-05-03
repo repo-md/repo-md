@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import RepoMD from '../../lib/index.js'
+import {RepoMD} from '../../lib/index.js'
 import ConfigPanel from './components/ConfigPanel'
 import Operations from './components/Operations'
 import ResultPanel from './components/ResultPanel'
