@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createRepo } from '../../lib/content-client'
+import RepoMD from '../../lib/index.js'
 import ConfigPanel from './components/ConfigPanel'
 import Operations from './components/Operations'
 import ResultPanel from './components/ResultPanel'
@@ -24,20 +24,33 @@ function App() {
     setLoading(true)
     
     try {
-      // Create base URL from project ID
-      const baseUrl = `https://api.example.com/${projectId}`
-      const repo = createRepo({ baseUrl })
+      // Create a RepoMD instance
+      const repo = new RepoMD({
+        projectId,
+        secret: apiSecret || undefined,
+        debug: true
+      })
 
       let data
       switch (operation) {
-        case 'listSlugs':
-          data = await repo.listSlugs()
+        case 'getProjectDetails':
+          data = await repo.fetchProjectDetails()
           break
-        case 'load':
+        case 'getAllPosts':
+          data = await repo.getAllPosts()
+          break
+        case 'getAllMedia':
+          data = await repo.getAllMedia()
+          break
+        case 'getRecentPosts':
+          const count = params.count ? parseInt(params.count) : 3
+          data = await repo.getRecentPosts(count)
+          break
+        case 'getPostBySlug':
           if (!params.slug) {
             throw new Error('Slug is required for this operation')
           }
-          data = await repo.load(params.slug)
+          data = await repo.getPostBySlug(params.slug)
           break
         default:
           throw new Error(`Unknown operation: ${operation}`)

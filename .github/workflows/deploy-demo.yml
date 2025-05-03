@@ -3,6 +3,11 @@ name: Deploy Demo to GitHub Pages
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +46,9 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: './demo'
+      
+      - name: Log Build Success
+        run: echo "Demo built successfully and ready for deployment"
 
   deploy:
     environment:
@@ -52,3 +60,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Log Deployment URL
+        run: echo "Demo deployed to ${{ steps.deployment.outputs.page_url }}"
