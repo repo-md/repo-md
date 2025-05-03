@@ -189,14 +189,216 @@ export class RepoMD {
     return posts?.find((post) => post.id === id) || null;
   }
 
+  // Helper function to safely fetch map data
+  async _fetchMapData(mapPath, defaultValue = {}) {
+    try {
+      return await this.fetchR2Json(mapPath, {
+        defaultValue,
+        useCache: true,
+      });
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[RepoMD] Error fetching map data ${mapPath}:`, error);
+      }
+      return defaultValue;
+    }
+  }
+
+  // Helper function to find post in array by property
+  _findPostByProperty(posts, property, value) {
+    return posts?.find(post => post[property] === value) || null;
+  }
+
+
+  // Get a post by its direct path
+  async getPostByPath(path) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching post by path: ${path}`);
+    }
+    
+    try {
+      return await this.fetchR2Json(path, {
+        defaultValue: null,
+        useCache: true,
+      });
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[RepoMD] Error fetching post at path ${path}:`, error);
+      }
+      return null;
+    }
+  }
+
   // Get a single blog post by slug
   async getPostBySlug(slug) {
     if (this.debug) {
       console.log(`[RepoMD] Fetching post with slug: ${slug}`);
     }
 
+    // Try to get post hash from slug map
+    const slugMap = await this._fetchMapData("/posts-slug-map.json");
+    
+    if (slugMap && slugMap[slug]) {
+      // If we have a hash, use getPostByHash
+      const post = await this.getPostByHash(slugMap[slug]);
+      if (post) return post;
+    }
+    
+    // Fall back to loading all posts and filtering
     const posts = await this.getAllPosts();
-    return posts?.find((post) => post.slug === slug) || null;
+    return this._findPostByProperty(posts, "slug", slug);
+  }
+  
+  // Get a single blog post by hash
+  async getPostByHash(hash) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching post with hash: ${hash}`);
+    }
+    
+    // Try to get post path from path map
+    const pathMap = await this._fetchMapData("/posts-path-map.json");
+    
+    if (pathMap && pathMap[hash]) {
+      // If we have a path, use getPostByPath
+      const post = await this.getPostByPath(pathMap[hash]);
+      if (post) return post;
+    }
+    
+    // Fall back to loading all posts and filtering
+    // This is temporary and will be improved later as mentioned
+    const posts = await this.getAllPosts();
+    return this._findPostByProperty(posts, "hash", hash);
+  }
+  
+  // Get posts embeddings map
+  async getPostsEmbeddings() {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching posts embeddings map`);
+    }
+    
+    return await this._fetchMapData("/posts-embedding-hash-map.json");
+  }
+  
+  // Get similar post hashes by hash (returns just the hashes)
+  async getSimilarPostsHashByHash(hash, limit = 10) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching similar post hashes for hash: ${hash}`);
+    }
+    
+    const embeddingsMap = await this.getPostsEmbeddings();
+    
+    if (embeddingsMap && embeddingsMap[hash] && Array.isArray(embeddingsMap[hash])) {
+      return embeddingsMap[hash].slice(0, limit);
+    }
+    
+    return [];
+  }
+  
+  // Get similar posts by hash with smart loading strategy
+  async getSimilarPostsByHash(hash, count = 5) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching similar posts for hash: ${hash}`);
+    }
+    
+    // Get array of similar post hashes
+    const similarHashes = await this.getSimilarPostsHashByHash(hash, count);
+    
+    if (!similarHashes.length) {
+      // Fall back to recent posts if no similar posts found
+      return await this.getRecentPosts(count);
+    }
+    
+    // Smart loading strategy based on number of posts
+    if (similarHashes.length < 3) {
+      // For small number of posts, load them individually
+      const posts = await Promise.all(
+        similarHashes.map(h => this.getPostByHash(h))
+      );
+      return posts.filter(Boolean); // Filter out null values
+    } else {
+      // For larger number of posts, load all posts and map
+      const allPosts = await this.getAllPosts();
+      const postsMap = {};
+      
+      // Create a hash lookup map for efficient filtering
+      allPosts.forEach(post => {
+        if (post.hash) {
+          postsMap[post.hash] = post;
+        }
+      });
+      
+      // Map similar hashes to full post objects
+      return similarHashes
+        .map(h => postsMap[h])
+        .filter(Boolean); // Filter out any undefined posts
+    }
+  }
+  
+  // Get similar post slugs by slug (returns just the slugs)
+  async getSimilarPostsSlugBySlug(slug, limit = 10) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching similar post slugs for slug: ${slug}`);
+    }
+    
+    const embeddingsMap = await this._fetchMapData("/posts-embedding-slug-map.json");
+    
+    if (embeddingsMap && embeddingsMap[slug] && Array.isArray(embeddingsMap[slug])) {
+      return embeddingsMap[slug].slice(0, limit);
+    }
+    
+    return [];
+  }
+  
+  // Get similar posts by slug with smart loading strategy
+  async getSimilarPostsBySlug(slug, count = 5) {
+    if (this.debug) {
+      console.log(`[RepoMD] Fetching similar posts for slug: ${slug}`);
+    }
+    
+    // Get array of similar post slugs
+    const similarSlugs = await this.getSimilarPostsSlugBySlug(slug, count);
+    
+    if (similarSlugs.length > 0) {
+      // Smart loading strategy based on number of posts
+      if (similarSlugs.length < 3) {
+        // For small number of posts, load them individually
+        const posts = await Promise.all(
+          similarSlugs.map(s => this.getPostBySlug(s))
+        );
+        return posts.filter(Boolean); // Filter out null values
+      } else {
+        // For larger number of posts, load all posts and map
+        const allPosts = await this.getAllPosts();
+        const postsMap = {};
+        
+        // Create a slug lookup map for efficient filtering
+        allPosts.forEach(post => {
+          if (post.slug) {
+            postsMap[post.slug] = post;
+          }
+        });
+        
+        // Map similar slugs to full post objects
+        return similarSlugs
+          .map(s => postsMap[s])
+          .filter(Boolean); // Filter out any undefined posts
+      }
+    }
+    
+    // Try to get the post hash and find similar posts by hash if no similar posts by slug
+    try {
+      const post = await this.getPostBySlug(slug);
+      if (post && post.hash) {
+        return await this.getSimilarPostsByHash(post.hash, count);
+      }
+    } catch (error) {
+      if (this.debug) {
+        console.error(`[RepoMD] Error getting similar posts by hash for slug ${slug}:`, error);
+      }
+    }
+    
+    // Fall back to recent posts if no similar posts found
+    return await this.getRecentPosts(count);
   }
 
   // Sort posts by date (newest first)
