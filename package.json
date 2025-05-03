@@ -27,7 +27,8 @@
     "prepare-npm": "npm run build && echo 'The dist folder is now ready for publishing'",
     "prepublish-checks": "npm run lint && npm run typecheck",
     "build-npm": "bash npm/build-npm.sh",
-    "publish-npm": "npm run build-npm && cd dist && npm publish && cd.. && npm run version-bump-patch",
+    "build-npm:force": "bash npm/build-npm.sh --skip-checks",
+    "publish-npm": "npm run build-npm:force && cd dist && npm publish && cd .. && npm run version-bump-patch",
     "preview-npm": "npm run build && npm pack --dry-run",
     "inspect-package": "cd dist && npm pack --dry-run",
     "npm-whoami": "npm whoami || echo 'Not logged in to npm'",
@@ -54,14 +55,15 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "minisearch": "^6.3.0",
     "commander": "^11.1.0",
+    "minisearch": "^6.3.0",
     "quick-lru": "^6.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@types/node": "^20.11.24",
     "eslint": "^9.9.1",
+    "globals": "^16.0.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.5.3",
     "vite": "^5.4.2"

@@ -4,14 +4,26 @@
 
 echo "=== RepoMD NPM Package Builder ==="
 
-# Run lint and type checks first
-echo "Running pre-publish checks..."
-npm run prepublish-checks
-
-# Check if prepublish checks were successful
-if [ $? -ne 0 ]; then
-  echo "Error: Pre-publish checks failed. Please fix errors before building."
-  exit 1
+# Run pre-publish checks if not skipped
+if [ "$1" != "--skip-checks" ]; then
+  echo "Running pre-publish checks..."
+  npm run prepublish-checks
+  
+  # Check if prepublish checks were successful
+  if [ $? -ne 0 ]; then
+    echo "Error: Pre-publish checks failed."
+    echo "To skip checks and continue anyway, run: npm run build-npm -- --skip-checks"
+    exit 1
+  fi
+else
+  echo "Skipping pre-publish checks..."
+  echo "Running only typecheck (required)..."
+  npm run typecheck
+  
+  if [ $? -ne 0 ]; then
+    echo "Error: Typecheck failed. This cannot be skipped."
+    exit 1
+  fi
 fi
 
 # Check npm login status

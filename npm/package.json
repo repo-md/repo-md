@@ -2,15 +2,15 @@
   "name": "repo-md",
   "version": "0.0.1",
   "type": "module",
-  "main": "./repomd.js",
-  "module": "./repomd.js",
+  "main": "./repo-md.js",
+  "module": "./repo-md.js",
   "types": "./index.d.ts",
   "bin": {
-    "repomd": "./cli/repo-md-cli.js"
+    "repo-md": "./cli/repo-md-cli.js"
   },
   "exports": {
     ".": {
-      "import": "./repomd.js",
+      "import": "./repo-md.js",
       "types": "./index.d.ts"
     }
   },
