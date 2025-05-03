@@ -4,6 +4,7 @@
 
 import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy";
 import * as frameworkSnippets from "./frameworkSnipets";
+import { createOpenAiToolHandler, handleOpenAiRequest } from "./openai/OpenAiToolHandler.js";
 
 import { fetchJson } from "./utils";
 
@@ -540,9 +541,16 @@ class RepoMD {
    * @returns {Function} - Handler function for OpenAI tool calls
    */
   createOpenAiToolHandler() {
-    // Import the function on demand to avoid circular dependencies
-    const { createOpenAiToolHandler } = require('./openai/OpenAiToolHandler.js');
     return createOpenAiToolHandler(this);
+  }
+  
+  /**
+   * Handles an OpenAI API request using this RepoMD instance
+   * @param {Object} request - The OpenAI API request
+   * @returns {Promise<Object>} - The response to send back to OpenAI
+   */
+  handleOpenAiRequest(request) {
+    return handleOpenAiRequest(request, this);
   }
 }
 

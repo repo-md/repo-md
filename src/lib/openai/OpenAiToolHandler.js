@@ -6,10 +6,9 @@
 /**
  * Creates a handler for OpenAI tool calls that connects to the RepoMD client
  * @param {Object} repoMD - An instance of the RepoMD client
- * @param {Object} options - Additional options (unused, kept for backward compatibility)
  * @returns {Function} - Handler function for OpenAI tool calls
  */
-export const createOpenAiToolHandler = (repoMD, options = {}) => {
+export const createOpenAiToolHandler = (repoMD) => {
   if (!repoMD) {
     throw new Error('RepoMD instance is required for OpenAiToolHandler');
   }
@@ -80,38 +79,18 @@ export const createOpenAiToolHandler = (repoMD, options = {}) => {
   };
 };
 
-// Import the RepoMD to maintain backward compatibility
-import { RepoMD } from "../index.js";
-
-/**
- * Example usage of the OpenAI Tool Handler with the RepoMD client
- * Maintained for backward compatibility
- */
-export const OpenAiToolHandler = (() => {
-  const repoMD = new RepoMD({
-    org: "iplanwebsites",
-    orgSlug: "iplanwebsites",
-    project: "tbd",
-    projectId: "680e97604a0559a192640d2c",
-    projectSlug: "undefined-project-slug",
-    rev: "latest",
-    debug: false,
-  });
-  return createOpenAiToolHandler(repoMD);
-})();
-
 /**
  * Integrated function to handle OpenAI API requests with the RepoMD tools
  * @param {Object} request - The OpenAI API request
- * @param {Object} repoMD - An instance of RepoMD (if not provided, one will be created with the given options)
- * @param {Object} options - Configuration options for creating a new RepoMD client (used only if repoMD is not provided)
+ * @param {Object} repoMD - An instance of RepoMD
  * @returns {Promise<Object>} - The response to send back to OpenAI
  */
-export const handleOpenAiRequest = async (request, repoMD = null, options = {}) => {
-  // If repoMD instance is not provided, create one using the options
-  const repoMDInstance = repoMD || new RepoMD(options);
+export const handleOpenAiRequest = async (request, repoMD) => {
+  if (!repoMD) {
+    throw new Error('RepoMD instance is required for handleOpenAiRequest');
+  }
   
-  const toolHandler = createOpenAiToolHandler(repoMDInstance);
+  const toolHandler = createOpenAiToolHandler(repoMD);
 
   // Extract tool calls from the request
   const toolCalls =
@@ -141,4 +120,5 @@ export const handleOpenAiRequest = async (request, repoMD = null, options = {}) 
   };
 };
 
-export default OpenAiToolHandler;
+// Export the createOpenAiToolHandler as the default export
+export default createOpenAiToolHandler;
