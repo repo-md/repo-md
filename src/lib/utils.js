@@ -34,12 +34,12 @@ export async function fetchJson(url, opts = {}, debug = false) {
       throw new Error(`${errorMessage}: ${response.statusText}`);
     }
 
-    const { data, error } = await response.json();
-
+    const data = await response.json();
+    /*
     if (error) {
       console.error(`[RepoMD] Error fetching data: ${url} +++ ${error}`);
       throw new Error(`${errorMessage}: ${error}`);
-    }
+    }*/
 
     // Store in cache if provided
     if (useCache && lru) {

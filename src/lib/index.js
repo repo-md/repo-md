@@ -77,10 +77,12 @@ export class RepoMD {
     const domain = "api.repo.md";
     const url = `https://${domain}/v1/${path}`;
 
-    return await this.fetchJson(url, {
+    const { success, error, data } = await this.fetchJson(url, {
       errorMessage: "Error fetching pubic API route: " + path,
       useCache: true, // fetchJson already handles caching
     });
+
+    return data;
   }
 
   // Fetch project configuration including latest release information
