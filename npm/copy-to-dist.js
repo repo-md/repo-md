@@ -22,8 +22,14 @@ const cliDistDir = path.join(distDir, "cli");
 
 // Files to copy
 const files = [
-  "package.json",
+  "package.json", // that's the package.json for the npm package, not the one in the root
   // 'README.md'
+];
+
+// Additional root files to copy
+const rootFiles = [
+  "README.md",
+  // "NPM_PUBLISH.md"
 ];
 
 // Ensure the dist directory exists
@@ -52,6 +58,25 @@ files.forEach((file) => {
   } catch (error) {
     console.error(`Error copying ${file}:`, error);
     process.exit(1);
+  }
+});
+
+// Copy root files to dist
+rootFiles.forEach((file) => {
+  const srcPath = path.join(rootDir, file);
+  const destPath = path.join(distDir, file);
+
+  try {
+    if (fs.existsSync(srcPath)) {
+      const content = fs.readFileSync(srcPath, "utf8");
+      fs.writeFileSync(destPath, content);
+      console.log(`Successfully copied ${file} to dist folder`);
+    } else {
+      console.warn(`Warning: ${file} not found in root directory, skipping`);
+    }
+  } catch (error) {
+    console.error(`Error copying ${file}:`, error);
+    // Don't exit for optional files
   }
 });
 

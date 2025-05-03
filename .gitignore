@@ -26,3 +26,4 @@ dist-ssr
 **/.claude/settings.local.json
 .claude 
 demo_old
+NPM_PUBLISH.md
