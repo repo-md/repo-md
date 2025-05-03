@@ -34,6 +34,7 @@ export class RepoMD {
     this.debug = debug;
     this.secret = secret;
     this.activeRev = null; // Store resolved latest revision ID
+    this.posts = null; // Cache for all posts
 
     // Resize cache if different settings are provided
     //if (maxCacheSize !== lru.maxSize) {
@@ -143,11 +144,109 @@ export class RepoMD {
   }
 
   // Fetch all blog posts
-  async getAllPosts(useCache = true) {
-    return await this.fetchR2Json("/posts.json", {
+  async getAllPosts(useCache = true, forceRefresh = false) {
+    // Return cached posts if available and refresh not forced
+    if (useCache && this.posts && !forceRefresh) {
+      if (this.debug) {
+        console.log(`[RepoMD] Using cached posts array (${this.posts.length} posts)`);
+      }
+      return this.posts;
+    }
+    
+    // Fetch posts from R2
+    const posts = await this.fetchR2Json("/posts.json", {
       defaultValue: [],
       useCache,
     });
+    
+    // Cache the posts for future use
+    if (useCache) {
+      this.posts = posts;
+      if (this.debug) {
+        console.log(`[RepoMD] Cached ${posts.length} posts in memory`);
+      }
+    }
+    
+    return posts;
+  }
+  
+  // Helper to augment an array of keys with their corresponding posts
+  async augmentPostsByProperty(keys, property, options = {}) {
+    if (!keys || !keys.length) return [];
+    
+    const { 
+      loadIndividually = 3,  // Threshold for switching to bulk loading
+      count = keys.length,    // How many posts to return
+      useCache = true        // Whether to use cache
+    } = options;
+    
+    // Slice to requested count
+    const targetKeys = keys.slice(0, count);
+    
+    if (this.debug) {
+      console.log(`[RepoMD] Augmenting ${targetKeys.length} posts by ${property}`);
+    }
+    
+    // For small number of posts (<= loadIndividually), load individually
+    if (targetKeys.length <= loadIndividually) {
+      if (this.debug) {
+        console.log(`[RepoMD] Loading ${targetKeys.length} posts individually`);
+      }
+      
+      // Use the appropriate getter method based on property
+      const getterMethod = property === 'hash' 
+        ? this.getPostByHash.bind(this)
+        : property === 'slug'
+          ? this.getPostBySlug.bind(this)
+          : this.getPostById.bind(this);
+      
+      // Fetch all posts in parallel
+      const posts = await Promise.all(
+        targetKeys.map(key => getterMethod(key))
+      );
+      
+      return posts.filter(Boolean); // Filter out null values
+    } 
+    
+    // For larger sets, check if posts are already cached
+    if (useCache && this.posts) {
+      if (this.debug) {
+        console.log(`[RepoMD] Using cached posts for bulk augmentation`);
+      }
+      
+      // Create a lookup map for efficient filtering
+      const postsMap = {};
+      this.posts.forEach(post => {
+        if (post[property]) {
+          postsMap[post[property]] = post;
+        }
+      });
+      
+      // Map keys to full post objects
+      return targetKeys
+        .map(key => postsMap[key])
+        .filter(Boolean);
+    }
+    
+    // Otherwise load all posts and filter
+    if (this.debug) {
+      console.log(`[RepoMD] Loading all posts for bulk augmentation`);
+    }
+    
+    const allPosts = await this.getAllPosts(useCache);
+    const postsMap = {};
+    
+    // Create a lookup map for efficient filtering
+    allPosts.forEach(post => {
+      if (post[property]) {
+        postsMap[post[property]] = post;
+      }
+    });
+    
+    // Map keys to full post objects
+    return targetKeys
+      .map(key => postsMap[key])
+      .filter(Boolean);
   }
 
   // Fetch media data
@@ -185,8 +284,18 @@ export class RepoMD {
       console.log(`[RepoMD] Fetching post with ID: ${id}`);
     }
 
+    // First check if we already have posts in memory
+    if (this.posts) {
+      if (this.debug) {
+        console.log(`[RepoMD] Searching for ID in cached posts array`);
+      }
+      const post = this._findPostByProperty(this.posts, "id", id);
+      if (post) return post;
+    }
+
+    // Fall back to loading all posts and filtering
     const posts = await this.getAllPosts();
-    return posts?.find((post) => post.id === id) || null;
+    return this._findPostByProperty(posts, "id", id);
   }
 
   // Helper function to safely fetch map data
@@ -208,8 +317,7 @@ export class RepoMD {
   _findPostByProperty(posts, property, value) {
     return posts?.find(post => post[property] === value) || null;
   }
-
-
+  
   // Get a post by its direct path
   async getPostByPath(path) {
     if (this.debug) {
@@ -235,6 +343,15 @@ export class RepoMD {
       console.log(`[RepoMD] Fetching post with slug: ${slug}`);
     }
 
+    // First check if we already have posts in memory
+    if (this.posts) {
+      if (this.debug) {
+        console.log(`[RepoMD] Searching for slug in cached posts array`);
+      }
+      const post = this._findPostByProperty(this.posts, "slug", slug);
+      if (post) return post;
+    }
+
     // Try to get post hash from slug map
     const slugMap = await this._fetchMapData("/posts-slug-map.json");
     
@@ -253,6 +370,15 @@ export class RepoMD {
   async getPostByHash(hash) {
     if (this.debug) {
       console.log(`[RepoMD] Fetching post with hash: ${hash}`);
+    }
+    
+    // First check if we already have posts in memory
+    if (this.posts) {
+      if (this.debug) {
+        console.log(`[RepoMD] Searching for hash in cached posts array`);
+      }
+      const post = this._findPostByProperty(this.posts, "hash", hash);
+      if (post) return post;
     }
     
     // Try to get post path from path map
@@ -294,8 +420,8 @@ export class RepoMD {
     return [];
   }
   
-  // Get similar posts by hash with smart loading strategy
-  async getSimilarPostsByHash(hash, count = 5) {
+  // Get similar posts by hash using augmentation helper
+  async getSimilarPostsByHash(hash, count = 5, options = {}) {
     if (this.debug) {
       console.log(`[RepoMD] Fetching similar posts for hash: ${hash}`);
     }
@@ -308,30 +434,11 @@ export class RepoMD {
       return await this.getRecentPosts(count);
     }
     
-    // Smart loading strategy based on number of posts
-    if (similarHashes.length < 3) {
-      // For small number of posts, load them individually
-      const posts = await Promise.all(
-        similarHashes.map(h => this.getPostByHash(h))
-      );
-      return posts.filter(Boolean); // Filter out null values
-    } else {
-      // For larger number of posts, load all posts and map
-      const allPosts = await this.getAllPosts();
-      const postsMap = {};
-      
-      // Create a hash lookup map for efficient filtering
-      allPosts.forEach(post => {
-        if (post.hash) {
-          postsMap[post.hash] = post;
-        }
-      });
-      
-      // Map similar hashes to full post objects
-      return similarHashes
-        .map(h => postsMap[h])
-        .filter(Boolean); // Filter out any undefined posts
-    }
+    // Use augmentation helper to get full post objects
+    return await this.augmentPostsByProperty(similarHashes, 'hash', {
+      count,
+      ...options
+    });
   }
   
   // Get similar post slugs by slug (returns just the slugs)
@@ -349,8 +456,8 @@ export class RepoMD {
     return [];
   }
   
-  // Get similar posts by slug with smart loading strategy
-  async getSimilarPostsBySlug(slug, count = 5) {
+  // Get similar posts by slug using augmentation helper
+  async getSimilarPostsBySlug(slug, count = 5, options = {}) {
     if (this.debug) {
       console.log(`[RepoMD] Fetching similar posts for slug: ${slug}`);
     }
@@ -359,37 +466,18 @@ export class RepoMD {
     const similarSlugs = await this.getSimilarPostsSlugBySlug(slug, count);
     
     if (similarSlugs.length > 0) {
-      // Smart loading strategy based on number of posts
-      if (similarSlugs.length < 3) {
-        // For small number of posts, load them individually
-        const posts = await Promise.all(
-          similarSlugs.map(s => this.getPostBySlug(s))
-        );
-        return posts.filter(Boolean); // Filter out null values
-      } else {
-        // For larger number of posts, load all posts and map
-        const allPosts = await this.getAllPosts();
-        const postsMap = {};
-        
-        // Create a slug lookup map for efficient filtering
-        allPosts.forEach(post => {
-          if (post.slug) {
-            postsMap[post.slug] = post;
-          }
-        });
-        
-        // Map similar slugs to full post objects
-        return similarSlugs
-          .map(s => postsMap[s])
-          .filter(Boolean); // Filter out any undefined posts
-      }
+      // Use augmentation helper to get full post objects
+      return await this.augmentPostsByProperty(similarSlugs, 'slug', {
+        count,
+        ...options
+      });
     }
     
     // Try to get the post hash and find similar posts by hash if no similar posts by slug
     try {
       const post = await this.getPostBySlug(slug);
       if (post && post.hash) {
-        return await this.getSimilarPostsByHash(post.hash, count);
+        return await this.getSimilarPostsByHash(post.hash, count, options);
       }
     } catch (error) {
       if (this.debug) {
