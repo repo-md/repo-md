@@ -27,7 +27,7 @@
     "prepare-npm": "npm run build && echo 'The dist folder is now ready for publishing'",
     "prepublish-checks": "npm run lint && npm run typecheck",
     "build-npm": "bash npm/build-npm.sh",
-    "publish-npm": "npm run build-npm && cd dist && npm publish",
+    "publish-npm": "npm run build-npm && cd dist && npm publish && cd.. && npm run version-bump-patch",
     "preview-npm": "npm run build && npm pack --dry-run",
     "inspect-package": "cd dist && npm pack --dry-run",
     "npm-whoami": "npm whoami || echo 'Not logged in to npm'",
