@@ -1,5 +1,5 @@
 {
-  "name": "repomd",
+  "name": "repo-md",
   "version": "0.0.1",
   "type": "module",
   "main_dist": "./dist/repomd.js",
@@ -10,6 +10,7 @@
   "files": [
     "dist"
   ],
+  "private": true,
   "scripts": {
     "build": "npm run clean && npm run build:lib && npm run build:cli && node npm/copy-to-dist.js",
     "build:lib": "vite build",
@@ -32,7 +33,7 @@
     "typescript",
     "search"
   ],
-  "author": "",
+  "author": "repo.md",
   "license": "MIT",
   "repository": {
     "type": "git",
