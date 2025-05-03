@@ -1,0 +1,55 @@
+{
+  "name": "repomd",
+  "version": "0.0.1",
+  "type": "module",
+  "main_dist": "./dist/repomd.js",
+  "module_dist": "./dist/repomd.js",
+  "main": "./src/lib/index.js",
+  "module": "./src/lib/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run build:lib && npm run build:cli && node npm/copy-to-dist.js",
+    "build:lib": "vite build",
+    "build:cli": "vite build --config cli.vite.config.ts",
+    "build:demo": "cd src/demo && npm install && npm run build",
+    "clean": "rimraf dist",
+    "dev": "vite",
+    "dev:demo": "cd src/demo && npm run dev",
+    "lint": "eslint .",
+    "test": "npm run lint && npm run typecheck",
+    "typecheck": "tsc --noEmit",
+    "typecheck2": "tsc  ",
+    "prepare-npm": "npm run build && echo 'The dist folder is now ready for publishing'"
+  },
+  "description": "Lightweight TypeScript client library for consuming JSON content APIs",
+  "keywords": [
+    "content",
+    "api",
+    "json",
+    "typescript",
+    "search"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/repomd.git"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "minisearch": "^6.3.0",
+    "commander": "^11.1.0",
+    "quick-lru": "^6.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@types/node": "^20.11.24",
+    "eslint": "^9.9.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "repomd",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./repomd.js",
+  "module": "./repomd.js",
+  "types": "./index.d.ts",
+  "bin": {
+    "repomd": "./cli/repomd-cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./repomd.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "files": [
+    "*.js",
+    "*.d.ts",
+    "cli"
+  ],
+  "description": "Lightweight TypeScript client library for consuming JSON content APIs",
+  "keywords": [
+    "content",
+    "api",
+    "json",
+    "typescript",
+    "search",
+    "cli",
+    "scaffold",
+    "generator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "minisearch": "^6.3.0",
+    "commander": "^11.1.0",
+    "quick-lru": "^6.1.1"
+  },
+  "sideEffects": false
+}
