@@ -1,5 +1,5 @@
 {
-  "name": "repo-md",
+  "name": "repo-md-js-sdk-source",
   "version": "0.0.1",
   "type": "module",
   "main_dist": "./dist/repomd.js",
