@@ -4,9 +4,9 @@ A lightweight JavaScript client library for fetching and working with content st
 
 > **Note:** This is an early preview release of our JavaScript SDK. API routes and method names might change as we extend functionalities. We look forward to seeing developers play with it!
 
-## Demo
+## API Playground
 
-You can view the live demo of this library on [GitHub Pages](https://username.github.io/repo-client/).
+You can a simple live demo of this library on [GitHub Pages](https://repo-md.github.io/repo-md/).
 
 The demo is automatically deployed when changes are pushed to the `main` branch.
 
@@ -324,6 +324,7 @@ npm run build:demo:pages
 ```
 
 This will:
+
 1. Build the demo application
 2. Configure it correctly for GitHub Pages (with the proper base path)
 3. Create a `.nojekyll` file to ensure GitHub Pages serves the site correctly

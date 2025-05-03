@@ -5,7 +5,7 @@ export default defineConfig({
     lib: {
       entry: 'src/lib/index.js',
       name: 'RepoMD',
-      fileName: 'repomd'
+      fileName: 'repo-md'
     },
     rollupOptions: {
       external: ['quick-lru'],
