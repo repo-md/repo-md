@@ -1,6 +1,6 @@
 {
   "name": "repo-md-js-sdk-source",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main_dist": "./dist/repomd.js",
   "module_dist": "./dist/repomd.js",
@@ -48,6 +48,7 @@
   ],
   "author": "repo.md",
   "website": "https://repo.md",
+  "homepage": "https://repo.md",
   "license": "MIT",
   "repository": {
     "type": "git",

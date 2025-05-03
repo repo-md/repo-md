@@ -1,6 +1,6 @@
 {
   "name": "repo-md",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "main": "./repo-md.js",
   "module": "./repo-md.js",
@@ -32,6 +32,7 @@
   ],
   "author": "repo.md",
   "website": "https://repo.md",
+  "homepage": "https://repo.md",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,7 +40,6 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "minisearch": "^6.3.0",
     "commander": "^11.1.0",
     "quick-lru": "^6.1.1"
   },
