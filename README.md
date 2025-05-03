@@ -2,6 +2,8 @@
 
 A lightweight JavaScript client library for fetching and working with content stored in the [repo.md](https://repo.md) API. The library provides easy access to posts, media, and other content stored in your [repo.md](https://repo.md) projects.
 
+> **Note:** This is an early preview release of our JavaScript SDK. API routes and method names might change as we extend functionalities. We look forward to seeing developers play with it!
+
 ## Installation
 
 ```bash
@@ -288,6 +290,24 @@ try {
   // Handle the error appropriately...
 }
 ```
+
+## Contributing
+
+We welcome contributions to improve the [repo.md](https://repo.md) client library! If you'd like to contribute, please feel free to submit a pull request. Whether it's fixing bugs, improving documentation, or adding new features, your help is appreciated.
+
+## Roadmap
+
+Here are some planned improvements for future releases:
+
+- Implement more API endpoints
+- Better validation and logging with configurable debug levels
+- Improved TypeScript types
+- Enhanced playground demo
+- Python SDK
+- Command line tools
+- And more...
+
+We're constantly working to improve the library based on developer feedback.
 
 ## License
 
