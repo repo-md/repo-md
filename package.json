@@ -1,6 +1,6 @@
 {
   "name": "repo-md-js-sdk-source",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main_dist": "./dist/repomd.js",
   "module_dist": "./dist/repomd.js",
@@ -56,6 +56,7 @@
   },
   "sideEffects": false,
   "dependencies": {
+    "ask-secret": "^1.0.2",
     "commander": "^11.1.0",
     "minisearch": "^6.3.0",
     "quick-lru": "^6.1.1"
