@@ -7,7 +7,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/cli/index.ts'),
       formats: ['es'],
-      fileName: () => 'repomd-cli.js'
+      fileName: () => 'repo-md-cli.js'
     },
     rollupOptions: {
       external: [

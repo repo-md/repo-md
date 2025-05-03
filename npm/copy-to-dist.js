@@ -115,7 +115,7 @@ if (fs.existsSync(cliNpmDir)) {
         const content = fs.readFileSync(srcPath, "utf8");
 
         // For the main CLI file, ensure it has the shebang
-        if (file === "repomd-cli.js") {
+        if (file === "repo-md-cli.js") {
           let cliContent = content;
           if (!cliContent.startsWith("#!/usr/bin/env node")) {
             cliContent = "#!/usr/bin/env node\n\n" + cliContent;

@@ -6,7 +6,7 @@
   "module": "./repomd.js",
   "types": "./index.d.ts",
   "bin": {
-    "repomd": "./cli/repomd-cli.js"
+    "repomd": "./cli/repo-md-cli.js"
   },
   "exports": {
     ".": {
