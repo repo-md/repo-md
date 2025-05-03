@@ -4,17 +4,17 @@ A lightweight JavaScript client library for fetching and working with content st
 
 > **Note:** This is an early preview release of our JavaScript SDK. API routes and method names might change as we extend functionalities. We look forward to seeing developers play with it!
 
+## Installation
+
+```bash
+npm i repo-md
+```
+
 ## API Playground
 
 You can a simple live demo of this library on [GitHub Pages](https://repo-md.github.io/repo-md/).
 
 The demo is automatically deployed when changes are pushed to the `main` branch.
-
-## Installation
-
-```bash
-npm install repo-md
-```
 
 ## Basic Usage
 
