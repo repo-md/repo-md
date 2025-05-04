@@ -4,7 +4,10 @@
 
 import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy.js";
 import { frameworkSnippets } from "./index.js";
-import { createOpenAiToolHandler, handleOpenAiRequest } from "./openai/OpenAiToolHandler.js";
+import {
+  createOpenAiToolHandler,
+  handleOpenAiRequest,
+} from "./openai/OpenAiToolHandler.js";
 import { LOG_PREFIXES } from "./logger.js";
 
 import { fetchJson } from "./utils.js";
@@ -149,7 +152,7 @@ class RepoMD {
   // Fetch all blog posts
   async getAllPosts(useCache = true, forceRefresh = false) {
     const startTime = performance.now();
-    
+
     // Return cached posts if available and refresh not forced
     if (useCache && this.posts && !forceRefresh) {
       const duration = (performance.now() - startTime).toFixed(2);
@@ -172,7 +175,9 @@ class RepoMD {
       this.posts = posts;
       const duration = (performance.now() - startTime).toFixed(2);
       if (this.debug) {
-        console.log(`${prefix} 📄 Cached ${posts.length} posts in memory in ${duration}ms`);
+        console.log(
+          `${prefix} 📄 Cached ${posts.length} posts in memory in ${duration}ms`
+        );
       }
     }
 
@@ -290,7 +295,7 @@ class RepoMD {
   async getPostById(id) {
     const startTime = performance.now();
     let lookupMethod = "unknown";
-    
+
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with ID: ${id}`);
     }
@@ -305,7 +310,11 @@ class RepoMD {
         lookupMethod = "memory-cache";
         const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache: ${post.title || id} in ${duration}ms`);
+          console.log(
+            `${prefix} ✅ Found post in cache: ${
+              post.title || id
+            } in ${duration}ms`
+          );
         }
         return post;
       }
@@ -313,23 +322,29 @@ class RepoMD {
 
     // Fall back to loading all posts and filtering
     if (this.debug) {
-      console.log(`${prefix} 📡 Falling back to loading all posts to find ID: ${id}`);
+      console.log(
+        `${prefix} 📡 Falling back to loading all posts to find ID: ${id}`
+      );
     }
     const posts = await this.getAllPosts();
     const post = this._findPostByProperty(posts, "id", id);
-    
+
     const duration = (performance.now() - startTime).toFixed(2);
     if (post) {
       lookupMethod = "all-posts";
       if (this.debug) {
-        console.log(`${prefix} ✅ Found post by ID in full posts list in ${duration}ms using ${lookupMethod}`);
+        console.log(
+          `${prefix} ✅ Found post by ID in full posts list in ${duration}ms using ${lookupMethod}`
+        );
       }
     } else {
       if (this.debug) {
-        console.log(`${prefix} ❓ Post with ID not found even after loading all posts (search took ${duration}ms)`);
+        console.log(
+          `${prefix} ❓ Post with ID not found even after loading all posts (search took ${duration}ms)`
+        );
       }
     }
-    
+
     return post;
   }
 
@@ -376,7 +391,7 @@ class RepoMD {
   async getPostBySlug(slug) {
     const startTime = performance.now();
     let lookupMethod = "unknown";
-    
+
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with slug: ${slug}`);
     }
@@ -391,7 +406,11 @@ class RepoMD {
         lookupMethod = "memory-cache";
         const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache by slug: ${post.title || slug} in ${duration}ms`);
+          console.log(
+            `${prefix} ✅ Found post in cache by slug: ${
+              post.title || slug
+            } in ${duration}ms`
+          );
         }
         return post;
       }
@@ -403,14 +422,18 @@ class RepoMD {
     if (slugMap && slugMap[slug]) {
       // If we have a hash, use getPostByHash
       if (this.debug) {
-        console.log(`${prefix} 🔍 Found hash for slug in slugMap: ${slugMap[slug]}`);
+        console.log(
+          `${prefix} 🔍 Found hash for slug in slugMap: ${slugMap[slug]}`
+        );
       }
       const post = await this.getPostByHash(slugMap[slug]);
       if (post) {
         lookupMethod = "slug-map";
         const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Successfully loaded post via hash from slug mapping in ${duration}ms`);
+          console.log(
+            `${prefix} ✅ Successfully loaded post via hash from slug mapping in ${duration}ms`
+          );
         }
         return post;
       }
@@ -418,23 +441,29 @@ class RepoMD {
 
     // Fall back to loading all posts and filtering
     if (this.debug) {
-      console.log(`${prefix} 📡 Falling back to loading all posts to find slug: ${slug}`);
+      console.log(
+        `${prefix} 📡 Falling back to loading all posts to find slug: ${slug}`
+      );
     }
     const posts = await this.getAllPosts();
     const post = this._findPostByProperty(posts, "slug", slug);
-    
+
     const duration = (performance.now() - startTime).toFixed(2);
     if (post) {
       lookupMethod = "all-posts";
       if (this.debug) {
-        console.log(`${prefix} ✅ Found post by slug in full posts list in ${duration}ms using ${lookupMethod}`);
+        console.log(
+          `${prefix} ✅ Found post by slug in full posts list in ${duration}ms using ${lookupMethod}`
+        );
       }
     } else {
       if (this.debug) {
-        console.log(`${prefix} ❓ Post with slug not found even after loading all posts (search took ${duration}ms)`);
+        console.log(
+          `${prefix} ❓ Post with slug not found even after loading all posts (search took ${duration}ms)`
+        );
       }
     }
-    
+
     return post;
   }
 
@@ -442,7 +471,7 @@ class RepoMD {
   async getPostByHash(hash) {
     const startTime = performance.now();
     let lookupMethod = "unknown";
-    
+
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with hash: ${hash}`);
     }
@@ -457,12 +486,18 @@ class RepoMD {
         lookupMethod = "memory-cache";
         const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache by hash: ${post.title || hash} in ${duration}ms`);
+          console.log(
+            `${prefix} ✅ Found post in cache by hash: ${
+              post.title || hash
+            } in ${duration}ms`
+          );
         }
         return post;
       } else {
         if (this.debug) {
-          console.log(`${prefix} ❓ Post with hash not found in cache: ${hash}`);
+          console.log(
+            `${prefix} ❓ Post with hash not found in cache: ${hash}`
+          );
         }
       }
     }
@@ -473,14 +508,18 @@ class RepoMD {
     if (pathMap && pathMap[hash]) {
       // If we have a path, use getPostByPath
       if (this.debug) {
-        console.log(`${prefix} 🔍 Found path for hash in pathMap: ${pathMap[hash]}`);
+        console.log(
+          `${prefix} 🔍 Found path for hash in pathMap: ${pathMap[hash]}`
+        );
       }
       const post = await this.getPostByPath(pathMap[hash]);
       if (post) {
         lookupMethod = "path-map";
         const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Successfully loaded post by path from hash mapping in ${duration}ms`);
+          console.log(
+            `${prefix} ✅ Successfully loaded post by path from hash mapping in ${duration}ms`
+          );
         }
         return post;
       }
@@ -489,20 +528,28 @@ class RepoMD {
     // Fall back to loading all posts and filtering
     // This is temporary and will be improved later as mentioned
     if (this.debug) {
-      console.log(`${prefix} 📡 Falling back to loading all posts to find hash: ${hash}`);
+      console.log(
+        `${prefix} 📡 Falling back to loading all posts to find hash: ${hash}`
+      );
     }
     const posts = await this.getAllPosts();
     const post = this._findPostByProperty(posts, "hash", hash);
-    
+
     const duration = (performance.now() - startTime).toFixed(2);
     if (post) {
       lookupMethod = "all-posts";
       if (this.debug) {
-        console.log(`${prefix} ✅ Found post by hash in full posts list: ${post.title || hash} in ${duration}ms using ${lookupMethod}`);
+        console.log(
+          `${prefix} ✅ Found post by hash in full posts list: ${
+            post.title || hash
+          } in ${duration}ms using ${lookupMethod}`
+        );
       }
     } else {
       if (this.debug) {
-        console.log(`${prefix} ❓ Post with hash not found even after loading all posts: ${hash} (search took ${duration}ms)`);
+        console.log(
+          `${prefix} ❓ Post with hash not found even after loading all posts: ${hash} (search took ${duration}ms)`
+        );
       }
     }
     return post;
@@ -653,7 +700,7 @@ class RepoMD {
   createOpenAiToolHandler() {
     return createOpenAiToolHandler(this);
   }
-  
+
   /**
    * Handles an OpenAI API request using this RepoMD instance
    * @param {Object} request - The OpenAI API request
@@ -662,14 +709,36 @@ class RepoMD {
   handleOpenAiRequest(request) {
     return handleOpenAiRequest(request, this);
   }
+
+  /**
+   * Lists all source files from the project
+   * @param {boolean} useCache - Whether to use cache for the request
+   * @returns {Promise<Array>} - Array of source files
+   */
+  async getSourceFilesList(useCache = true) {
+    await this.ensureLatestRev();
+    return await this.fetchR2Json("/files-source.json", {
+      defaultValue: [],
+      useCache,
+    });
+  }
+
+  /**
+   * Lists all distribution files from the project
+   * @param {boolean} useCache - Whether to use cache for the request
+   * @returns {Promise<Array>} - Array of distribution files
+   */
+  async getDistFilesList(useCache = true) {
+    await this.ensureLatestRev();
+    return await this.fetchR2Json("/files-dist.json", {
+      defaultValue: [],
+      useCache,
+    });
+  }
 }
 
-// Import tool specs for OpenAI 
+// Import tool specs for OpenAI
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
 // Export RepoMD class and OpenAI related tools
-export {
-  RepoMD,
-  OpenAiToolSpec,
-  toolSpecs,
-};
+export { RepoMD, OpenAiToolSpec, toolSpecs };
