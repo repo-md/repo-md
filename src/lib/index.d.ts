@@ -46,6 +46,9 @@ export class RepoMD {
   getRecentPosts(count?: number): Promise<any[]>;
   getReleaseInfo(): Promise<any>;
   handleCloudflareRequest(request: Request): Promise<Response | null>;
+  getSourceFilesList(useCache?: boolean): Promise<any[]>;
+  getDistFilesList(useCache?: boolean): Promise<any[]>;
+  getGraph(useCache?: boolean): Promise<any>;
 }
 
 export default RepoMD;

@@ -1,6 +1,6 @@
 {
   "name": "repo-md",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "main": "./repo-md.js",
   "module": "./repo-md.js",

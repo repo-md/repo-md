@@ -38,6 +38,19 @@ export async function fetchJson(url, opts = {}, debug = false) {
 
     const response = await fetch(url);
     
+    // Log the full response for debugging
+    if (debug) {
+      console.log(`${prefix} 📡 Response status: ${response.status} ${response.statusText}`);
+      console.log(`${prefix} 🔍 Response URL: ${response.url}`);
+      
+      // Log response headers
+      const headers = {};
+      response.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      console.log(`${prefix} 📝 Response headers:`, headers);
+    }
+    
     // Handle different HTTP error status codes with specific messages
     if (!response.ok) {
       let userMessage;
@@ -65,14 +78,40 @@ export async function fetchJson(url, opts = {}, debug = false) {
           userMessage = `${errorMessage}: ${response.statusText} (${response.status})`;
       }
       
+      if (debug) {
+        console.error(`${prefix} ❌ ${userMessage}`);
+      }
+      
       throw new Error(userMessage);
     }
 
+    // First clone the response since we might need to read the body twice
+    const clonedResponse = response.clone();
+    
     // Parse JSON safely
     let data;
     try {
       data = await response.json();
+      
+      // Log the parsed response data when in debug mode
+      if (debug) {
+        console.log(`${prefix} 📦 Response data:`, JSON.stringify(data, null, 2).substring(0, 500) + (JSON.stringify(data, null, 2).length > 500 ? '...' : ''));
+      }
     } catch (jsonError) {
+      // In case of a JSON parsing error, try to get the raw text to help with debugging
+      try {
+        const responseText = await clonedResponse.text();
+        if (debug) {
+          console.error(`${prefix} ❌ Failed to parse JSON response:`, jsonError);
+          console.error(`${prefix} 📃 Raw response text (first 500 chars):`, responseText.substring(0, 500) + (responseText.length > 500 ? '...' : ''));
+        }
+      } catch (textError) {
+        if (debug) {
+          console.error(`${prefix} ❌ Failed to parse JSON response:`, jsonError);
+          console.error(`${prefix} ❌ Also failed to read raw response text:`, textError);
+        }
+      }
+      
       throw new Error(`Invalid JSON response: ${jsonError.message}`);
     }
     

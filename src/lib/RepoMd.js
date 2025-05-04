@@ -853,6 +853,19 @@ class RepoMD {
       useCache,
     });
   }
+
+  /**
+   * Fetches the graph data from the project
+   * @param {boolean} useCache - Whether to use cache for the request
+   * @returns {Promise<Object>} - The graph data object
+   */
+  async getGraph(useCache = true) {
+    await this.ensureLatestRev();
+    return await this.fetchR2Json("/graph.json", {
+      defaultValue: {},
+      useCache,
+    });
+  }
 }
 
 // Import tool specs for OpenAI
