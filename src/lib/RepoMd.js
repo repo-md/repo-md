@@ -82,7 +82,7 @@ class RepoMD {
 
   async fetchPublicApi(path = "/") {
     const domain = "api.repo.md";
-    const url = `https://${domain}/v1/${path}`;
+    const url = `https://${domain}/v1${path}`;
 
     const { success, error, data } = await this.fetchJson(url, {
       errorMessage: "Error fetching pubic API route: " + path,
