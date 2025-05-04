@@ -84,41 +84,143 @@ class RepoMD {
     const domain = "api.repo.md";
     const url = `https://${domain}/v1${path}`;
 
-    const { success, error, data } = await this.fetchJson(url, {
-      errorMessage: "Error fetching pubic API route: " + path,
-      useCache: true, // fetchJson already handles caching
-    });
+    try {
+      const result = await this.fetchJson(url, {
+        errorMessage: "Error fetching public API route: " + path,
+        useCache: true, // fetchJson already handles caching
+        returnErrorObject: true, // Get structured error response
+      });
 
-    return data;
+      // Check if we got an error object back
+      if (result && result.success === false) {
+        throw new Error(result.error || `Failed to fetch data from ${url}`);
+      }
+
+      // If the result is null or undefined, it likely means there was an error
+      if (result === null || result === undefined) {
+        throw new Error(
+          `Failed to fetch data from ${url} - please verify your project credentials`
+        );
+      }
+
+      return result.data;
+    } catch (error) {
+      const errorMsg = `API Request Failed: ${error.message}`;
+
+      if (this.debug) {
+        console.error(`${prefix} ❌ ${errorMsg}`);
+        console.error(`${prefix} 🔍 Failed URL: ${url}`);
+      }
+
+      // Provide a user-friendly message that includes project information
+      const projectInfo = this.projectId
+        ? `project ID: ${this.projectId}`
+        : this.projectSlug
+        ? `project slug: ${this.projectSlug}`
+        : "unknown project";
+
+      throw new Error(`Failed to access ${projectInfo}: ${error.message}`);
+    }
   }
 
   // Fetch project configuration including latest release information
   async fetchProjectDetails() {
-    const path = `/orgs/${this.orgSlug}/projects/slug/${this.projectSlug}`;
-    // EX: http://localhost:5599/v1/orgs/iplanwebsites/projects/slug/port1g
+    let path;
+
+    // Check if we have a valid projectId and use it preferentially
+    if (this.projectId && this.projectId !== "undefined-project-id") {
+      path = `/project-id/${this.projectId}`;
+      if (this.debug) {
+        console.log(`${prefix} 🔍 Using project ID path: ${path}`);
+      }
+    } else if (
+      this.projectSlug &&
+      this.projectSlug !== "undefined-project-slug"
+    ) {
+      path = `/orgs/${this.orgSlug}/projects/slug/${this.projectSlug}`;
+      if (this.debug) {
+        console.log(`${prefix} 🔍 Using project slug path: ${path}`);
+      }
+    } else {
+      // If neither valid projectId nor projectSlug is available, throw an error
+      throw new Error(
+        "No valid projectId or projectSlug provided for fetching project details"
+      );
+    }
+
+    // EX: https://api.repo.md/v1/orgs/iplanwebsites/projects/680e97604a0559a192640d2c
+    // or: https://api.repo.md/v1/orgs/iplanwebsites/projects/slug/port1g
     const project = await this.fetchPublicApi(path);
     return project;
   }
   // Get the latest revision ID
   async getActiveProjectRev() {
-    const { activeRev, id } = await this.fetchProjectDetails();
+    try {
+      const projectDetails = await this.fetchProjectDetails();
 
-    return activeRev;
+      if (!projectDetails || typeof projectDetails !== "object") {
+        throw new Error("Invalid project details response format");
+      }
+
+      const { activeRev } = projectDetails;
+
+      if (!activeRev) {
+        throw new Error(
+          `No active revision found for project ${
+            this.projectId || this.projectSlug
+          }`
+        );
+      }
+
+      return activeRev;
+    } catch (error) {
+      if (this.debug) {
+        console.error(
+          `${prefix} ❌ Error getting active project revision: ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get active project revision: ${error.message}`
+      );
+    }
   }
 
   // Ensure latest revision is resolved before making R2 calls
   async ensureLatestRev() {
-    if (this.rev === "latest" && !this.activeRev) {
-      const latestId = await this.getActiveProjectRev();
-      if (!latestId) {
-        throw new Error("Could not determine latest revision ID");
+    try {
+      if (this.rev === "latest" && !this.activeRev) {
+        if (this.debug) {
+          console.log(
+            `${prefix} 🔄 Resolving latest revision for project ${
+              this.projectId || this.projectSlug
+            }`
+          );
+        }
+
+        const latestId = await this.getActiveProjectRev();
+
+        if (!latestId) {
+          throw new Error(
+            `Could not determine latest revision ID for project ${
+              this.projectId || this.projectSlug
+            }`
+          );
+        }
+
+        this.activeRev = latestId;
+
+        if (this.debug) {
+          console.log(
+            `${prefix} ✅ Resolved 'latest' to revision: ${this.activeRev}`
+          );
+        }
       }
-      this.activeRev = latestId;
+    } catch (error) {
+      const errorMessage = `Failed to resolve latest revision: ${error.message}`;
       if (this.debug) {
-        console.log(
-          `[RepoMD] Resolved 'latest' to revision: ${this.activeRev}`
-        );
+        console.error(`${prefix} ❌ ${errorMessage}`);
       }
+      throw new Error(errorMessage);
     }
   }
 
@@ -674,11 +776,27 @@ class RepoMD {
 
   // Get release information
   async getReleaseInfo() {
-    const config = await this.fetchProjectDetails();
-    return {
-      current: config.latest_release,
-      all: config.releases || [],
-    };
+    try {
+      const config = await this.fetchProjectDetails();
+
+      if (!config || typeof config !== "object") {
+        throw new Error("Invalid project configuration response");
+      }
+
+      return {
+        current: config.latest_release || null,
+        all: config.releases || [],
+        projectId: config.id || this.projectId || null,
+        projectName: config.name || null,
+      };
+    } catch (error) {
+      if (this.debug) {
+        console.error(
+          `${prefix} ❌ Error getting release information: ${error.message}`
+        );
+      }
+      throw new Error(`Failed to get release information: ${error.message}`);
+    }
   }
 
   // Handle Cloudflare requests

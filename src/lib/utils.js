@@ -37,11 +37,45 @@ export async function fetchJson(url, opts = {}, debug = false) {
     }
 
     const response = await fetch(url);
+    
+    // Handle different HTTP error status codes with specific messages
     if (!response.ok) {
-      throw new Error(`${errorMessage}: ${response.statusText}`);
+      let userMessage;
+      
+      switch (response.status) {
+        case 404:
+          userMessage = `Resource not found (404): ${url.split('/').slice(-2).join('/')}`;
+          break;
+        case 401:
+          userMessage = "Authentication required: Please check your credentials";
+          break;
+        case 403:
+          userMessage = "Access forbidden: You don't have permission to access this resource";
+          break;
+        case 429:
+          userMessage = "Too many requests: Please try again later";
+          break;
+        case 500:
+        case 502:
+        case 503:
+        case 504:
+          userMessage = `Server error (${response.status}): The server encountered an issue`;
+          break;
+        default:
+          userMessage = `${errorMessage}: ${response.statusText} (${response.status})`;
+      }
+      
+      throw new Error(userMessage);
     }
 
-    const data = await response.json();
+    // Parse JSON safely
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      throw new Error(`Invalid JSON response: ${jsonError.message}`);
+    }
+    
     const duration = (performance.now() - startTime).toFixed(2);
     
     // Log the fetch duration
@@ -66,6 +100,16 @@ export async function fetchJson(url, opts = {}, debug = false) {
       console.error(`${prefix} ⚠️ Error fetching: ${url} (${duration}ms)`);
       console.error(`${prefix} ⚠️ ${errorMessage}:`, error);
     }
+    
+    // Return a more structured error object that can be checked
+    if (opts.returnErrorObject) {
+      return {
+        success: false,
+        error: error.message || "Unknown error",
+        data: defaultValue
+      };
+    }
+    
     return defaultValue;
   }
 }
