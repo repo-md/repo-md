@@ -9,7 +9,7 @@ const lru = new QuickLRU({
 
 const prefix = LOG_PREFIXES.UTILS;
 
-// Helper function to fetch JSON with error handling
+// Helper function to fetch JSON with error handling and duration measurement
 export async function fetchJson(url, opts = {}, debug = false) {
   // Deconstruct options with sensible defaults
   const {
@@ -18,6 +18,9 @@ export async function fetchJson(url, opts = {}, debug = false) {
     useCache = true,
   } = opts;
 
+  // Track start time for duration calculation
+  const startTime = performance.now();
+  
   try {
     if (debug) {
       console.log(`${prefix} 🌐 Fetching JSON from: ${url}`);
@@ -26,8 +29,9 @@ export async function fetchJson(url, opts = {}, debug = false) {
     // Check cache first if provided
     if (useCache && lru && lru.has(url)) {
       const cachedData = lru.get(url);
+      const duration = (performance.now() - startTime).toFixed(2);
       if (debug) {
-        console.log(`${prefix} ✨ Cache hit for: ${url}`);
+        console.log(`${prefix} ✨ Cache hit for: ${url} (${duration}ms)`);
       }
       return cachedData;
     }
@@ -38,11 +42,12 @@ export async function fetchJson(url, opts = {}, debug = false) {
     }
 
     const data = await response.json();
-    /*
-    if (error) {
-      console.error(`[RepoMD] Error fetching data: ${url} +++ ${error}`);
-      throw new Error(`${errorMessage}: ${error}`);
-    }*/
+    const duration = (performance.now() - startTime).toFixed(2);
+    
+    // Log the fetch duration
+    if (debug) {
+      console.log(`${prefix} ⏱️ Fetched data in ${duration}ms: ${url}`);
+    }
 
     // Store in cache if provided
     if (useCache && lru) {
@@ -56,8 +61,9 @@ export async function fetchJson(url, opts = {}, debug = false) {
 
     return data;
   } catch (error) {
+    const duration = (performance.now() - startTime).toFixed(2);
     if (debug) {
-      console.error(`${prefix} ⚠️ Error fetching: ${url}`);
+      console.error(`${prefix} ⚠️ Error fetching: ${url} (${duration}ms)`);
       console.error(`${prefix} ⚠️ ${errorMessage}:`, error);
     }
     return defaultValue;

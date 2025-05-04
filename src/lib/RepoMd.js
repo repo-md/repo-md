@@ -148,11 +148,14 @@ class RepoMD {
 
   // Fetch all blog posts
   async getAllPosts(useCache = true, forceRefresh = false) {
+    const startTime = performance.now();
+    
     // Return cached posts if available and refresh not forced
     if (useCache && this.posts && !forceRefresh) {
+      const duration = (performance.now() - startTime).toFixed(2);
       if (this.debug) {
         console.log(
-          `${prefix} 💾 Using cached posts array (${this.posts.length} posts)`
+          `${prefix} 💾 Using cached posts array (${this.posts.length} posts) in ${duration}ms`
         );
       }
       return this.posts;
@@ -167,8 +170,9 @@ class RepoMD {
     // Cache the posts for future use
     if (useCache) {
       this.posts = posts;
+      const duration = (performance.now() - startTime).toFixed(2);
       if (this.debug) {
-        console.log(`${prefix} 📄 Cached ${posts.length} posts in memory`);
+        console.log(`${prefix} 📄 Cached ${posts.length} posts in memory in ${duration}ms`);
       }
     }
 
@@ -284,6 +288,9 @@ class RepoMD {
 
   // Get a single blog post by ID
   async getPostById(id) {
+    const startTime = performance.now();
+    let lookupMethod = "unknown";
+    
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with ID: ${id}`);
     }
@@ -295,16 +302,35 @@ class RepoMD {
       }
       const post = this._findPostByProperty(this.posts, "id", id);
       if (post) {
+        lookupMethod = "memory-cache";
+        const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache: ${post.title || id}`);
+          console.log(`${prefix} ✅ Found post in cache: ${post.title || id} in ${duration}ms`);
         }
         return post;
       }
     }
 
     // Fall back to loading all posts and filtering
+    if (this.debug) {
+      console.log(`${prefix} 📡 Falling back to loading all posts to find ID: ${id}`);
+    }
     const posts = await this.getAllPosts();
-    return this._findPostByProperty(posts, "id", id);
+    const post = this._findPostByProperty(posts, "id", id);
+    
+    const duration = (performance.now() - startTime).toFixed(2);
+    if (post) {
+      lookupMethod = "all-posts";
+      if (this.debug) {
+        console.log(`${prefix} ✅ Found post by ID in full posts list in ${duration}ms using ${lookupMethod}`);
+      }
+    } else {
+      if (this.debug) {
+        console.log(`${prefix} ❓ Post with ID not found even after loading all posts (search took ${duration}ms)`);
+      }
+    }
+    
+    return post;
   }
 
   // Helper function to safely fetch map data
@@ -348,6 +374,9 @@ class RepoMD {
 
   // Get a single blog post by slug
   async getPostBySlug(slug) {
+    const startTime = performance.now();
+    let lookupMethod = "unknown";
+    
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with slug: ${slug}`);
     }
@@ -359,8 +388,10 @@ class RepoMD {
       }
       const post = this._findPostByProperty(this.posts, "slug", slug);
       if (post) {
+        lookupMethod = "memory-cache";
+        const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache by slug: ${post.title || slug}`);
+          console.log(`${prefix} ✅ Found post in cache by slug: ${post.title || slug} in ${duration}ms`);
         }
         return post;
       }
@@ -371,17 +402,47 @@ class RepoMD {
 
     if (slugMap && slugMap[slug]) {
       // If we have a hash, use getPostByHash
+      if (this.debug) {
+        console.log(`${prefix} 🔍 Found hash for slug in slugMap: ${slugMap[slug]}`);
+      }
       const post = await this.getPostByHash(slugMap[slug]);
-      if (post) return post;
+      if (post) {
+        lookupMethod = "slug-map";
+        const duration = (performance.now() - startTime).toFixed(2);
+        if (this.debug) {
+          console.log(`${prefix} ✅ Successfully loaded post via hash from slug mapping in ${duration}ms`);
+        }
+        return post;
+      }
     }
 
     // Fall back to loading all posts and filtering
+    if (this.debug) {
+      console.log(`${prefix} 📡 Falling back to loading all posts to find slug: ${slug}`);
+    }
     const posts = await this.getAllPosts();
-    return this._findPostByProperty(posts, "slug", slug);
+    const post = this._findPostByProperty(posts, "slug", slug);
+    
+    const duration = (performance.now() - startTime).toFixed(2);
+    if (post) {
+      lookupMethod = "all-posts";
+      if (this.debug) {
+        console.log(`${prefix} ✅ Found post by slug in full posts list in ${duration}ms using ${lookupMethod}`);
+      }
+    } else {
+      if (this.debug) {
+        console.log(`${prefix} ❓ Post with slug not found even after loading all posts (search took ${duration}ms)`);
+      }
+    }
+    
+    return post;
   }
 
   // Get a single blog post by hash
   async getPostByHash(hash) {
+    const startTime = performance.now();
+    let lookupMethod = "unknown";
+    
     if (this.debug) {
       console.log(`${prefix} 📡 Fetching post with hash: ${hash}`);
     }
@@ -393,8 +454,10 @@ class RepoMD {
       }
       const post = this._findPostByProperty(this.posts, "hash", hash);
       if (post) {
+        lookupMethod = "memory-cache";
+        const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Found post in cache by hash: ${post.title || hash}`);
+          console.log(`${prefix} ✅ Found post in cache by hash: ${post.title || hash} in ${duration}ms`);
         }
         return post;
       } else {
@@ -414,8 +477,10 @@ class RepoMD {
       }
       const post = await this.getPostByPath(pathMap[hash]);
       if (post) {
+        lookupMethod = "path-map";
+        const duration = (performance.now() - startTime).toFixed(2);
         if (this.debug) {
-          console.log(`${prefix} ✅ Successfully loaded post by path from hash mapping`);
+          console.log(`${prefix} ✅ Successfully loaded post by path from hash mapping in ${duration}ms`);
         }
         return post;
       }
@@ -428,13 +493,16 @@ class RepoMD {
     }
     const posts = await this.getAllPosts();
     const post = this._findPostByProperty(posts, "hash", hash);
+    
+    const duration = (performance.now() - startTime).toFixed(2);
     if (post) {
+      lookupMethod = "all-posts";
       if (this.debug) {
-        console.log(`${prefix} ✅ Found post by hash in full posts list: ${post.title || hash}`);
+        console.log(`${prefix} ✅ Found post by hash in full posts list: ${post.title || hash} in ${duration}ms using ${lookupMethod}`);
       }
     } else {
       if (this.debug) {
-        console.log(`${prefix} ❓ Post with hash not found even after loading all posts: ${hash}`);
+        console.log(`${prefix} ❓ Post with hash not found even after loading all posts: ${hash} (search took ${duration}ms)`);
       }
     }
     return post;

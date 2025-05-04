@@ -95,6 +95,8 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
 
 // Unified handler for Cloudflare requests
 export async function handleCloudflareRequest(request, getR2MediaUrl) {
+  const startTime = performance.now();
+  
   if (DEBUG) {
     console.log(`${prefix} 🖼️ Handling request: ${request.url}`);
   }
@@ -125,10 +127,15 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
     );
   }
 
+  // Track URL resolution time
+  const urlResolveStart = performance.now();
+  
   // Wait for the Promise to resolve
   const r2Url = await getR2MediaUrl(mediaPath);
+  
+  const urlResolveDuration = (performance.now() - urlResolveStart).toFixed(2);
   if (DEBUG) {
-    console.log(`${prefix} 🔀 Proxying to R2 URL: ${r2Url}`);
+    console.log(`${prefix} 🔀 Resolved R2 URL in ${urlResolveDuration}ms: ${r2Url}`);
   }
 
   // Create and send the asset request
@@ -140,13 +147,24 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
   });
 
   try {
+    // Track fetch time
+    const fetchStart = performance.now();
+    
     const response = await fetch(assetRequest);
+    
+    const fetchDuration = (performance.now() - fetchStart).toFixed(2);
     if (DEBUG) {
-      console.log(`${prefix} 📦 R2 response status: ${response.status}`);
+      console.log(`${prefix} 📦 R2 response status: ${response.status} (fetch took ${fetchDuration}ms)`);
     }
 
     // Create browser-friendly headers
     const headers = createBrowserFriendlyHeaders(response.headers, mediaPath);
+
+    // Calculate total processing time
+    const totalDuration = (performance.now() - startTime).toFixed(2);
+    if (DEBUG) {
+      console.log(`${prefix} ⏱️ Total media proxy time: ${totalDuration}ms for ${mediaPath}`);
+    }
 
     // Return the response with browser-friendly headers
     return new Response(response.body, {
@@ -155,7 +173,8 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
       headers: headers,
     });
   } catch (error) {
-    console.error(`${prefix} 🚫 Error proxying to asset server:`, error);
+    const errorDuration = (performance.now() - startTime).toFixed(2);
+    console.error(`${prefix} 🚫 Error proxying to asset server (${errorDuration}ms):`, error);
     return new Response("Asset not found", { status: 404 });
   }
 }
