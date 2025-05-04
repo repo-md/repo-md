@@ -2,11 +2,11 @@
  * RepoMD - A client for interacting with the repo.md API with quick-lru cache
  */
 
-import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy";
-import * as frameworkSnippets from "./frameworkSnipets";
+import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy.js";
+import { frameworkSnippets } from "./index.js";
 import { createOpenAiToolHandler, handleOpenAiRequest } from "./openai/OpenAiToolHandler.js";
 
-import { fetchJson } from "./utils";
+import { fetchJson } from "./utils.js";
 
 const DEBUG = true;
 const R2_DOMAIN = "https://r2.repo.md";
@@ -557,10 +557,9 @@ class RepoMD {
 // Import tool specs for OpenAI 
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
-// Export framework snippets and RepoMD class
+// Export RepoMD class and OpenAI related tools
 export {
   RepoMD,
-  frameworkSnippets,
   OpenAiToolSpec,
   toolSpecs,
 };
