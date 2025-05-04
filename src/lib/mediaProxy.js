@@ -1,14 +1,16 @@
 /**
  * Media proxy service for handling media asset requests
  */
+import { LOG_PREFIXES } from "./logger.js";
 
 const MEDIA_URL_PREFIX = "/_repo/medias/";
 const DEBUG = true;
+const prefix = LOG_PREFIXES.MEDIA;
 
 // Helper function to find probable MIME type from file path
 function findProbableMimeType(path) {
   const ext = path.split(".").pop().toLowerCase();
-  if (DEBUG) console.log("++++++ext from path:", ext, path);
+  if (DEBUG) console.log(`${prefix} 📎 Extracted extension: ${ext} from path: ${path}`);
   const mimeTypes = {
     // Images
     jpg: "image/jpeg",
@@ -61,7 +63,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   // Get content type from original headers or determine from file extension
   let contentType = originalHeaders.get("Content-Type");
   if (DEBUG)
-    console.log("++++++Content-Type from original headers:", contentType);
+    console.log(`${prefix} 📎 Content-Type from original headers: ${contentType}`);
   if (!contentType || contentType === "application/octet-stream") {
     contentType = findProbableMimeType(mediaPath);
   }
@@ -70,8 +72,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   newHeaders.set("Content-Type", contentType);
   if (DEBUG)
     console.log(
-      "++++-+-+-+-+++Content-Type from findProbableMimeType",
-      contentType
+      `${prefix} 📎 Determined Content-Type: ${contentType}`
     );
 
   // Remove or set Content-Disposition to inline for browser display
@@ -95,7 +96,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
 // Unified handler for Cloudflare requests
 export async function handleCloudflareRequest(request, getR2MediaUrl) {
   if (DEBUG) {
-    console.log(`[MediaProxy] Handling request: ${request.url}`);
+    console.log(`${prefix} 🖼️ Handling request: ${request.url}`);
   }
 
   // Check if request is for a media asset
@@ -103,7 +104,7 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
   const isMedia = url.pathname.startsWith(MEDIA_URL_PREFIX);
 
   if (DEBUG) {
-    console.log(`[MediaProxy] URL path: ${url.pathname}, isMedia: ${isMedia}`);
+    console.log(`${prefix} 🖼️ URL path: ${url.pathname}, isMedia: ${isMedia}`);
   }
 
   if (!isMedia) {
@@ -112,7 +113,7 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
 
   if (DEBUG) {
     console.log(
-      `[MediaProxy] Detected media request, proxying to asset server`
+      `${prefix} 🔀 Detected media request, proxying to asset server`
     );
   }
 
@@ -120,14 +121,14 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
   const mediaPath = url.pathname.replace(MEDIA_URL_PREFIX, "");
   if (DEBUG) {
     console.log(
-      `[MediaProxy] Extracted media path: ${mediaPath} from ${url.pathname}`
+      `${prefix} 🔀 Extracted media path: ${mediaPath} from ${url.pathname}`
     );
   }
 
   // Wait for the Promise to resolve
   const r2Url = await getR2MediaUrl(mediaPath);
   if (DEBUG) {
-    console.log(`[MediaProxy] Proxying to R2 URL: ${r2Url}`);
+    console.log(`${prefix} 🔀 Proxying to R2 URL: ${r2Url}`);
   }
 
   // Create and send the asset request
@@ -141,7 +142,7 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
   try {
     const response = await fetch(assetRequest);
     if (DEBUG) {
-      console.log(`[MediaProxy] R2 response status: ${response.status}`);
+      console.log(`${prefix} 📦 R2 response status: ${response.status}`);
     }
 
     // Create browser-friendly headers
@@ -154,7 +155,7 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
       headers: headers,
     });
   } catch (error) {
-    console.error(`[MediaProxy] Error proxying to asset server:`, error);
+    console.error(`${prefix} 🚫 Error proxying to asset server:`, error);
     return new Response("Asset not found", { status: 404 });
   }
 }

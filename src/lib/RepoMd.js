@@ -5,11 +5,13 @@
 import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy.js";
 import { frameworkSnippets } from "./index.js";
 import { createOpenAiToolHandler, handleOpenAiRequest } from "./openai/OpenAiToolHandler.js";
+import { LOG_PREFIXES } from "./logger.js";
 
 import { fetchJson } from "./utils.js";
 
 const DEBUG = true;
 const R2_DOMAIN = "https://r2.repo.md";
+const prefix = LOG_PREFIXES.REPO_MD;
 
 class RepoMD {
   constructor({
@@ -43,7 +45,7 @@ class RepoMD {
     //  }
 
     if (this.debug) {
-      console.log(`[RepoMD] Initialized with:
+      console.log(`${prefix} 🚀 Initialized with:
         - org: ${org}
         - project: ${project}
         - rev: ${rev} 
@@ -59,7 +61,7 @@ class RepoMD {
     //    const url = `${R2_DOMAIN}/${this.orgSlug}/${this.projectId}/${resolvedRev}${path}`;
     const url = `${R2_DOMAIN}/${this.orgSlug}/${this.projectId}${path}`;
     if (this.debug) {
-      console.log(`[RepoMD] Generated URL: ${url}`);
+      console.log(`${prefix} 🔗 Generated URL: ${url}`);
     }
     return url;
   }
@@ -68,7 +70,7 @@ class RepoMD {
     const url = this.getR2ProjectUrl("/" + resolvedRev + path);
     //  const url = `https://${domain}/${this.orgSlug}/${this.projectId}/${resolvedRev}${path}`;
     if (this.debug) {
-      console.log(`[RepoMD] Generated URL: ${url}`);
+      console.log(`${prefix} 🔗 Generated URL: ${url}`);
     }
     return url;
   }
@@ -150,7 +152,7 @@ class RepoMD {
     if (useCache && this.posts && !forceRefresh) {
       if (this.debug) {
         console.log(
-          `[RepoMD] Using cached posts array (${this.posts.length} posts)`
+          `${prefix} 💾 Using cached posts array (${this.posts.length} posts)`
         );
       }
       return this.posts;
@@ -166,7 +168,7 @@ class RepoMD {
     if (useCache) {
       this.posts = posts;
       if (this.debug) {
-        console.log(`[RepoMD] Cached ${posts.length} posts in memory`);
+        console.log(`${prefix} 📄 Cached ${posts.length} posts in memory`);
       }
     }
 
@@ -283,16 +285,21 @@ class RepoMD {
   // Get a single blog post by ID
   async getPostById(id) {
     if (this.debug) {
-      console.log(`[RepoMD] Fetching post with ID: ${id}`);
+      console.log(`${prefix} 📡 Fetching post with ID: ${id}`);
     }
 
     // First check if we already have posts in memory
     if (this.posts) {
       if (this.debug) {
-        console.log(`[RepoMD] Searching for ID in cached posts array`);
+        console.log(`${prefix} 💾 Searching for ID in cached posts array`);
       }
       const post = this._findPostByProperty(this.posts, "id", id);
-      if (post) return post;
+      if (post) {
+        if (this.debug) {
+          console.log(`${prefix} ✅ Found post in cache: ${post.title || id}`);
+        }
+        return post;
+      }
     }
 
     // Fall back to loading all posts and filtering
@@ -342,16 +349,21 @@ class RepoMD {
   // Get a single blog post by slug
   async getPostBySlug(slug) {
     if (this.debug) {
-      console.log(`[RepoMD] Fetching post with slug: ${slug}`);
+      console.log(`${prefix} 📡 Fetching post with slug: ${slug}`);
     }
 
     // First check if we already have posts in memory
     if (this.posts) {
       if (this.debug) {
-        console.log(`[RepoMD] Searching for slug in cached posts array`);
+        console.log(`${prefix} 💾 Searching for slug in cached posts array`);
       }
       const post = this._findPostByProperty(this.posts, "slug", slug);
-      if (post) return post;
+      if (post) {
+        if (this.debug) {
+          console.log(`${prefix} ✅ Found post in cache by slug: ${post.title || slug}`);
+        }
+        return post;
+      }
     }
 
     // Try to get post hash from slug map
@@ -371,16 +383,25 @@ class RepoMD {
   // Get a single blog post by hash
   async getPostByHash(hash) {
     if (this.debug) {
-      console.log(`[RepoMD] Fetching post with hash: ${hash}`);
+      console.log(`${prefix} 📡 Fetching post with hash: ${hash}`);
     }
 
     // First check if we already have posts in memory
     if (this.posts) {
       if (this.debug) {
-        console.log(`[RepoMD] Searching for hash in cached posts array`);
+        console.log(`${prefix} 💾 Searching for hash in cached posts array`);
       }
       const post = this._findPostByProperty(this.posts, "hash", hash);
-      if (post) return post;
+      if (post) {
+        if (this.debug) {
+          console.log(`${prefix} ✅ Found post in cache by hash: ${post.title || hash}`);
+        }
+        return post;
+      } else {
+        if (this.debug) {
+          console.log(`${prefix} ❓ Post with hash not found in cache: ${hash}`);
+        }
+      }
     }
 
     // Try to get post path from path map
@@ -388,14 +409,35 @@ class RepoMD {
 
     if (pathMap && pathMap[hash]) {
       // If we have a path, use getPostByPath
+      if (this.debug) {
+        console.log(`${prefix} 🔍 Found path for hash in pathMap: ${pathMap[hash]}`);
+      }
       const post = await this.getPostByPath(pathMap[hash]);
-      if (post) return post;
+      if (post) {
+        if (this.debug) {
+          console.log(`${prefix} ✅ Successfully loaded post by path from hash mapping`);
+        }
+        return post;
+      }
     }
 
     // Fall back to loading all posts and filtering
     // This is temporary and will be improved later as mentioned
+    if (this.debug) {
+      console.log(`${prefix} 📡 Falling back to loading all posts to find hash: ${hash}`);
+    }
     const posts = await this.getAllPosts();
-    return this._findPostByProperty(posts, "hash", hash);
+    const post = this._findPostByProperty(posts, "hash", hash);
+    if (post) {
+      if (this.debug) {
+        console.log(`${prefix} ✅ Found post by hash in full posts list: ${post.title || hash}`);
+      }
+    } else {
+      if (this.debug) {
+        console.log(`${prefix} ❓ Post with hash not found even after loading all posts: ${hash}`);
+      }
+    }
+    return post;
   }
 
   // Get posts embeddings map

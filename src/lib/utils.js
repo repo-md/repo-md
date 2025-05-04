@@ -1,10 +1,13 @@
 import QuickLRU from "quick-lru";
+import { LOG_PREFIXES } from "./logger.js";
 
 // Global cache instance that persists across requests
 const lru = new QuickLRU({
   maxSize: 1000, ///tweak depending on worker
   maxAge: 60000 * 60, // 1h
 });
+
+const prefix = LOG_PREFIXES.UTILS;
 
 // Helper function to fetch JSON with error handling
 export async function fetchJson(url, opts = {}, debug = false) {
@@ -17,14 +20,14 @@ export async function fetchJson(url, opts = {}, debug = false) {
 
   try {
     if (debug) {
-      console.log(`[RepoMD] Fetching JSON from: ${url}`);
+      console.log(`${prefix} 🌐 Fetching JSON from: ${url}`);
     }
 
     // Check cache first if provided
     if (useCache && lru && lru.has(url)) {
       const cachedData = lru.get(url);
       if (debug) {
-        console.log(`[RepoMD] Cache hit for: ${url}`);
+        console.log(`${prefix} ✨ Cache hit for: ${url}`);
       }
       return cachedData;
     }
@@ -46,7 +49,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
       lru.set(url, data);
       if (debug) {
         console.log(
-          `[RepoMD] Cached data for: ${url} (cache size: ${lru.size})`
+          `${prefix} 💽 Cached data for: ${url} (cache size: ${lru.size})`
         );
       }
     }
@@ -54,8 +57,8 @@ export async function fetchJson(url, opts = {}, debug = false) {
     return data;
   } catch (error) {
     if (debug) {
-      console.error(`[RepoMD] 🌐  ${url}:`);
-      console.error(`[RepoMD] ${errorMessage}:`, error);
+      console.error(`${prefix} ⚠️ Error fetching: ${url}`);
+      console.error(`${prefix} ⚠️ ${errorMessage}:`, error);
     }
     return defaultValue;
   }
