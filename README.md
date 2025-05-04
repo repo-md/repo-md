@@ -35,11 +35,11 @@ When loaded via CDN, the library is available as a global variable `RepoMD`:
   const repo = new RepoMD.RepoMD({
     orgSlug: "iplanwebsites",
     projectSlug: "port1g",
-    projectId: "680e97604a0559a192640d2c"
+    projectId: "680e97604a0559a192640d2c",
   });
-  
+
   // Use repo client methods
-  repo.getAllPosts().then(posts => {
+  repo.getAllPosts().then((posts) => {
     console.log(posts);
   });
 </script>
@@ -51,17 +51,17 @@ If you need to use the UMD module in a Node.js project that doesn't support ES m
 
 ```javascript
 // Using require with the UMD build
-const RepoMD = require('repo-md/min').RepoMD;
+const RepoMD = require("repo-md/min").RepoMD;
 
 // Initialize the client
 const repo = new RepoMD({
   orgSlug: "iplanwebsites",
   projectSlug: "port1g",
-  projectId: "680e97604a0559a192640d2c"
+  projectId: "680e97604a0559a192640d2c",
 });
 
 // Use client methods
-repo.getAllPosts().then(posts => {
+repo.getAllPosts().then((posts) => {
   console.log(posts);
 });
 ```
@@ -77,7 +77,7 @@ The demo is automatically deployed when changes are pushed to the `main` branch.
 Import the RepoMD class and create a client instance:
 
 ```javascript
-import RepoMD from "repo-md";
+import { RepoMD } from "repo-md";
 
 // Initialize the client
 const repo = new RepoMD({
@@ -239,7 +239,7 @@ RepoMD includes a helper to handle media requests in Cloudflare Worker environme
 
 ```javascript
 // In your Cloudflare Worker
-import RepoMD from "repo-md";
+import { RepoMD } from "repo-md";
 
 const repo = new RepoMD({
   orgSlug: "your-org-slug",
@@ -299,7 +299,7 @@ const freshMedia = await repo.getAllMedia(false);
 ## Complete Example
 
 ```javascript
-import RepoMD from "repo-md";
+import { RepoMD } from "repo-md";
 
 async function main() {
   // Initialize the client
