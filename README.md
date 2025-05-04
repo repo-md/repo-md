@@ -6,8 +6,64 @@ A lightweight JavaScript client library for fetching and working with content st
 
 ## Installation
 
+### NPM
+
 ```bash
 npm i repo-md
+```
+
+### CDN (Browser)
+
+You can also include repo-md directly in your HTML via CDN:
+
+```html
+<!-- From unpkg (recommended) -->
+<script src="https://unpkg.com/repo-md"></script>
+
+<!-- Or from jsDelivr -->
+<script src="https://cdn.jsdelivr.net/npm/repo-md"></script>
+
+<!-- Minified versions for production -->
+<script src="https://unpkg.com/repo-md/repo-md.min.umd.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/repo-md/repo-md.min.umd.cjs"></script>
+```
+
+When loaded via CDN, the library is available as a global variable `RepoMD`:
+
+```html
+<script>
+  const repo = new RepoMD.RepoMD({
+    orgSlug: "iplanwebsites",
+    projectSlug: "port1g",
+    projectId: "680e97604a0559a192640d2c"
+  });
+  
+  // Use repo client methods
+  repo.getAllPosts().then(posts => {
+    console.log(posts);
+  });
+</script>
+```
+
+### UMD Module in Node.js
+
+If you need to use the UMD module in a Node.js project that doesn't support ES modules:
+
+```javascript
+// Using require with the UMD build
+const RepoMD = require('repo-md/min').RepoMD;
+
+// Initialize the client
+const repo = new RepoMD({
+  orgSlug: "iplanwebsites",
+  projectSlug: "port1g",
+  projectId: "680e97604a0559a192640d2c"
+});
+
+// Use client methods
+repo.getAllPosts().then(posts => {
+  console.log(posts);
+});
 ```
 
 ## API Playground

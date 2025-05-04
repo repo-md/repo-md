@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repo.md UMD Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 12px;
+      border-radius: 4px;
+      overflow: auto;
+    }
+    #results {
+      margin-top: 20px;
+      background-color: #f8f8f8;
+      padding: 15px;
+      border-radius: 4px;
+      min-height: 100px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Repo.md UMD Usage Example</h1>
+  
+  <p>This example demonstrates how to use the Repo.md library via CDN in a plain HTML page.</p>
+  
+  <div>
+    <button id="getAllPosts">Get All Posts</button>
+    <button id="getRecentPosts">Get Recent Posts</button>
+    <button id="getMediaItems">Get Media Items</button>
+    <button id="getReleaseInfo">Get Release Info</button>
+  </div>
+  
+  <h3>Results:</h3>
+  <pre id="results">Click a button to make an API request...</pre>
+  
+  <!-- Include the Repo.md library from CDN (unpkg) -->
+  <script src="https://unpkg.com/repo-md/repo-md.min.umd.cjs"></script>
+  
+  <script>
+    // Initialize the Repo.md client
+    const repo = new RepoMD.RepoMD({
+      orgSlug: "iplanwebsites",
+      projectSlug: "port1g",
+      projectId: "680e97604a0559a192640d2c",
+      debug: true,
+    });
+    
+    // Helper to display results
+    function displayResults(data) {
+      document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+    }
+    
+    // Button event handlers
+    document.getElementById('getAllPosts').addEventListener('click', async () => {
+      try {
+        const posts = await repo.getAllPosts();
+        displayResults(posts);
+      } catch (error) {
+        displayResults({ error: error.message });
+      }
+    });
+    
+    document.getElementById('getRecentPosts').addEventListener('click', async () => {
+      try {
+        const posts = await repo.getRecentPosts(3);
+        displayResults(posts);
+      } catch (error) {
+        displayResults({ error: error.message });
+      }
+    });
+    
+    document.getElementById('getMediaItems').addEventListener('click', async () => {
+      try {
+        const media = await repo.getMediaItems();
+        displayResults(media);
+      } catch (error) {
+        displayResults({ error: error.message });
+      }
+    });
+    
+    document.getElementById('getReleaseInfo').addEventListener('click', async () => {
+      try {
+        const releaseInfo = await repo.getReleaseInfo();
+        displayResults(releaseInfo);
+      } catch (error) {
+        displayResults({ error: error.message });
+      }
+    });
+  </script>
+</body>
+</html>

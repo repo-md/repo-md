@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { minify } from "terser";
 
 // Get the current directory
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +32,9 @@ const rootFiles = [
   "README.md",
   // "NPM_PUBLISH.md"
 ];
+
+// Handle minified version if MINIFY environment variable is set
+const isMinify = process.env.MINIFY === 'true';
 
 // Ensure the dist directory exists
 if (!fs.existsSync(distDir)) {
@@ -138,6 +142,65 @@ if (fs.existsSync(cliNpmDir)) {
   console.warn(
     "CLI source directory not found. CLI files will not be included."
   );
+}
+
+// Create both non-minified and minified UMD files
+try {
+  const umdFilePath = path.join(distDir, "repo-md.umd.cjs");
+  const minFilePath = path.join(distDir, "repo-md.min.umd.cjs");
+  
+  if (fs.existsSync(umdFilePath)) {
+    // Read the UMD file content
+    const code = fs.readFileSync(umdFilePath, 'utf8');
+    
+    // Minify the code using terser with aggressive optimization settings
+    console.log("Minifying UMD file with terser (aggressive optimization)...");
+    const minifyOptions = {
+      compress: {
+        drop_console: true,     // Remove console logs in minified version
+        passes: 3,              // Increase optimization passes
+        pure_getters: true,     // Optimize property access
+        unsafe: true,           // Allow "unsafe" optimizations for better compression
+        unsafe_comps: true,     // More aggressive optimizations
+        unsafe_math: true,      // Allow math optimizations that may affect precision
+        sequences: true,        // Join consecutive statements with the comma operator
+        dead_code: true,        // Remove unreachable code
+        conditionals: true,     // Optimize if-s and conditional expressions
+        booleans: true,         // Optimize boolean expressions
+        evaluate: true          // Try to evaluate constant expressions
+      },
+      mangle: {
+        properties: false       // Don't mangle property names to avoid breaking the API
+      },
+      format: {
+        comments: false         // Remove all comments
+      }
+    };
+    
+    // Run the minification asynchronously
+    const minified = await minify(code, minifyOptions);
+    
+    // Write the minified code to the output file
+    fs.writeFileSync(minFilePath, minified.code);
+    
+    // Calculate file size reduction
+    const originalSize = Buffer.byteLength(code, 'utf8');
+    const minifiedSize = Buffer.byteLength(minified.code, 'utf8');
+    const reduction = Math.round((1 - minifiedSize / originalSize) * 100);
+    
+    console.log(`Successfully created minified UMD file (${reduction}% smaller)`);
+  }
+} catch (error) {
+  console.error("Error creating minified UMD file:", error);
+  // Fallback to copying if minification fails
+  try {
+    const umdFilePath = path.join(distDir, "repo-md.umd.cjs");
+    const minFilePath = path.join(distDir, "repo-md.min.umd.cjs");
+    fs.copyFileSync(umdFilePath, minFilePath);
+    console.log("Fallback: Created minified UMD file by copying (minification failed)");
+  } catch (fallbackError) {
+    console.error("Error in fallback copy:", fallbackError);
+  }
 }
 
 console.log("All files successfully copied to dist folder");

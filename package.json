@@ -15,6 +15,7 @@
     "build": "npm run clean && npm run build:lib && npm run build:cli && node npm/copy-to-dist.js",
     "build:lib": "vite build",
     "build:cli": "vite build --config cli.vite.config.ts",
+    "build:minified": "npm run clean && MINIFY=true vite build && npm run build:cli && node npm/copy-to-dist.js",
     "build:demo": "cd src/demo && npm install && npm run build",
     "build:demo:pages": "npm run build:demo && touch demo/.nojekyll",
     "clean": "rimraf dist",
@@ -67,6 +68,7 @@
     "eslint": "^9.9.1",
     "globals": "^16.0.0",
     "rimraf": "^5.0.5",
+    "terser": "^5.39.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.2"
   }

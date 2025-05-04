@@ -4,8 +4,8 @@
   "type": "module",
   "main": "./repo-md.js",
   "module": "./repo-md.js",
-  "unpkg": "./repo-md.umd.cjs",
-  "jsdelivr": "./repo-md.umd.cjs",
+  "unpkg": "./repo-md.min.umd.cjs",
+  "jsdelivr": "./repo-md.min.umd.cjs",
   "types": "./index.d.ts",
   "bin": {
     "repo-md": "./cli/repo-md-cli.js"
@@ -13,8 +13,11 @@
   "exports": {
     ".": {
       "import": "./repo-md.js",
-      "require": "./repo-md.umd.cjs",
+      "require": "./repo-md.umd.cjs", 
       "types": "./index.d.ts"
+    },
+    "./min": {
+      "require": "./repo-md.min.umd.cjs"
     }
   },
   "files": [
