@@ -384,17 +384,7 @@ class RepoMD {
 
   // Get all media items with formatted URLs
   async getMediaItems(useCache = true) {
-    const mediaData = await this.getAllMedias(useCache);
-    const items = [];
-
-    if (this.debug) {
-      console.log(
-        "[RepoMD] Raw media data structure:",
-        JSON.stringify(mediaData, null, 2)
-      );
-    }
-
-    return mediaData.mediaData || [];
+    return await this.getAllMedias(useCache);
   }
 
   // Get a single blog post by ID

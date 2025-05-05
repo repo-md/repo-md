@@ -4,7 +4,7 @@
 
 <!--
 ![npm bundle size](https://img.shields.io/bundlephobia/min/repo-md)
- -->
+ -->3
 
 ![npm](https://img.shields.io/npm/v/repo-md)
 ![npm bundle size ](https://img.shields.io/bundlephobia/minzip/repo-md?label=bundle%20size%20%28main%29)
