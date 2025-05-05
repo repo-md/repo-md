@@ -2,6 +2,8 @@
 
 ![npm](https://img.shields.io/npm/v/repo-md)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/repo-md)
+![npm bundle size (main)](https://img.shields.io/bundlephobia/minzip/repo-md?label=bundle%20size%20%28main%29)
+
 [![Documentation](https://img.shields.io/badge/docs-repo.md-blue)](https://repo.md/docs)
 
 # Repo.md 💙 JS
