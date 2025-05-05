@@ -1,14 +1,16 @@
+<a href="https://repo.md"> 
 <img src="./src/logo.svg" style="height:200px;" />
-
-![npm](https://img.shields.io/npm/v/repo-md)
+</a>
 
 <!--
 ![npm bundle size](https://img.shields.io/bundlephobia/min/repo-md)
  -->
 
+![npm](https://img.shields.io/npm/v/repo-md)
 ![npm bundle size ](https://img.shields.io/bundlephobia/minzip/repo-md?label=bundle%20size%20%28main%29)
-
 [![Documentation](https://img.shields.io/badge/docs-repo.md-blue)](https://repo.md/docs)
+![JavaScript](https://img.shields.io/badge/JavaScript-%23F7DF1E.svg?style=flat&logo=javascript&logoColor=black)
+![Markdown](https://img.shields.io/badge/Markdown-%23000000.svg?style=flat&logo=markdown&logoColor=white)
 
 # Repo.md 💙 JS
 
@@ -24,14 +26,9 @@ A lightweight JavaScript client library for fetching and working with content st
 npm i repo-md
 ```
 
-Powered by  
-![JavaScript](https://img.shields.io/badge/JavaScript-%23F7DF1E.svg?style=flat&logo=javascript&logoColor=black)
-![Node.js](https://img.shields.io/badge/Node.js-%23339933.svg?style=flat&logo=nodedotjs&logoColor=white)
-![Markdown](https://img.shields.io/badge/Markdown-%23000000.svg?style=flat&logo=markdown&logoColor=white)
-
 ---
 
-Use any frameworks
+Use in your favourite frameworks
 
 ![React](https://img.shields.io/badge/React-%2320232A.svg?style=flat&logo=react&logoColor=%2361DAFB)
 ![Vue.js](https://img.shields.io/badge/Vue.js-%2335495E.svg?style=flat&logo=vuedotjs&logoColor=%234FC08D)
@@ -41,7 +38,7 @@ Use any frameworks
 
 ---
 
-Repo.md is optimized to run on the edge:
+Deploy apps on the edge:
 
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-%23F38020.svg?style=flat&logo=Cloudflare&logoColor=white)
 ![Fly.io](https://img.shields.io/badge/Fly.io-%238b5cf6.svg?style=flat&logo=fly&logoColor=white)
