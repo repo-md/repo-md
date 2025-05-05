@@ -1,4 +1,10 @@
-# Repo.md
+<img src="./src/logo.svg" style="height:200px;" />
+
+![npm](https://img.shields.io/npm/v/repo-md)
+![npm bundle size](https://img.shields.io/bundlephobia/min/repo-md)
+[![Documentation](https://img.shields.io/badge/docs-repo.md-blue)](https://repo.md/docs)
+
+# Repo.md 💙 JS
 
 A lightweight JavaScript client library for fetching and working with content stored in the [repo.md](https://repo.md) API. The library provides easy access to posts, media, and other content stored in your [repo.md](https://repo.md) projects.
 
