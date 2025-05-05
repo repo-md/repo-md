@@ -24,6 +24,28 @@ A lightweight JavaScript client library for fetching and working with content st
 npm i repo-md
 ```
 
+Powered by  
+![JavaScript](https://img.shields.io/badge/JavaScript-%23F7DF1E.svg?style=flat&logo=javascript&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-%23339933.svg?style=flat&logo=nodedotjs&logoColor=white)
+![Markdown](https://img.shields.io/badge/Markdown-%23000000.svg?style=flat&logo=markdown&logoColor=white)
+
+---
+
+Use any frameworks
+
+![React](https://img.shields.io/badge/React-%2320232A.svg?style=flat&logo=react&logoColor=%2361DAFB)
+![Vue.js](https://img.shields.io/badge/Vue.js-%2335495E.svg?style=flat&logo=vuedotjs&logoColor=%234FC08D)
+![Remix](https://img.shields.io/badge/Remix-%23000.svg?style=flat&logo=remix&logoColor=white)
+![Astro](https://img.shields.io/badge/Astro-%232C2052.svg?style=flat&logo=astro&logoColor=white)
+![WordPress](https://img.shields.io/badge/WordPress-%23117AC9.svg?style=flat&logo=WordPress&logoColor=white)
+
+---
+
+Repo.md is optimized to run on the edge:
+
+![Cloudflare](https://img.shields.io/badge/Cloudflare-%23F38020.svg?style=flat&logo=Cloudflare&logoColor=white)
+![Fly.io](https://img.shields.io/badge/Fly.io-%238b5cf6.svg?style=flat&logo=fly&logoColor=white)
+
 ### CDN (Browser)
 
 You can also include repo-md directly in your HTML via CDN:
