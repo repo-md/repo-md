@@ -16,6 +16,12 @@ const DEBUG = true;
 const R2_DOMAIN = "https://r2.repo.md";
 const prefix = LOG_PREFIXES.REPO_MD;
 
+export const logo = `
+▄▖            ▌
+▙▘█▌▛▌▛▌  ▛▛▌▛▌
+▌▌▙▖▙▌▙▌▗ ▌▌▌▙▌
+    ▌          `;
+
 class RepoMD {
   constructor({
     org = "iplanwebsites",
