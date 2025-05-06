@@ -1,6 +1,6 @@
 {
   "name": "repo-md-js-sdk-source",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "type": "module",
   "main_dist": "./dist/repomd.js",
   "module_dist": "./dist/repomd.js",
@@ -63,6 +63,7 @@
     "quick-lru": "^6.1.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@eslint/js": "^9.9.1",
     "@types/node": "^20.11.24",
     "eslint": "^9.9.1",
