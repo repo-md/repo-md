@@ -5,7 +5,7 @@
 import { similarity as computeCosineSimilarity } from "compute-cosine-similarity";
 
 import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy.js";
-import { frameworkSnippets } from "./index.js";
+import { createViteProxy } from "./frameworkSnipets.js";
 import {
   createOpenAiToolHandler,
   handleOpenAiRequest,
@@ -84,7 +84,11 @@ class RepoMD {
     }
     return url;
   }
+  createViteProxy(folder = "_repo") {
+    // Create a proxy for Vite development server
 
+    return createViteProxy(this.orgSlug, this.projectId, folder);
+  }
   // Get base API URL for backend calls
 
   async fetchPublicApi(path = "/") {

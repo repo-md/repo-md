@@ -143,3 +143,34 @@ export const reactPackageJsonProxy = {
  *   app.use(MEDIA_PATH, createProxyMiddleware(ReactDevProxy));
  * };
  */
+
+// ----------------------------------------
+// Vite Dynamic Configuration
+// ----------------------------------------
+
+export function createViteProxy(org, projectId, folder = "_repo") {
+  const proxyPath = `/${folder}/medias`;
+
+  return {
+    [proxyPath]: {
+      target: R2_URL,
+      changeOrigin: true,
+      rewrite: (path) => {
+        // Transform /_repo_docs/medias/file.jpeg to /org/projectId/_shared/medias/file.jpeg
+        return path.replace(proxyPath, `/${org}/${projectId}/_shared/medias`);
+      },
+      configure: (proxy, options) => {
+        // Keep the logging for debugging
+        proxy.on("error", (err, req, res) => {
+          console.log("Proxy error:", err);
+        });
+        proxy.on("proxyReq", (proxyReq, req, res) => {
+          console.log("Proxy request:", req.url, "→", proxyReq.path);
+        });
+        proxy.on("proxyRes", (proxyRes, req, res) => {
+          console.log("Proxy response:", proxyRes.statusCode, req.url);
+        });
+      },
+    },
+  };
+}
