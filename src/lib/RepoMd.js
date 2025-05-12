@@ -2,6 +2,8 @@
  * RepoMD - A client for interacting with the repo.md API with quick-lru cache
  */
 
+import { similarity as computeCosineSimilarity } from "compute-cosine-similarity";
+
 import { handleCloudflareRequest as handleMediaRequest } from "./mediaProxy.js";
 import { frameworkSnippets } from "./index.js";
 import {
@@ -43,7 +45,9 @@ class RepoMD {
     this.secret = secret;
     this.activeRev = null; // Store resolved latest revision ID
     this.posts = null; // Cache for all posts
-    this.similarityCache = {}; // Cache for similarity scores between post hashes
+    this.similarityCache = {}; // Cache for in-memory similarity scores between post hashes
+    this.similarityData = null; // Cache for pre-computed similarity data from posts-similarity.json
+    this.similarPostsHashes = null; // Cache for pre-computed similar posts data from posts-similar-hash.json
 
     // Resize cache if different settings are provided
     //if (maxCacheSize !== lru.maxSize) {
@@ -54,7 +58,7 @@ class RepoMD {
       console.log(`${prefix} 🚀 Initialized with:
         - org: ${org}
         - project: ${project}
-        - rev: ${rev} 
+        - rev: ${rev}
         `);
     }
   }
@@ -456,7 +460,10 @@ class RepoMD {
       });
     } catch (error) {
       if (this.debug) {
-        console.error(`[RepoMD] Error fetching map data ${mapPath}:`, error);
+        console.error(
+          `${prefix} ❌ Error fetching map data ${mapPath}:`,
+          error
+        );
       }
       return defaultValue;
     }
@@ -663,20 +670,61 @@ class RepoMD {
     return await this._fetchMapData("/posts-embedding-hash-map.json");
   }
 
+  // Get pre-computed post similarities
+  async getPostsSimilarity() {
+    if (!this.similarityData) {
+      if (this.debug) {
+        console.log(`${prefix} 📡 Loading pre-computed post similarity data`);
+      }
+      this.similarityData = await this._fetchMapData(
+        "/posts-similarity.json",
+        {}
+      );
+    }
+    return this.similarityData;
+  }
+
   async getPostsSimilarityByHashes(hash1, hash2) {
     if (hash1 === hash2) return 1.0; // Same post has perfect similarity
 
     // Create a cache key (ordered alphabetically for consistency)
     const cacheKey = [hash1, hash2].sort().join("-");
 
-    // Check cache first
+    // Check in-memory cache first
     if (this.similarityCache[cacheKey] !== undefined) {
       if (this.debug) {
         console.log(
-          `${prefix} 💾 Using cached similarity for ${hash1} and ${hash2}`
+          `${prefix} 💾 Using memory-cached similarity for ${hash1} and ${hash2}`
         );
       }
       return this.similarityCache[cacheKey];
+    }
+
+    // Try to get from pre-computed similarity data
+    const similarityData = await this.getPostsSimilarity();
+
+    if (similarityData && similarityData[cacheKey] !== undefined) {
+      const similarity = similarityData[cacheKey];
+
+      // Cache the result in memory
+      this.similarityCache[cacheKey] = similarity;
+
+      if (this.debug) {
+        console.log(
+          `${prefix} 💾 Using pre-computed similarity ${similarity.toFixed(
+            4
+          )} for ${hash1} and ${hash2}`
+        );
+      }
+
+      return similarity;
+    }
+
+    // Fall back to computing on the fly if no pre-computed data available
+    if (this.debug) {
+      console.log(
+        `${prefix} ⚠️ No pre-computed similarity found for ${cacheKey}, computing on the fly`
+      );
     }
 
     // Get embeddings map
@@ -695,7 +743,7 @@ class RepoMD {
     }
 
     // Calculate similarity
-    const similarity = cosineSimilarity(
+    const similarity = computeCosineSimilarity(
       embeddingsMap[hash1],
       embeddingsMap[hash2]
     );
@@ -714,11 +762,45 @@ class RepoMD {
     return similarity;
   }
 
+  // Get pre-computed similar post hashes
+  async getTopSimilarPostsHashes() {
+    if (!this.similarPostsHashes) {
+      if (this.debug) {
+        console.log(`${prefix} 📡 Loading pre-computed similar post hashes`);
+      }
+      this.similarPostsHashes = await this._fetchMapData(
+        "/posts-similar-hash.json",
+        {}
+      );
+    }
+    return this.similarPostsHashes;
+  }
+
   // Get similar post hashes by hash (returns just the hashes)
   async getSimilarPostsHashByHash(hash, limit = 10) {
     if (this.debug) {
       console.log(
         `${prefix} 📡 Fetching similar post hashes for hash: ${hash}`
+      );
+    }
+
+    // Try to get from pre-computed similar hashes map first
+    const similarHashesMap = await this.getTopSimilarPostsHashes();
+
+    // If we have pre-computed similar hashes, use them
+    if (similarHashesMap && similarHashesMap[hash]) {
+      if (this.debug) {
+        console.log(
+          `${prefix} 💾 Using pre-computed similar hashes for ${hash}`
+        );
+      }
+      return similarHashesMap[hash].slice(0, limit);
+    }
+
+    // Fall back to the old implementation if no pre-computed data available
+    if (this.debug) {
+      console.log(
+        `${prefix} ⚠️ No pre-computed similar hashes found for ${hash}, falling back to on-the-fly computation`
       );
     }
 
