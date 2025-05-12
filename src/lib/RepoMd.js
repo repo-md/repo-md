@@ -12,15 +12,11 @@ import { LOG_PREFIXES } from "./logger.js";
 
 import { fetchJson } from "./utils.js";
 
+import { cosineSimilarity } from "./vector.js";
+
 const DEBUG = true;
 const R2_DOMAIN = "https://r2.repo.md";
 const prefix = LOG_PREFIXES.REPO_MD;
-
-export const logo = `
-▄▖            ▌
-▙▘█▌▛▌▛▌  ▛▛▌▛▌
-▌▌▙▖▙▌▙▌▗ ▌▌▌▙▌
-    ▌          `;
 
 class RepoMD {
   constructor({
@@ -867,6 +863,12 @@ class RepoMD {
     });
   }
 }
+
+export const logo = `
+▄▖            ▌
+▙▘█▌▛▌▛▌  ▛▛▌▛▌
+▌▌▙▖▙▌▙▌▗ ▌▌▌▙▌
+    ▌          `;
 
 // Import tool specs for OpenAI
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
