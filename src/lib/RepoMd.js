@@ -43,6 +43,7 @@ class RepoMD {
     this.secret = secret;
     this.activeRev = null; // Store resolved latest revision ID
     this.posts = null; // Cache for all posts
+    this.similarityCache = {}; // Cache for similarity scores between post hashes
 
     // Resize cache if different settings are provided
     //if (maxCacheSize !== lru.maxSize) {
@@ -662,23 +663,105 @@ class RepoMD {
     return await this._fetchMapData("/posts-embedding-hash-map.json");
   }
 
+  async getPostsSimilarityByHashes(hash1, hash2) {
+    if (hash1 === hash2) return 1.0; // Same post has perfect similarity
+
+    // Create a cache key (ordered alphabetically for consistency)
+    const cacheKey = [hash1, hash2].sort().join("-");
+
+    // Check cache first
+    if (this.similarityCache[cacheKey] !== undefined) {
+      if (this.debug) {
+        console.log(
+          `${prefix} 💾 Using cached similarity for ${hash1} and ${hash2}`
+        );
+      }
+      return this.similarityCache[cacheKey];
+    }
+
+    // Get embeddings map
+    const embeddingsMap = await this.getPostsEmbeddings();
+
+    // Ensure we have both embeddings
+    if (!embeddingsMap[hash1] || !embeddingsMap[hash2]) {
+      if (this.debug) {
+        console.log(
+          `${prefix} ❌ Missing embedding for hash: ${
+            !embeddingsMap[hash1] ? hash1 : hash2
+          }`
+        );
+      }
+      return 0; // No similarity if we don't have the embeddings
+    }
+
+    // Calculate similarity
+    const similarity = cosineSimilarity(
+      embeddingsMap[hash1],
+      embeddingsMap[hash2]
+    );
+
+    // Cache the result
+    this.similarityCache[cacheKey] = similarity;
+
+    if (this.debug) {
+      console.log(
+        `${prefix} 🧮 Calculated similarity ${similarity.toFixed(
+          4
+        )} for ${hash1} and ${hash2}`
+      );
+    }
+
+    return similarity;
+  }
+
   // Get similar post hashes by hash (returns just the hashes)
   async getSimilarPostsHashByHash(hash, limit = 10) {
     if (this.debug) {
-      console.log(`[RepoMD] Fetching similar post hashes for hash: ${hash}`);
+      console.log(
+        `${prefix} 📡 Fetching similar post hashes for hash: ${hash}`
+      );
     }
 
+    // First try to get from the pre-computed embeddings map (existing implementation)
     const embeddingsMap = await this.getPostsEmbeddings();
 
-    if (
-      embeddingsMap &&
-      embeddingsMap[hash] &&
-      Array.isArray(embeddingsMap[hash])
-    ) {
-      return embeddingsMap[hash].slice(0, limit);
+    // If no pre-computed similar posts, compute similarities on the fly
+    if (this.debug) {
+      console.log(`${prefix} 🧮 Computing similarities for ${hash} on the fly`);
     }
 
-    return [];
+    // Get all post hashes from the embeddings map
+    const allHashes = Object.keys(embeddingsMap);
+
+    // Skip if the target hash is not in the embeddings map
+    if (!allHashes.includes(hash)) {
+      if (this.debug) {
+        console.log(
+          `${prefix} ❌ No embedding found for post with hash: ${hash}`
+        );
+      }
+      return [];
+    }
+
+    // Calculate similarities for all posts
+    const similarities = [];
+
+    for (const otherHash of allHashes) {
+      if (otherHash === hash) continue; // Skip the target post
+      const similarity = await this.getPostsSimilarityByHashes(hash, otherHash);
+      similarities.push({
+        hash: otherHash,
+        similarity,
+      });
+    }
+
+    // Sort by similarity (highest first) and take the top 'limit'
+    const sortedSimilarities = similarities
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit);
+
+    // Return just the hashes
+    return sortedSimilarities.map((item) => item.hash);
   }
 
   // Get similar posts by hash using augmentation helper
@@ -807,28 +890,16 @@ class RepoMD {
     return await handleMediaRequest(request, getResolvedR2MediaUrl);
   }
 
-  /**
-   * Creates an OpenAI tool handler that uses this RepoMD instance
-   * @returns {Function} - Handler function for OpenAI tool calls
-   */
   createOpenAiToolHandler() {
     return createOpenAiToolHandler(this);
   }
 
-  /**
-   * Handles an OpenAI API request using this RepoMD instance
-   * @param {Object} request - The OpenAI API request
-   * @returns {Promise<Object>} - The response to send back to OpenAI
-   */
+  // Handles an OpenAI API request using this RepoMD instance
   handleOpenAiRequest(request) {
     return handleOpenAiRequest(request, this);
   }
 
-  /**
-   * Lists all source files from the project
-   * @param {boolean} useCache - Whether to use cache for the request
-   * @returns {Promise<Array>} - Array of source files
-   */
+  // Lists all source files from the project
   async getSourceFilesList(useCache = true) {
     await this.ensureLatestRev();
     return await this.fetchR2Json("/files-source.json", {
@@ -837,11 +908,7 @@ class RepoMD {
     });
   }
 
-  /**
-   * Lists all distribution files from the project
-   * @param {boolean} useCache - Whether to use cache for the request
-   * @returns {Promise<Array>} - Array of distribution files
-   */
+  // Lists all distribution files from the project
   async getDistFilesList(useCache = true) {
     await this.ensureLatestRev();
     return await this.fetchR2Json("/files-dist.json", {
@@ -850,11 +917,7 @@ class RepoMD {
     });
   }
 
-  /**
-   * Fetches the graph data from the project
-   * @param {boolean} useCache - Whether to use cache for the request
-   * @returns {Promise<Object>} - The graph data object
-   */
+  //Fetches the graph data from the project
   async getGraph(useCache = true) {
     await this.ensureLatestRev();
     return await this.fetchR2Json("/graph.json", {
