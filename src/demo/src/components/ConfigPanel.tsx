@@ -1,34 +1,115 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 interface ConfigPanelProps {
   projectId: string
   setProjectId: (value: string) => void
+  orgSlug: string
+  setOrgSlug: (value: string) => void
   apiSecret: string
   setApiSecret: (value: string) => void
+  strategy: string
+  setStrategy: (value: string) => void
 }
+
+// Storage keys
+const STORAGE_KEY_PROJECT_ID = 'repomd_demo_projectId';
+const STORAGE_KEY_ORG_SLUG = 'repomd_demo_orgSlug';
+const STORAGE_KEY_STRATEGY = 'repomd_demo_strategy';
+
+// Sample project data
+const SAMPLE_PROJECT = {
+  projectId: '680e97604a0559a192640d2c',
+  orgSlug: 'iplanwebsites'
+};
 
 const ConfigPanel: React.FC<ConfigPanelProps> = ({
   projectId,
   setProjectId,
+  orgSlug,
+  setOrgSlug,
   apiSecret,
   setApiSecret,
+  strategy,
+  setStrategy
 }) => {
+  // Load values from localStorage on component mount
+  useEffect(() => {
+    const storedProjectId = localStorage.getItem(STORAGE_KEY_PROJECT_ID);
+    const storedOrgSlug = localStorage.getItem(STORAGE_KEY_ORG_SLUG);
+    const storedStrategy = localStorage.getItem(STORAGE_KEY_STRATEGY);
+
+    if (storedProjectId) setProjectId(storedProjectId);
+    if (storedOrgSlug) setOrgSlug(storedOrgSlug);
+    if (storedStrategy) setStrategy(storedStrategy);
+  }, [setProjectId, setOrgSlug, setStrategy]);
+
+  // Handler for project ID changes
+  const handleProjectIdChange = (value: string) => {
+    setProjectId(value);
+    localStorage.setItem(STORAGE_KEY_PROJECT_ID, value);
+  };
+
+  // Handler for org slug changes
+  const handleOrgSlugChange = (value: string) => {
+    setOrgSlug(value);
+    localStorage.setItem(STORAGE_KEY_ORG_SLUG, value);
+  };
+
+  // Handler for strategy changes
+  const handleStrategyChange = (value: string) => {
+    setStrategy(value);
+    localStorage.setItem(STORAGE_KEY_STRATEGY, value);
+  };
+
+  // Handler for using sample project
+  const handleUseSampleProject = () => {
+    handleProjectIdChange(SAMPLE_PROJECT.projectId);
+    handleOrgSlugChange(SAMPLE_PROJECT.orgSlug);
+  };
+
   return (
     <div className="config-panel">
       <h2>Configuration</h2>
-      
+
       <div className="form-group">
         <label htmlFor="projectId">Project ID (required)</label>
         <input
           id="projectId"
           type="text"
           value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
+          onChange={(e) => handleProjectIdChange(e.target.value)}
           placeholder="Enter your project ID (e.g., 680e97604a0559a192640d2c)"
         />
         <small>Example: 680e97604a0559a192640d2c</small>
       </div>
-      
+
+      <div className="form-group">
+        <label htmlFor="orgSlug">Organization Slug (required)</label>
+        <input
+          id="orgSlug"
+          type="text"
+          value={orgSlug}
+          onChange={(e) => handleOrgSlugChange(e.target.value)}
+          placeholder="Enter your organization slug (e.g., iplanwebsites)"
+        />
+        <small>Example: iplanwebsites</small>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="strategy">Strategy</label>
+        <select
+          id="strategy"
+          value={strategy}
+          onChange={(e) => handleStrategyChange(e.target.value)}
+          className="strategy-select"
+        >
+          <option value="auto">Auto (Default)</option>
+          <option value="server">Server</option>
+          <option value="browser">Browser</option>
+        </select>
+        <small>Determines how the client handles requests</small>
+      </div>
+
       <div className="form-group">
         <label htmlFor="apiSecret">Secret Key (optional)</label>
         <input
@@ -40,10 +121,19 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
         />
         <small>Required only for accessing protected content</small>
       </div>
-      
+
+      <div className="button-container">
+        <button
+          className="sample-project-button"
+          onClick={handleUseSampleProject}
+        >
+          Use Sample Project
+        </button>
+      </div>
+
       <div className="info-box">
         <p>This demo uses the RepoMD JavaScript client to fetch content from the repo.md API.</p>
-        <p>Enter your project ID to get started. You can find this in your repo.md dashboard.</p>
+        <p>Enter your project ID and organization slug to get started, or use the sample project button.</p>
       </div>
     </div>
   )
