@@ -12,14 +12,16 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * Create a post retrieval service
  * @param {Object} config - Configuration object
  * @param {Function} config.getRevisionUrl - Function to get revision-specific URLs (async)
+ * @param {Function} config.getProjectUrl - Function to get project URLs (not revision-specific)
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
+ * @param {Function} config.fetchJson - Function to fetch JSON from any URL
  * @param {Function} config._fetchMapData - Function to fetch map data
  * @param {Object} config.stats - Stats object for tracking usage metrics
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - Post retrieval functions
  */
 export function createPostRetrieval(config) {
-  const { getRevisionUrl, fetchR2Json, _fetchMapData, stats, debug = false } = config;
+  const { getRevisionUrl, getProjectUrl, fetchR2Json, fetchJson, _fetchMapData, stats, debug = false } = config;
   
   // Local post cache reference
   let postsCache = null;
@@ -367,7 +369,7 @@ export function createPostRetrieval(config) {
     }
 
     // Try to directly load the post by its hash from the shared folder
-    // This path is one level above the revision folder, so we use a different URL generation approach
+    // This path is one level above the revision folder and doesn't need a revision number
     const hashPath = `/_shared/posts/${hash}.json`;
     if (debug) {
       console.log(
@@ -376,11 +378,16 @@ export function createPostRetrieval(config) {
     }
     
     try {
-      // Use a special URL generation approach for shared resources
-      const post = await fetchR2Json(hashPath, {
+      // Construct the URL directly using getRevisionUrl's parent URL logic
+      const url = getProjectUrl(hashPath);
+      
+      if (debug) {
+        console.log(`${prefix} 🔗 Loading from shared URL: ${url}`);
+      }
+      
+      const post = await fetchJson(url, {
         defaultValue: null,
         useCache: true,
-        useSharedFolder: true, // Signal that this should use the shared folder path
       });
       
       if (post) {

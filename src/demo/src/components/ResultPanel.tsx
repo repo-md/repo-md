@@ -306,7 +306,7 @@ fetchData();`;
 
       {!loading && !result && (
         <div className="result-content initial-content">
-          Repo instance created! Use the methods on the left to interact with your repo.
+          Repo instance created! Use the methods on the left to interact with your <a href="http://repo.md">Repo.md project</a>.
           {projectId && <div>Project ID: {projectId}</div>}
           {orgSlug && <div>Organization: {orgSlug}</div>}
           {strategy && <div>Strategy: {strategy}</div>}

@@ -256,21 +256,8 @@ class RepoMD {
 
   // Fetch a JSON file from R2 storage
   async fetchR2Json(path, opts = {}) {
-    let url;
-    
-    // Check if this is a shared folder resource
-    if (opts.useSharedFolder) {
-      // Use project URL for shared resources (not revision-specific)
-      url = this.urls.getProjectUrl(path);
-      
-      if (this.debug) {
-        console.log(`${prefix} 🔍 Using shared folder path: ${url}`);
-      }
-    } else {
-      // Get the URL, which will resolve revision if needed
-      url = await this.urls.getRevisionUrl(path);
-    }
-    
+    // Get the URL, which will resolve revision if needed
+    const url = await this.urls.getRevisionUrl(path);
     return await this.fetchJson(url, opts);
   }
 
@@ -297,7 +284,9 @@ class RepoMD {
     // Initialize post retrieval service
     this.posts = createPostRetrieval({
       getRevisionUrl: this.urls.getRevisionUrl,
+      getProjectUrl: this.urls.getProjectUrl,
       fetchR2Json: this.fetchR2Json,
+      fetchJson: this.fetchJson,
       _fetchMapData: this._fetchMapData,
       stats: this.stats,
       debug: this.debug,
