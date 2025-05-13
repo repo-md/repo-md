@@ -97,7 +97,8 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
     if (!result?.operation) return '';
 
     const operation = result.operation;
-    const params = result.params || {};
+    // Use current paramValues state instead of result.params to make it responsive to input changes
+    const params = paramValues;
     const currentFunctionParams = functionParams[operation] || [];
 
     // Use the actual values from the playground
@@ -135,7 +136,8 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
       let paramList = currentFunctionParams
         .map(param => {
           const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
-          return param.type === 'string' ? `'${paramValue}'` : paramValue;
+          const formattedValue = param.type === 'string' ? `'${paramValue}'` : paramValue;
+          return formattedValue;
         })
         .join(', ');
       functionCall = `const data = await repo.${operation}(${paramList});`;

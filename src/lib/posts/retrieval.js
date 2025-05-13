@@ -251,7 +251,40 @@ export function createPostRetrieval(config) {
       }
     }
 
-    // Try to get post path from path map
+    // Try to directly load the post by its hash from the individual JSON file
+    const hashPath = `/_posts/hash/${hash}.json`;
+    if (debug) {
+      console.log(
+        `${prefix} 🔍 Trying to load individual post file directly: ${hashPath}`
+      );
+    }
+    
+    try {
+      const post = await fetchR2Json(hashPath, {
+        defaultValue: null,
+        useCache: true,
+      });
+      
+      if (post) {
+        lookupMethod = 'direct-hash-file';
+        const duration = (performance.now() - startTime).toFixed(2);
+        if (debug) {
+          console.log(
+            `${prefix} ✅ Successfully loaded post directly from hash file in ${duration}ms`
+          );
+        }
+        return post;
+      }
+    } catch (error) {
+      if (debug) {
+        console.log(
+          `${prefix} ⚠️ Could not load post directly from hash file: ${error.message}`
+        );
+      }
+      // Continue to fallback options
+    }
+
+    // Fallback: Try to get post path from path map
     const pathMap = await _fetchMapData('/posts-path-map.json');
 
     if (pathMap && pathMap[hash]) {
@@ -274,7 +307,7 @@ export function createPostRetrieval(config) {
       }
     }
 
-    // Fall back to loading all posts and filtering
+    // Last resort: Fall back to loading all posts and filtering
     if (debug) {
       console.log(
         `${prefix} 📡 Falling back to loading all posts to find hash: ${hash}`
