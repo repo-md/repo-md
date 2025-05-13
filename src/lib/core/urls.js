@@ -145,11 +145,26 @@ export function createUrlGenerator(config) {
     return frameworkCreateViteProxy(orgSlug, projectId, folder);
   }
 
+  /**
+   * Get URL for a shared folder resource (not revision-specific)
+   * @param {string} path - Resource path within the shared folder
+   * @returns {string} - Full URL
+   */
+  function getSharedFolderUrl(path = "") {
+    const url = getProjectUrl(`/_shared${path}`);
+    
+    if (debug) {
+      console.log(`${prefix} 🔗 Generated shared folder URL: ${url}`);
+    }
+    return url;
+  }
+
   return {
     getProjectUrl,
     getRevisionUrl,
     getMediaUrl,
     getSqliteUrl,
+    getSharedFolderUrl,
     createViteProxy,
   };
 }

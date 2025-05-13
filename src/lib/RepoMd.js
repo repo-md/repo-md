@@ -285,6 +285,7 @@ class RepoMD {
     this.posts = createPostRetrieval({
       getRevisionUrl: this.urls.getRevisionUrl,
       getProjectUrl: this.urls.getProjectUrl,
+      getSharedFolderUrl: this.urls.getSharedFolderUrl,
       fetchR2Json: this.fetchR2Json,
       fetchJson: this.fetchJson,
       _fetchMapData: this._fetchMapData,
@@ -333,6 +334,10 @@ class RepoMD {
 
   getR2ProjectUrl(path = "") {
     return this.urls.getProjectUrl(path);
+  }
+
+  getR2SharedFolderUrl(path = "") {
+    return this.urls.getSharedFolderUrl(path);
   }
 
   async getR2RevUrl(path = "") {

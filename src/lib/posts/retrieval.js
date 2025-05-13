@@ -13,6 +13,7 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * @param {Object} config - Configuration object
  * @param {Function} config.getRevisionUrl - Function to get revision-specific URLs (async)
  * @param {Function} config.getProjectUrl - Function to get project URLs (not revision-specific)
+ * @param {Function} config.getSharedFolderUrl - Function to get shared folder URLs
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
  * @param {Function} config.fetchJson - Function to fetch JSON from any URL
  * @param {Function} config._fetchMapData - Function to fetch map data
@@ -21,7 +22,7 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * @returns {Object} - Post retrieval functions
  */
 export function createPostRetrieval(config) {
-  const { getRevisionUrl, getProjectUrl, fetchR2Json, fetchJson, _fetchMapData, stats, debug = false } = config;
+  const { getRevisionUrl, getProjectUrl, getSharedFolderUrl, fetchR2Json, fetchJson, _fetchMapData, stats, debug = false } = config;
   
   // Local post cache reference
   let postsCache = null;
@@ -369,8 +370,8 @@ export function createPostRetrieval(config) {
     }
 
     // Try to directly load the post by its hash from the shared folder
-    // This path is one level above the revision folder and doesn't need a revision number
-    const hashPath = `/_shared/posts/${hash}.json`;
+    // This path is in the shared folder and doesn't need a revision number
+    const hashPath = `/posts/${hash}.json`;
     if (debug) {
       console.log(
         `${prefix} 🔍 Trying to load individual post file directly from shared folder: ${hashPath}`
@@ -378,8 +379,8 @@ export function createPostRetrieval(config) {
     }
     
     try {
-      // Construct the URL directly using getRevisionUrl's parent URL logic
-      const url = getProjectUrl(hashPath);
+      // Get the URL using the shared folder URL generator
+      const url = getSharedFolderUrl(hashPath);
       
       if (debug) {
         console.log(`${prefix} 🔗 Loading from shared URL: ${url}`);
