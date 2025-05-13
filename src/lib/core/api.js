@@ -148,7 +148,8 @@ export function createApiClient(config) {
 
       if (debug) {
         console.log(
-          `${prefix} ✅ Successfully fetched revision: ${response.rev} from /rev endpoint`
+          `${prefix} ✅ Successfully fetched revision: ${response} from /rev endpoint`,
+          response
         );
       }
 

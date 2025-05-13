@@ -65,13 +65,17 @@ class RepoMD {
         this.activeRev = resolvedRev;
 
         if (this.debug) {
-          console.log(`${prefix} ✅ Resolved latest revision: ${resolvedRev} via resolver function`);
+          console.log(
+            `${prefix} ✅ Resolved latest revision: ${resolvedRev} via resolver function`
+          );
         }
 
         return resolvedRev;
       } catch (error) {
         if (this.debug) {
-          console.warn(`${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`);
+          console.warn(
+            `${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`
+          );
         }
         throw error;
       }
@@ -98,8 +102,9 @@ class RepoMD {
     // If we're using "latest" revision, try to eagerly resolve it to avoid issues with lazy loading
     if (rev === "latest" && !this.activeRev) {
       // This is non-blocking - we don't await it but start the process early
-      this.api.fetchProjectActiveRev()
-        .then(resolvedRev => {
+      this.api
+        .fetchProjectActiveRev()
+        .then((resolvedRev) => {
           this.activeRev = resolvedRev;
 
           // Update URL generator with the resolved activeRev
@@ -113,12 +118,16 @@ class RepoMD {
           });
 
           if (this.debug) {
-            console.log(`${prefix} 🚀 Eagerly resolved 'latest' to revision: ${this.activeRev}`);
+            console.log(
+              `${prefix} 🚀 Eagerly resolved 'latest' to revision: ${this.activeRev}`
+            );
           }
         })
-        .catch(error => {
+        .catch((error) => {
           if (this.debug) {
-            console.warn(`${prefix} ⚠️ Eager resolution failed, will resolve lazily: ${error.message}`);
+            console.warn(
+              `${prefix} ⚠️ Eager resolution failed, will resolve lazily: ${error.message}`
+            );
           }
         });
     }
@@ -135,6 +144,7 @@ class RepoMD {
     if (this.debug) {
       console.log(`${prefix} 🚀 Initialized with:
         - org: ${org}
+        - projectId: ${projectId}
         - rev: ${rev}
         - strategy: ${strategy}
       `);
@@ -160,7 +170,10 @@ class RepoMD {
 
         // Use the API's ensureLatestRev helper which handles cached revisions
         // and will use the faster /rev endpoint through fetchProjectActiveRev
-        const latestId = await this.api.ensureLatestRev(this.rev, this.activeRev);
+        const latestId = await this.api.ensureLatestRev(
+          this.rev,
+          this.activeRev
+        );
 
         if (!latestId) {
           throw new Error(
@@ -184,7 +197,9 @@ class RepoMD {
             return resolvedRev;
           } catch (error) {
             if (this.debug) {
-              console.warn(`${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`);
+              console.warn(
+                `${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`
+              );
             }
             throw error;
           }
