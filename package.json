@@ -62,7 +62,8 @@
     "compute-cosine-similarity": "^1.1.0",
     "minisearch": "^6.3.0",
     "notion-to-md": "^3.1.8",
-    "quick-lru": "^6.1.1"
+    "quick-lru": "^6.1.1",
+    "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

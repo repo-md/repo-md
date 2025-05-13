@@ -411,6 +411,29 @@ button:disabled {
   border-bottom: 1px solid #d0e0ff;
 }
 
+.code-sample-container {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  overflow: auto;
+}
+
+.code-sample-header {
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.code-sample-header h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.code-sample-header small {
+  color: #666;
+  font-size: 12px;
+}
+
 .result-content {
   white-space: pre-wrap;
   font-family: monospace;

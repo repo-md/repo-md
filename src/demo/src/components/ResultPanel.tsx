@@ -3,6 +3,8 @@ import { ApiResult } from '../types'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
 import { Settings, Code, Play } from 'lucide-react'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 // Define parameter types for functions
 interface FunctionParam {
@@ -19,6 +21,10 @@ interface ResultPanelProps {
   showConfig: boolean
   handleRun?: (params?: Record<string, string>) => void
   functionParams?: Record<string, FunctionParam[]>
+  projectId?: string
+  orgSlug?: string
+  strategy?: 'auto' | 'server' | 'browser'
+  revision?: string
 }
 
 const ResultPanel: React.FC<ResultPanelProps> = ({
@@ -27,10 +33,16 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
   toggleConfig,
   showConfig,
   handleRun,
-  functionParams = {}
+  functionParams = {},
+  projectId = '',
+  orgSlug = '',
+  strategy = 'auto',
+  revision = ''
 }) => {
   // State for parameter values
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
+  // State for showing code sample
+  const [showCodeSample, setShowCodeSample] = useState(false);
 
   // Reset param values when result changes
   useEffect(() => {
@@ -80,6 +92,75 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
     (functionParams[result.operation] && functionParams[result.operation].length > 0) :
     false;
 
+  // Generate code sample for the current operation
+  const generateCodeSample = () => {
+    if (!result?.operation) return '';
+
+    const operation = result.operation;
+    const params = result.params || {};
+    const currentFunctionParams = functionParams[operation] || [];
+
+    // Use the actual values from the playground
+    const actualProjectId = projectId || '680e97604a0559a192640d2c';
+    const actualOrgSlug = orgSlug || 'iplanwebsites';
+
+    let codeLines = [
+      "// Initialize the RepoMD instance",
+      "const repo = new RepoMD({",
+      `  projectId: '${actualProjectId}',`,
+      `  orgSlug: '${actualOrgSlug}',`
+    ];
+
+    // Add strategy if not auto
+    if (strategy !== 'auto') {
+      codeLines.push(`  strategy: '${strategy}',`);
+    }
+
+    // Add revision if specified
+    if (revision && revision !== 'latest') {
+      codeLines.push(`  rev: '${revision}',`);
+    }
+
+    codeLines.push("  debug: true");
+    codeLines.push("});");
+    codeLines.push("");
+    codeLines.push("// Later in your code");
+    codeLines.push("async function fetchData() {");
+    codeLines.push("  try {");
+
+    // Add the function call with parameters
+    if (currentFunctionParams.length === 0) {
+      // No parameters
+      codeLines.push(`    const data = await repo.${operation}();`);
+    } else if (currentFunctionParams.length === 1) {
+      // Single parameter
+      const param = currentFunctionParams[0];
+      const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
+      const formattedValue = param.type === 'string' ? `'${paramValue}'` : paramValue;
+      codeLines.push(`    const data = await repo.${operation}(${formattedValue});`);
+    } else {
+      // Multiple parameters
+      let paramList = currentFunctionParams
+        .map(param => {
+          const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
+          return param.type === 'string' ? `'${paramValue}'` : paramValue;
+        })
+        .join(', ');
+      codeLines.push(`    const data = await repo.${operation}(${paramList});`);
+    }
+
+    // Complete the code sample
+    codeLines.push('    console.log(data);');
+    codeLines.push('  } catch (error) {');
+    codeLines.push('    console.error("Error:", error);');
+    codeLines.push('  }');
+    codeLines.push('}');
+    codeLines.push('');
+    codeLines.push('fetchData();');
+
+    return codeLines.join('\n');
+  };
+
   return (
     <div className="result-panel">
       <div className="result-navbar">
@@ -109,9 +190,10 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
           )}
 
           <button
-            className="nav-button code-sample-button"
-            title="View Code Sample"
-            disabled
+            className={`nav-button code-sample-button ${showCodeSample ? 'active' : ''}`}
+            title={showCodeSample ? "Hide Code Sample" : "View Code Sample"}
+            onClick={() => setShowCodeSample(!showCodeSample)}
+            disabled={!result}
           >
             <Code size={18} />
           </button>
@@ -159,6 +241,37 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
       {!loading && result && result.executionTime !== undefined && (
         <div className="execution-time-bar">
           Execution time: {formatExecutionTime(result.executionTime)}
+        </div>
+      )}
+
+      {!loading && result && showCodeSample && (
+        <div className="code-sample-container">
+          <div className="code-sample-header">
+            <h4>Code Sample</h4>
+            <small>How to use this method with RepoMD SDK</small>
+          </div>
+          <SyntaxHighlighter
+            language="javascript"
+            style={monokai}
+            customStyle={{
+              borderRadius: '4px',
+              margin: '0',
+              padding: '15px',
+              fontSize: '14px',
+              lineHeight: '1.5',
+              backgroundColor: '#282c34'
+            }}
+            wrapLongLines={true}
+            showLineNumbers={true}
+            codeTagProps={{
+              style: {
+                display: 'block',
+                overflow: 'auto'
+              }
+            }}
+          >
+            {generateCodeSample()}
+          </SyntaxHighlighter>
         </div>
       )}
 

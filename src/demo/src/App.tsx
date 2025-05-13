@@ -332,6 +332,10 @@ function App() {
               undefined
             }
             functionParams={functionParams}
+            projectId={projectId}
+            orgSlug={orgSlug}
+            strategy={strategy}
+            revision={revision}
           />
         </div>
       </div>
