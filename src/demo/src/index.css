@@ -96,9 +96,9 @@ body {
 }
 
 .column-left {
-  flex: 0 0 300px;
-  min-width: 300px;
-  max-width: 300px;
+  flex: 0 0 350px;
+  min-width: 350px;
+  max-width: 350px;
   height: 100%;
   overflow: hidden;
   display: flex;
@@ -553,7 +553,8 @@ button:disabled {
   font-size: 14px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .function-name:hover {
@@ -572,17 +573,26 @@ button:disabled {
   border-radius: 50%;
   margin-right: 8px;
   display: inline-block;
+  flex: 0 0 8px;
 }
 
 .function-label {
   flex: 1;
-  margin-right: 8px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .param-tags {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: 8px;
 }
 
 .param-tag {
