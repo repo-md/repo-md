@@ -55,11 +55,26 @@ const functionParams: Record<string, FunctionParam[]> = {
 };
 
 function App() {
-  const [projectId, setProjectId] = useState('')
-  const [orgSlug, setOrgSlug] = useState('iplanwebsites') // Default value
+  // Get initial values from localStorage or use defaults
+  const getInitialProjectId = () => {
+    const stored = localStorage.getItem('repomd_demo_projectId');
+    return stored || '680e97604a0559a192640d2c'; // Default project ID
+  };
+
+  const [projectId, setProjectId] = useState(getInitialProjectId)
+  const [orgSlug, setOrgSlug] = useState(() => {
+    const stored = localStorage.getItem('repomd_demo_orgSlug');
+    return stored || 'iplanwebsites'; // Default value
+  })
   const [apiSecret, setApiSecret] = useState('')
-  const [strategy, setStrategy] = useState<'auto' | 'server' | 'browser'>('auto') // Default strategy
-  const [revision, setRevision] = useState('') // Empty by default, will default to "latest" in RepoMD
+  const [strategy, setStrategy] = useState<'auto' | 'server' | 'browser'>(() => {
+    const stored = localStorage.getItem('repomd_demo_strategy');
+    return (stored as 'auto' | 'server' | 'browser') || 'auto'; // Default strategy
+  })
+  const [revision, setRevision] = useState(() => {
+    const stored = localStorage.getItem('repomd_demo_revision');
+    return stored || ''; // Empty by default, will default to "latest" in RepoMD
+  })
   const [result, setResult] = useState<ApiResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [functions, setFunctions] = useState<string[]>([])
@@ -102,8 +117,9 @@ function App() {
 
   // Create or recreate the RepoMD instance when config changes
   useEffect(() => {
-    // Don't create an instance if we don't have the required fields
-    if (!projectId || !orgSlug) return
+    // Use default values if fields are missing
+    const currentProjectId = projectId || '680e97604a0559a192640d2c';
+    const currentOrgSlug = orgSlug || 'iplanwebsites';
 
     // Destroy the previous instance if it exists and has a destroy method
     if (repoRef.current && typeof (repoRef.current as any).destroy === 'function') {
@@ -113,8 +129,8 @@ function App() {
 
     // Create a new instance
     repoRef.current = new RepoMD({
-      projectId,
-      orgSlug,
+      projectId: currentProjectId,
+      orgSlug: currentOrgSlug,
       strategy,
       secret: apiSecret || undefined,
       rev: revision || 'latest', // Use 'latest' as default if empty
@@ -124,25 +140,9 @@ function App() {
   }, [projectId, orgSlug, apiSecret, strategy, revision])
 
   const handleRun = useCallback(async (operation: string, params: Record<string, string> = {}) => {
-    if (!projectId) {
-      setResult({
-        success: false,
-        error: 'Project ID is required',
-        operation,
-        params
-      })
-      return
-    }
-
-    if (!orgSlug) {
-      setResult({
-        success: false,
-        error: 'Organization Slug is required',
-        operation,
-        params
-      })
-      return
-    }
+    // Always ensure we have a project ID and org slug
+    const currentProjectId = projectId || '680e97604a0559a192640d2c';
+    const currentOrgSlug = orgSlug || 'iplanwebsites';
 
     setLoading(true)
     const startTime = performance.now()
@@ -151,8 +151,8 @@ function App() {
       // Ensure we have an instance
       if (!repoRef.current) {
         repoRef.current = new RepoMD({
-          projectId,
-          orgSlug,
+          projectId: currentProjectId,
+          orgSlug: currentOrgSlug,
           strategy,
           secret: apiSecret || undefined,
           rev: revision || 'latest', // Use 'latest' as default if empty
@@ -179,61 +179,35 @@ function App() {
           data = await repo.getRecentPosts(count)
           break
         case 'getPostBySlug':
-          if (!params.slug) {
-            throw new Error('Slug is required for this operation')
-          }
           data = await repo.getPostBySlug(params.slug)
           break
         case 'getPostByHash':
-          if (!params.hash) {
-            throw new Error('Hash is required for this operation')
-          }
           data = await repo.getPostByHash(params.hash)
           break
         case 'getPostByPath':
-          if (!params.path) {
-            throw new Error('Path is required for this operation')
-          }
           data = await repo.getPostByPath(params.path)
           break
         case 'getSimilarPostsBySlug':
-          if (!params.slug) {
-            throw new Error('Slug is required for this operation')
-          }
           const countSlug = params.count ? parseInt(params.count) : 5
           data = await repo.getSimilarPostsBySlug(params.slug, countSlug)
           break
         case 'getSimilarPostsByHash':
-          if (!params.hash) {
-            throw new Error('Hash is required for this operation')
-          }
           const countHash = params.count ? parseInt(params.count) : 5
           data = await repo.getSimilarPostsByHash(params.hash, countHash)
           break
         case 'getSimilarPostsHashByHash':
-          if (!params.hash) {
-            throw new Error('Hash is required for this operation')
-          }
           const limitHash = params.limit ? parseInt(params.limit) : 10
           data = await repo.getSimilarPostsHashByHash(params.hash, limitHash)
           break
         case 'getSimilarPostsSlugBySlug':
-          if (!params.slug) {
-            throw new Error('Slug is required for this operation')
-          }
           const limitSlug = params.limit ? parseInt(params.limit) : 10
           data = await repo.getSimilarPostsSlugBySlug(params.slug, limitSlug)
           break
         case 'getFileContent':
-          if (!params.path) {
-            throw new Error('Path is required for this operation')
-          }
           data = await repo.getFileContent(params.path)
           break
         case 'getPostsSimilarityByHashes':
-          if (!params.hash1 || !params.hash2) {
-          //  throw new Error('Hash1 and Hash2 are required for this operation')
-          }
+       
           data = await repo.getPostsSimilarityByHashes(params.hash1, params.hash2)
           break
         default:
@@ -284,7 +258,10 @@ function App() {
   return (
     <div className="container">
       <div className="app-header">
-        <h3>Repo.md API Demo</h3>
+      <h3>
+      <a href="https://repo.md" target="_blank" className=""><img src="https://repo.md/brand/repo/logo_purple.svg" alt="Repo.md" style={{maxHeight: '20px'}} /></a> 
+
+        API playground</h3>
         <div className="header-actions">
           <a
             href="https://repo.md/docs"

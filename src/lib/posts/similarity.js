@@ -66,12 +66,25 @@ export function createPostSimilarity(config) {
    * @param {string} hash1 - First post hash
    * @param {string} hash2 - Second post hash
    * @returns {Promise<number>} - Similarity score (0-1)
+   * @throws {Error} - If hash parameters are missing or invalid
    */
   async function getPostsSimilarityByHashes(hash1, hash2) {
-    if (!hash1 || !hash2) {
-      throw new Error(
-        "Hash1 and Hash2 are required to compare posts similarity (getPostsSimilarityByHashes)"
-      );
+    // Validate hash1 parameter
+    if (!hash1) {
+      throw new Error('Hash1 is required for getPostsSimilarityByHashes operation');
+    }
+
+    if (typeof hash1 !== 'string') {
+      throw new Error('Hash1 must be a string value');
+    }
+
+    // Validate hash2 parameter
+    if (!hash2) {
+      throw new Error('Hash2 is required for getPostsSimilarityByHashes operation');
+    }
+
+    if (typeof hash2 !== 'string') {
+      throw new Error('Hash2 must be a string value');
     }
 
     if (hash1 === hash2) return 1.0; // Same post has perfect similarity
@@ -170,8 +183,23 @@ export function createPostSimilarity(config) {
    * @param {string} hash - Post hash
    * @param {number} limit - Maximum number of similar hashes to return
    * @returns {Promise<Array<string>>} - Array of similar post hashes
+   * @throws {Error} - If hash parameter is missing or invalid
    */
   async function getSimilarPostsHashByHash(hash, limit = 10) {
+    // Validate hash parameter
+    if (!hash) {
+      throw new Error('Hash is required for getSimilarPostsHashByHash operation');
+    }
+
+    if (typeof hash !== 'string') {
+      throw new Error('Hash must be a string value');
+    }
+
+    // Validate limit parameter
+    if (limit !== undefined && (typeof limit !== 'number' || limit < 0)) {
+      throw new Error('Limit must be a positive number or zero');
+    }
+
     if (debug) {
       console.log(
         `${prefix} 📡 Fetching similar post hashes for hash: ${hash}`
@@ -246,8 +274,23 @@ export function createPostSimilarity(config) {
    * @param {number} count - Maximum number of similar posts to return
    * @param {Object} options - Options for augmentation
    * @returns {Promise<Array<Object>>} - Array of similar posts
+   * @throws {Error} - If hash parameter is missing or invalid
    */
   async function getSimilarPostsByHash(hash, count = 5, options = {}) {
+    // Validate hash parameter
+    if (!hash) {
+      throw new Error('Hash is required for getSimilarPostsByHash operation');
+    }
+
+    if (typeof hash !== 'string') {
+      throw new Error('Hash must be a string value');
+    }
+
+    // Validate count parameter
+    if (count !== undefined && (typeof count !== 'number' || count < 0)) {
+      throw new Error('Count must be a positive number or zero');
+    }
+
     if (debug) {
       console.log(`${prefix} 📡 Fetching similar posts for hash: ${hash}`);
     }
@@ -297,8 +340,23 @@ export function createPostSimilarity(config) {
    * @param {number} count - Maximum number of similar posts to return
    * @param {Object} options - Options for augmentation
    * @returns {Promise<Array<Object>>} - Array of similar posts
+   * @throws {Error} - If slug parameter is missing or invalid
    */
   async function getSimilarPostsBySlug(slug, count = 5, options = {}) {
+    // Validate slug parameter
+    if (!slug) {
+      throw new Error('Slug is required for getSimilarPostsBySlug operation');
+    }
+
+    if (typeof slug !== 'string') {
+      throw new Error('Slug must be a string value');
+    }
+
+    // Validate count parameter
+    if (count !== undefined && (typeof count !== 'number' || count < 0)) {
+      throw new Error('Count must be a positive number or zero');
+    }
+
     if (debug) {
       console.log(`${prefix} 📡 Fetching similar posts for slug: ${slug}`);
     }

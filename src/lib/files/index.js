@@ -64,7 +64,23 @@ export function createFileHandler(config) {
     return await fetchFile("graph", useCache);
   }
 
+  /**
+   * Get the content of a file by path
+   * @param {string} path - File path
+   * @param {boolean} useCache - Whether to use cache
+   * @returns {Promise<Object|null>} - File content or null
+   * @throws {Error} - If path parameter is missing or invalid
+   */
   async function getFileContent(path, useCache = true) {
+    // Validate path parameter
+    if (!path) {
+      throw new Error('Path is required for getFileContent operation');
+    }
+
+    if (typeof path !== 'string') {
+      throw new Error('Path must be a string value');
+    }
+
     await ensureLatestRev();
 
     if (debug) {

@@ -79,8 +79,18 @@ export function createPostRetrieval(config) {
    * Get a post by its direct path
    * @param {string} path - Post path
    * @returns {Promise<Object|null>} - Post object or null
+   * @throws {Error} - If path parameter is missing or invalid
    */
   async function getPostByPath(path) {
+    // Validate path parameter
+    if (!path) {
+      throw new Error('Path is required for getPostByPath operation');
+    }
+
+    if (typeof path !== 'string') {
+      throw new Error('Path must be a string value');
+    }
+
     if (debug) {
       console.log(`${prefix} 📡 Fetching post by path: ${path}`);
     }
@@ -163,8 +173,18 @@ export function createPostRetrieval(config) {
    * Get a single blog post by slug
    * @param {string} slug - Post slug
    * @returns {Promise<Object|null>} - Post object or null
+   * @throws {Error} - If slug parameter is missing or invalid
    */
   async function getPostBySlug(slug) {
+    // Validate slug parameter
+    if (!slug) {
+      throw new Error('Slug is required for getPostBySlug operation');
+    }
+
+    if (typeof slug !== 'string') {
+      throw new Error('Slug must be a string value');
+    }
+
     const startTime = performance.now();
     let lookupMethod = 'unknown';
 
@@ -247,8 +267,18 @@ export function createPostRetrieval(config) {
    * Get a single blog post by hash
    * @param {string} hash - Post hash
    * @returns {Promise<Object|null>} - Post object or null
+   * @throws {Error} - If hash parameter is missing or invalid
    */
   async function getPostByHash(hash) {
+    // Validate hash parameter
+    if (!hash) {
+      throw new Error('Hash is required for getPostByHash operation');
+    }
+
+    if (typeof hash !== 'string') {
+      throw new Error('Hash must be a string value');
+    }
+
     const startTime = performance.now();
     let lookupMethod = 'unknown';
 
