@@ -8,7 +8,7 @@ interface ConfigPanelProps {
   setOrgSlug: (value: string) => void
   apiSecret: string
   setApiSecret: (value: string) => void
-  strategy: 'auto' | 'server' | 'browser'
+  strategy:  'auto' | 'server' | 'browser'
   setStrategy: (value: 'auto' | 'server' | 'browser') => void
   revision: string
   setRevision: (value: string) => void
