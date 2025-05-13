@@ -142,11 +142,12 @@ class RepoMD {
     this.initializeServices();
 
     if (this.debug) {
-      console.log(`${prefix} 🚀 Initialized with:
+      console.log(`${prefix} 🚀 Initialized RepoMD instance with:
         - org: ${org}
         - projectId: ${projectId}
         - rev: ${rev}
         - strategy: ${strategy}
+        - instance: ${this._instanceId = Math.random().toString(36).substring(2, 10)}
       `);
     }
   }
@@ -457,8 +458,35 @@ class RepoMD {
     return handleOpenAiRequest(request, this);
   }
 
-  destroy(request) {
-    /// todo
+  destroy() {
+    if (this.debug) {
+      console.log(`${prefix} 🧹 Cleaning up RepoMD instance resources (instance: ${this._instanceId || 'unknown'})`);
+    }
+    
+    // Clear all cache for this instance
+    cache.clear('posts');
+    cache.clear('similarity');
+    cache.clear('media');
+    
+    // Clear any references to services
+    this.posts = null;
+    this.similarity = null;
+    this.media = null;
+    this.project = null;
+    this.files = null;
+    
+    // Clear URL generator and API client
+    this.urls = null;
+    this.api = null;
+    
+    // Clear any pending fetch operations if supported by platform
+    if (typeof AbortController !== 'undefined' && this._abortController) {
+      this._abortController.abort();
+      this._abortController = null;
+    }
+    
+    // Flag as destroyed to prevent further use
+    this._destroyed = true;
   }
 }
 
