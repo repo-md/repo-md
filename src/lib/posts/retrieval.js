@@ -151,7 +151,40 @@ export function createPostRetrieval(config) {
       }
     }
 
-    // Try to get post hash from slug map
+    // Try to directly load the post by its slug from the individual JSON file
+    const slugPath = `/_posts/slug/${slug}.json`;
+    if (debug) {
+      console.log(
+        `${prefix} 🔍 Trying to load individual post file directly: ${slugPath}`
+      );
+    }
+    
+    try {
+      const post = await fetchR2Json(slugPath, {
+        defaultValue: null,
+        useCache: true,
+      });
+      
+      if (post) {
+        lookupMethod = 'direct-slug-file';
+        const duration = (performance.now() - startTime).toFixed(2);
+        if (debug) {
+          console.log(
+            `${prefix} ✅ Successfully loaded post directly from slug file in ${duration}ms`
+          );
+        }
+        return post;
+      }
+    } catch (error) {
+      if (debug) {
+        console.log(
+          `${prefix} ⚠️ Could not load post directly from slug file: ${error.message}`
+        );
+      }
+      // Continue to fallback options
+    }
+
+    // Fallback: Try to get post hash from slug map
     const slugMap = await _fetchMapData('/posts-slug-map.json');
 
     if (slugMap && slugMap[slug]) {
@@ -174,7 +207,7 @@ export function createPostRetrieval(config) {
       }
     }
 
-    // Fall back to loading all posts and filtering
+    // Last resort: Fall back to loading all posts and filtering
     if (debug) {
       console.log(
         `${prefix} 📡 Falling back to loading all posts to find slug: ${slug}`

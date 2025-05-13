@@ -3,13 +3,13 @@
  * Provides utilities for generating URLs and resolving paths
  */
 
-import { LOG_PREFIXES } from '../logger.js';
-import { createViteProxy as frameworkCreateViteProxy } from '../frameworkSnipets.js';
+import { LOG_PREFIXES } from "../logger.js";
+import { createViteProxy as frameworkCreateViteProxy } from "../frameworkSnipets.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
 
 // Constants
-const R2_DOMAIN = 'https://r2.repo.md';
+const R2_DOMAIN = "https://static.repo.md"; //'https://r2.repo.md';
 
 /**
  * Create a URL generator for a specific project
@@ -23,14 +23,21 @@ const R2_DOMAIN = 'https://r2.repo.md';
  * @returns {Object} - URL generator functions
  */
 export function createUrlGenerator(config) {
-  const { orgSlug, projectId, activeRev, rev, resolveLatestRev, debug = false } = config;
+  const {
+    orgSlug,
+    projectId,
+    activeRev,
+    rev,
+    resolveLatestRev,
+    debug = false,
+  } = config;
 
   /**
    * Get URL for a project resource
    * @param {string} path - Resource path
    * @returns {string} - Full URL
    */
-  function getProjectUrl(path = '') {
+  function getProjectUrl(path = "") {
     const url = `${R2_DOMAIN}/${orgSlug}/${projectId}${path}`;
     if (debug) {
       console.log(`${prefix} 🔗 Generated project URL: ${url}`);
@@ -43,21 +50,25 @@ export function createUrlGenerator(config) {
    * @param {string} path - Resource path
    * @returns {Promise<string>} - Full URL
    */
-  async function getRevisionUrl(path = '') {
+  async function getRevisionUrl(path = "") {
     // If we have a specific revision (not "latest"), use it directly
-    if (rev !== 'latest') {
-      const url = getProjectUrl('/' + rev + path);
+    if (rev !== "latest") {
+      const url = getProjectUrl("/" + rev + path);
       if (debug) {
-        console.log(`${prefix} 🔗 Generated revision URL with specific rev: ${url}`);
+        console.log(
+          `${prefix} 🔗 Generated revision URL with specific rev: ${url}`
+        );
       }
       return url;
     }
 
     // If we already have the active revision, use it
     if (activeRev) {
-      const url = getProjectUrl('/' + activeRev + path);
+      const url = getProjectUrl("/" + activeRev + path);
       if (debug) {
-        console.log(`${prefix} 🔗 Generated revision URL with cached activeRev: ${url}`);
+        console.log(
+          `${prefix} 🔗 Generated revision URL with cached activeRev: ${url}`
+        );
       }
       return url;
     }
@@ -73,22 +84,28 @@ export function createUrlGenerator(config) {
       resolvedRev = await resolveLatestRev();
 
       if (!resolvedRev) {
-        throw new Error(`Failed to resolve latest revision for URL generation - received empty revision`);
+        throw new Error(
+          `Failed to resolve latest revision for URL generation - received empty revision`
+        );
       }
 
       // Update module state with the resolved revision for future calls
       activeRev = resolvedRev;
     } catch (error) {
       if (debug) {
-        console.error(`${prefix} ❌ Error resolving revision: ${error.message}`);
+        console.error(
+          `${prefix} ❌ Error resolving revision: ${error.message}`
+        );
       }
       throw error;
     }
 
-    const url = getProjectUrl('/' + resolvedRev + path);
+    const url = getProjectUrl("/" + resolvedRev + path);
 
     if (debug) {
-      console.log(`${prefix} 🔗 Generated revision URL with resolved rev (${resolvedRev}): ${url}`);
+      console.log(
+        `${prefix} 🔗 Generated revision URL with resolved rev (${resolvedRev}): ${url}`
+      );
     }
 
     return url;
@@ -102,7 +119,7 @@ export function createUrlGenerator(config) {
   function getMediaUrl(path) {
     // https://r2.repo.md/iplanwebsites/680e97604a0559a192640d2c/_shared/medias/9ad367214fab7207e61dbea46f32e9943d55b7e8cefb55e02f57e06f0db6dd0f-sm.jpeg
     const url = getProjectUrl(`/_shared/medias/${path}`);
-    
+
     if (debug) {
       console.log(`${prefix} 🔗 Generated media URL: ${url}`);
     }
@@ -114,7 +131,7 @@ export function createUrlGenerator(config) {
    * @returns {Promise<string>} - Full URL
    */
   async function getSqliteUrl() {
-    return await getRevisionUrl('/content.sqlite');
+    return await getRevisionUrl("/content.sqlite");
   }
 
   /**
@@ -124,7 +141,7 @@ export function createUrlGenerator(config) {
    * @param {string} folder - Folder name for proxy path
    * @returns {Object} - Vite proxy configuration
    */
-  function createViteProxy(orgSlug, projectId, folder = '_repo') {
+  function createViteProxy(orgSlug, projectId, folder = "_repo") {
     return frameworkCreateViteProxy(orgSlug, projectId, folder);
   }
 
