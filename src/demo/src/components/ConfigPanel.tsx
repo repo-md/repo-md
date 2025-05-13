@@ -84,70 +84,72 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
     <div className="config-panel">
       <h2>Configuration</h2>
 
-      <div className="form-group">
-        <label htmlFor="projectId">Project ID (required)</label>
-        <input
-          id="projectId"
-          type="text"
-          value={projectId}
-          onChange={(e) => handleProjectIdChange(e.target.value)}
-          placeholder="Enter your project ID (e.g., 680e97604a0559a192640d2c)"
-        />
-        <small>Example: 680e97604a0559a192640d2c</small>
+      <div className="config-form">
+        <div className="form-group">
+          <label htmlFor="projectId">Project ID (required)</label>
+          <input
+            id="projectId"
+            type="text"
+            value={projectId}
+            onChange={(e) => handleProjectIdChange(e.target.value)}
+            placeholder="Enter project ID"
+          />
+          <small>Example: 680e97604a0559a192640d2c</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="orgSlug">Org Slug (required)</label>
+          <input
+            id="orgSlug"
+            type="text"
+            value={orgSlug}
+            onChange={(e) => handleOrgSlugChange(e.target.value)}
+            placeholder="Enter org slug"
+          />
+          <small>Example: iplanwebsites</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="strategy">Strategy</label>
+          <select
+            id="strategy"
+            value={strategy}
+            onChange={(e) => handleStrategyChange(e.target.value)}
+            className="strategy-select"
+          >
+            <option value="auto">Auto (Default)</option>
+            <option value="server">Server</option>
+            <option value="browser">Browser</option>
+          </select>
+          <small>Client handling mode</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="revision">Revision <span className="optional-label">(optional)</span></label>
+          <input
+            id="revision"
+            type="text"
+            value={revision}
+            onChange={(e) => handleRevisionChange(e.target.value)}
+            placeholder="latest"
+          />
+          <small>Default: latest</small>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="apiSecret">Secret Key <span className="optional-label">(optional)</span></label>
+          <input
+            id="apiSecret"
+            type="password"
+            value={apiSecret}
+            onChange={(e) => setApiSecret(e.target.value)}
+            placeholder="Enter secret key"
+          />
+          <small>For protected content</small>
+        </div>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="orgSlug">Organization Slug (required)</label>
-        <input
-          id="orgSlug"
-          type="text"
-          value={orgSlug}
-          onChange={(e) => handleOrgSlugChange(e.target.value)}
-          placeholder="Enter your organization slug (e.g., iplanwebsites)"
-        />
-        <small>Example: iplanwebsites</small>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="strategy">Strategy</label>
-        <select
-          id="strategy"
-          value={strategy}
-          onChange={(e) => handleStrategyChange(e.target.value)}
-          className="strategy-select"
-        >
-          <option value="auto">Auto (Default)</option>
-          <option value="server">Server</option>
-          <option value="browser">Browser</option>
-        </select>
-        <small>Determines how the client handles requests</small>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="revision">Revision <span className="optional-label">(optional)</span></label>
-        <input
-          id="revision"
-          type="text"
-          value={revision}
-          onChange={(e) => handleRevisionChange(e.target.value)}
-          placeholder="latest"
-        />
-        <small>Leave empty to use latest revision</small>
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="apiSecret">Secret Key <span className="optional-label">(optional)</span></label>
-        <input
-          id="apiSecret"
-          type="password"
-          value={apiSecret}
-          onChange={(e) => setApiSecret(e.target.value)}
-          placeholder="Enter your secret key for protected content"
-        />
-        <small>Required only for accessing protected content</small>
-      </div>
-
-      <div className="button-container">
+      <div className="config-buttons">
         <button
           className="sample-project-button"
           onClick={handleUseSampleProject}

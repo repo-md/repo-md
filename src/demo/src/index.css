@@ -36,11 +36,28 @@ body {
   margin-bottom: 20px;
 }
 
+.config-form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 5px;
   margin-bottom: 15px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.config-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  width: 100%;
 }
 
 .form-group small {
