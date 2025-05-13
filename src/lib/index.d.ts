@@ -14,6 +14,8 @@ export interface RepoMDOptions {
   strategy?: 'auto' | 'browser' | 'server';
 }
 
+export type AliasesDefinition = Record<string, string>;
+
 export class RepoMD {
   constructor(options?: RepoMDOptions);
 
@@ -27,6 +29,15 @@ export class RepoMD {
   secret: string | null;
   activeRev: string | null;
   strategy: string;
+  
+  // Internal properties for services
+  urls: any;
+  api: any;
+  posts: any;
+  similarity: any;
+  media: any;
+  project: any;
+  files: any;
 
   // URL methods
   getR2Url(path?: string): string;
@@ -55,7 +66,6 @@ export class RepoMD {
 
   // Post retrieval methods
   getAllPosts(useCache?: boolean, forceRefresh?: boolean): Promise<any[]>;
-  getPostById(id: string): Promise<any | null>;
   getPostBySlug(slug: string): Promise<any | null>;
   getPostByHash(hash: string): Promise<any | null>;
   getPostByPath(path: string): Promise<any | null>;
@@ -87,6 +97,20 @@ export class RepoMD {
   // OpenAI integrations
   createOpenAiToolHandler(): (toolCall: any) => Promise<any>;
   handleOpenAiRequest(request: any): Promise<any>;
+  
+  // Instance cleanup method
+  destroy(): void;
+  
+  // Method aliases (with backwards compatibility)
+  
+  // Media related aliases
+  getAllMedias(useCache?: boolean): Promise<any>; // Alias for getAllMedia
+  
+  // Posts related aliases
+  getPostsBySlug(slug: string): Promise<any | null>; // Alias for getPostBySlug
+  
+  // Files related aliases
+  getSourceFiles(useCache?: boolean): Promise<any[]>; // Alias for getSourceFilesList
 }
 
 // Logo
@@ -95,6 +119,11 @@ export const logo: string;
 // OpenAI tools
 export const OpenAiToolSpec: Record<string, any>;
 export const toolSpecs: Record<string, any>;
+
+// Alias mechanism
+export const aliases: AliasesDefinition;
+export function createAliasFunction(instance: any, aliasName: string, targetName: string): Function;
+export function applyAliases(instance: any, debug?: boolean): void;
 
 export default RepoMD;
 

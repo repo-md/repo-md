@@ -107,66 +107,6 @@ export function createPostRetrieval(config) {
     }
   }
 
-  /**
-   * Get a single blog post by ID
-   * @param {string} id - Post ID
-   * @returns {Promise<Object|null>} - Post object or null
-   */
-  async function getPostById(id) {
-    const startTime = performance.now();
-    let lookupMethod = 'unknown';
-
-    if (debug) {
-      console.log(`${prefix} 📡 Fetching post with ID: ${id}`);
-    }
-
-    // First check if we already have posts in memory
-    if (postsCache) {
-      if (debug) {
-        console.log(`${prefix} 💾 Searching for ID in cached posts array`);
-      }
-      const post = _findPostByProperty(postsCache, 'id', id);
-      if (post) {
-        lookupMethod = 'memory-cache';
-        const duration = (performance.now() - startTime).toFixed(2);
-        if (debug) {
-          console.log(
-            `${prefix} ✅ Found post in cache: ${
-              post.title || id
-            } in ${duration}ms`
-          );
-        }
-        return post;
-      }
-    }
-
-    // Fall back to loading all posts and filtering
-    if (debug) {
-      console.log(
-        `${prefix} 📡 Falling back to loading all posts to find ID: ${id}`
-      );
-    }
-    const posts = await getAllPosts();
-    const post = _findPostByProperty(posts, 'id', id);
-
-    const duration = (performance.now() - startTime).toFixed(2);
-    if (post) {
-      lookupMethod = 'all-posts';
-      if (debug) {
-        console.log(
-          `${prefix} ✅ Found post by ID in full posts list in ${duration}ms using ${lookupMethod}`
-        );
-      }
-    } else {
-      if (debug) {
-        console.log(
-          `${prefix} ❓ Post with ID not found even after loading all posts (search took ${duration}ms)`
-        );
-      }
-    }
-
-    return post;
-  }
 
   /**
    * Get a single blog post by slug
@@ -400,9 +340,21 @@ export function createPostRetrieval(config) {
           ? getPostByHash
           : property === 'slug'
           ? getPostBySlug
-          : getPostById;
+          : null;
+          
+      // If we don't have a getter method for this property (like 'id'), use general lookup
+      if (!getterMethod) {
+        if (debug) {
+          console.log(`${prefix} ⚠️ No direct getter for property '${property}', using all posts lookup`);
+        }
+        const allPosts = await getAllPosts();
+        const posts = targetKeys
+          .map(key => _findPostByProperty(allPosts, property, key))
+          .filter(Boolean);
+        return posts;
+      }
 
-      // Fetch all posts in parallel
+      // Fetch all posts in parallel using the appropriate getter
       const posts = await Promise.all(
         targetKeys.map((key) => getterMethod(key))
       );
@@ -469,7 +421,6 @@ export function createPostRetrieval(config) {
   return {
     getAllPosts,
     getPostByPath,
-    getPostById,
     getPostBySlug,
     getPostByHash,
     augmentPostsByProperty,

@@ -13,6 +13,9 @@ import * as projectModule from './project/index.js';
 import * as filesModule from './files/index.js';
 import * as openaiModule from './openai/index.js';
 
+// Import alias mechanism
+import { aliases, createAliasFunction, applyAliases } from './aliases.js';
+
 // Re-export all public APIs
 export {
   // Main classes and utilities
@@ -28,6 +31,11 @@ export {
   projectModule,
   filesModule,
   openaiModule,
+  
+  // Alias mechanism for extending and compatibility
+  aliases,
+  createAliasFunction,
+  applyAliases,
 };
 
 // Default export

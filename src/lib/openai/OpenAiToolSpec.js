@@ -28,20 +28,6 @@ export const OpenAiToolSpec = {
       },
     },
     {
-      name: "getPostById",
-      description: "Get a single blog post by its ID",
-      parameters: {
-        type: "object",
-        properties: {
-          id: {
-            type: "string",
-            description: "The ID of the post to retrieve",
-          },
-        },
-        required: ["id"],
-      },
-    },
-    {
       name: "getPostBySlug",
       description: "Get a single blog post by its slug",
       parameters: {

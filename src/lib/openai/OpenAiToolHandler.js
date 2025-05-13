@@ -31,9 +31,6 @@ export const createOpenAiToolHandler = (repoMD) => {
             parsedArgs.forceRefresh || false
           );
 
-        case "getPostById":
-          return await repoMD.getPostById(parsedArgs.id);
-
         case "getPostBySlug":
           return await repoMD.getPostBySlug(parsedArgs.slug);
 

@@ -24,6 +24,9 @@ import {
 // Import exported logo and tool specs
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
+// Import alias mechanism
+import { applyAliases } from "./aliases.js";
+
 const prefix = LOG_PREFIXES.REPO_MD;
 
 class RepoMD {
@@ -295,6 +298,9 @@ class RepoMD {
       fetchR2Json: this.fetchR2Json,
       debug: this.debug,
     });
+    
+    // Apply any configured method aliases to this instance
+    applyAliases(this, this.debug);
   }
 
   // URL generation methods (proxy to URL module)
@@ -356,10 +362,6 @@ class RepoMD {
   // Post retrieval methods (proxy to Posts module)
   async getAllPosts(useCache = true, forceRefresh = false) {
     return await this.posts.getAllPosts(useCache, forceRefresh);
-  }
-
-  async getPostById(id) {
-    return await this.posts.getPostById(id);
   }
 
   async getPostBySlug(slug) {
