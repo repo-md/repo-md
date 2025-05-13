@@ -232,7 +232,7 @@ function App() {
           break
         case 'getPostsSimilarityByHashes':
           if (!params.hash1 || !params.hash2) {
-            throw new Error('Hash1 and Hash2 are required for this operation')
+          //  throw new Error('Hash1 and Hash2 are required for this operation')
           }
           data = await repo.getPostsSimilarityByHashes(params.hash1, params.hash2)
           break

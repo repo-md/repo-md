@@ -80,12 +80,12 @@ const FunctionList: React.FC<FunctionListProps> = ({
 
   return (
     <div className="function-list">
-      <h2>All Available Functions</h2>
+    
 
       <div className="function-filter">
         <input
           type="text"
-          placeholder="Search functions..."
+          placeholder="Search methods..."
           value={searchFilter}
           onChange={(e) => setSearchFilter(e.target.value)}
           className="function-search-input"
@@ -100,9 +100,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
         )}
       </div>
 
-      <p className="function-description">
-        Click on a function to run it. Functions with required parameters will show parameter inputs in the result panel.
-      </p>
+  
 
       {groupOrder.map(groupName => {
         const functionList = groupedFunctions[groupName];

@@ -3,9 +3,9 @@
  * Provides functions for computing and retrieving post similarities
  */
 
-import { similarity as computeCosineSimilarity } from 'compute-cosine-similarity';
-import { LOG_PREFIXES } from '../logger.js';
-import cache from '../core/cache.js';
+import { similarity as computeCosineSimilarity } from "compute-cosine-similarity";
+import { LOG_PREFIXES } from "../logger.js";
+import cache from "../core/cache.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
 
@@ -21,15 +21,15 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * @returns {Object} - Post similarity functions
  */
 export function createPostSimilarity(config) {
-  const { 
-    fetchR2Json, 
-    _fetchMapData, 
+  const {
+    fetchR2Json,
+    _fetchMapData,
     getRecentPosts,
     getPostBySlug,
     augmentPostsByProperty,
-    debug = false 
+    debug = false,
   } = config;
-  
+
   // Local caches for similarity data
   let similarityData = null;
   let similarPostsHashes = null;
@@ -44,10 +44,7 @@ export function createPostSimilarity(config) {
       if (debug) {
         console.log(`${prefix} 📡 Loading pre-computed post similarity data`);
       }
-      similarityData = await _fetchMapData(
-        '/posts-similarity.json',
-        {}
-      );
+      similarityData = await _fetchMapData("/posts-similarity.json", {});
     }
     return similarityData;
   }
@@ -61,7 +58,7 @@ export function createPostSimilarity(config) {
       console.log(`${prefix} 📡 Fetching posts embeddings map`);
     }
 
-    return await _fetchMapData('/posts-embedding-hash-map.json');
+    return await _fetchMapData("/posts-embedding-hash-map.json");
   }
 
   /**
@@ -71,10 +68,16 @@ export function createPostSimilarity(config) {
    * @returns {Promise<number>} - Similarity score (0-1)
    */
   async function getPostsSimilarityByHashes(hash1, hash2) {
+    if (!hash1 || !hash2) {
+      throw new Error(
+        "Hash1 and Hash2 are required to compare posts similarity (getPostsSimilarityByHashes)"
+      );
+    }
+
     if (hash1 === hash2) return 1.0; // Same post has perfect similarity
 
     // Create a cache key (ordered alphabetically for consistency)
-    const cacheKey = [hash1, hash2].sort().join('-');
+    const cacheKey = [hash1, hash2].sort().join("-");
 
     // Check in-memory cache first
     if (similarityCache[cacheKey] !== undefined) {
@@ -157,10 +160,7 @@ export function createPostSimilarity(config) {
       if (debug) {
         console.log(`${prefix} 📡 Loading pre-computed similar post hashes`);
       }
-      similarPostsHashes = await _fetchMapData(
-        '/posts-similar-hash.json',
-        {}
-      );
+      similarPostsHashes = await _fetchMapData("/posts-similar-hash.json", {});
     }
     return similarPostsHashes;
   }
@@ -261,7 +261,7 @@ export function createPostSimilarity(config) {
     }
 
     // Use augmentation helper to get full post objects
-    return await augmentPostsByProperty(similarHashes, 'hash', {
+    return await augmentPostsByProperty(similarHashes, "hash", {
       count,
       ...options,
     });
@@ -278,9 +278,7 @@ export function createPostSimilarity(config) {
       console.log(`${prefix} 📡 Fetching similar post slugs for slug: ${slug}`);
     }
 
-    const embeddingsMap = await _fetchMapData(
-      '/posts-embedding-slug-map.json'
-    );
+    const embeddingsMap = await _fetchMapData("/posts-embedding-slug-map.json");
 
     if (
       embeddingsMap &&
@@ -310,7 +308,7 @@ export function createPostSimilarity(config) {
 
     if (similarSlugs.length > 0) {
       // Use augmentation helper to get full post objects
-      return await augmentPostsByProperty(similarSlugs, 'slug', {
+      return await augmentPostsByProperty(similarSlugs, "slug", {
         count,
         ...options,
       });
