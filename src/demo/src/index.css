@@ -457,8 +457,6 @@ button:disabled {
 /* Function List Styling */
 .function-list {
   margin: 0;
-  border: 1px solid #eaeaea;
-  border-radius: 4px;
   padding: 15px;
   height: 100%;
   display: flex;
@@ -509,16 +507,13 @@ button:disabled {
 
 .function-group {
   margin-bottom: 20px;
-  border: 1px solid #eaeaea;
-  border-radius: 4px;
-  padding: 10px;
 }
 
 .function-group-header {
   font-weight: bold;
   margin-bottom: 10px;
-  color: #4c86f9;
-  border-bottom: 1px solid #eaeaea;
+  font-size: 1.1rem;
+  color: #333;
   padding-bottom: 5px;
 }
 
@@ -526,18 +521,18 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-left: 4px;
 }
 
 .function-item {
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 .function-name {
   cursor: pointer;
-  padding: 8px;
+  padding: 6px 8px;
   border-radius: 4px;
   transition: all 0.2s;
   font-family: monospace;
@@ -555,6 +550,14 @@ button:disabled {
   background-color: #e9f5ff;
   color: #4c86f9;
   font-weight: bold;
+}
+
+.function-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
 }
 
 .function-label {

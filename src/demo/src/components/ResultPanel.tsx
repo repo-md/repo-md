@@ -104,40 +104,32 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
     const actualProjectId = projectId || '680e97604a0559a192640d2c';
     const actualOrgSlug = orgSlug || 'iplanwebsites';
 
-    let codeLines = [
-      "// Initialize the RepoMD instance",
-      "const repo = new RepoMD({",
-      `  projectId: '${actualProjectId}',`,
-      `  orgSlug: '${actualOrgSlug}',`
-    ];
+    // Create configuration string with conditional options
+    let configOptions = `  projectId: '${actualProjectId}',\n  orgSlug: '${actualOrgSlug}'`;
 
     // Add strategy if not auto
     if (strategy !== 'auto') {
-      codeLines.push(`  strategy: '${strategy}',`);
+      configOptions += `,\n  strategy: '${strategy}'`;
     }
 
     // Add revision if specified
     if (revision && revision !== 'latest') {
-      codeLines.push(`  rev: '${revision}',`);
+      configOptions += `,\n  rev: '${revision}'`;
     }
 
-    codeLines.push("  debug: true");
-    codeLines.push("});");
-    codeLines.push("");
-    codeLines.push("// Later in your code");
-    codeLines.push("async function fetchData() {");
-    codeLines.push("  try {");
+    configOptions += `,\n  debug: true`;
 
-    // Add the function call with parameters
+    // Generate function call with parameters
+    let functionCall = '';
     if (currentFunctionParams.length === 0) {
       // No parameters
-      codeLines.push(`    const data = await repo.${operation}();`);
+      functionCall = `const data = await repo.${operation}();`;
     } else if (currentFunctionParams.length === 1) {
       // Single parameter
       const param = currentFunctionParams[0];
       const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
       const formattedValue = param.type === 'string' ? `'${paramValue}'` : paramValue;
-      codeLines.push(`    const data = await repo.${operation}(${formattedValue});`);
+      functionCall = `const data = await repo.${operation}(${formattedValue});`;
     } else {
       // Multiple parameters
       let paramList = currentFunctionParams
@@ -146,19 +138,29 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
           return param.type === 'string' ? `'${paramValue}'` : paramValue;
         })
         .join(', ');
-      codeLines.push(`    const data = await repo.${operation}(${paramList});`);
+      functionCall = `const data = await repo.${operation}(${paramList});`;
     }
 
-    // Complete the code sample
-    codeLines.push('    console.log(data);');
-    codeLines.push('  } catch (error) {');
-    codeLines.push('    console.error("Error:", error);');
-    codeLines.push('  }');
-    codeLines.push('}');
-    codeLines.push('');
-    codeLines.push('fetchData();');
+    // Use backtick multiline string for the entire code sample
+    return `// Import the RepoMD library
+import { RepoMD } from "repo-md";  //  npm i repo-md
 
-    return codeLines.join('\n');
+// Initialize the RepoMD instance
+const repo = new RepoMD({
+${configOptions}
+});
+
+// Later in your code
+async function fetchData() {
+  try {
+    ${functionCall}
+    console.log(data);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+fetchData();`;
   };
 
   return (

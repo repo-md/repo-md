@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 
 // Import the parameter types from App.tsx
+
+// Function group color mapping
+const groupColors: Record<string, string> = {
+  Posts: '#4c86f9',
+  Media: '#f97316',
+  Files: '#65a30d',
+  Project: '#8b5cf6',
+  URLs: '#0891b2',
+  Similarity: '#ec4899',
+  Fetch: '#f59e0b',
+  OpenAI: '#06b6d4',
+  Other: '#ccc'
+};
 interface FunctionParam {
   name: string;
   required: boolean;
@@ -80,8 +93,6 @@ const FunctionList: React.FC<FunctionListProps> = ({
 
   return (
     <div className="function-list">
-    
-
       <div className="function-filter">
         <input
           type="text"
@@ -100,15 +111,13 @@ const FunctionList: React.FC<FunctionListProps> = ({
         )}
       </div>
 
-  
-
       {groupOrder.map(groupName => {
         const functionList = groupedFunctions[groupName];
         if (!functionList || functionList.length === 0) return null;
 
         return (
           <div key={groupName} className="function-group">
-            <div className="function-group-header">{groupName}</div>
+            <h3 className="function-group-header">{groupName}</h3>
             <div className="function-items">
               {functionList.sort().map(fnName => {
                 const isSelected = selectedFunction === fnName;
@@ -123,6 +132,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
                       className={`function-name ${isSelected ? 'selected' : ''}`}
                       onClick={() => handleFunctionSelect(fnName)}
                     >
+                      <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }}></span>
                       <span className="function-label">{fnName}</span>
                       {requiredParams.length > 0 && (
                         <div className="param-tags">
