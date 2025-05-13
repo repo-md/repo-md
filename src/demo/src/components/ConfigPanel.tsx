@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Info } from 'lucide-react'
 
 interface ConfigPanelProps {
   projectId: string
@@ -82,11 +83,19 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
 
   return (
     <div className="config-panel">
-    
+      <div className="config-header">
+        <h3>API Configuration
+          <span className="info-icon">
+            <Info size={16} />
+            <div className="tooltip">
+              <p>This demo uses the RepoMD JavaScript client to fetch content from the repo.md API.</p>
+              <p>Enter your project ID and organization slug to get started, or use the sample project button.</p>
+            </div>
+          </span>
+        </h3>
+      </div>
 
       <div className="config-form">
-      
-
         <div className="form-group">
           <label htmlFor="orgSlug">Org Slug (required)</label>
           <input
@@ -110,7 +119,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
           />
           <small>Example: 680e97604a0559a192640d2c</small>
         </div>
-
 
         <div className="form-group">
           <label htmlFor="strategy">Strategy</label>
@@ -159,11 +167,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
         >
           Use Sample Project
         </button>
-      </div>
-
-      <div className="info-box">
-        <p>This demo uses the RepoMD JavaScript client to fetch content from the repo.md API.</p>
-        <p>Enter your project ID and organization slug to get started, or use the sample project button.</p>
       </div>
     </div>
   )

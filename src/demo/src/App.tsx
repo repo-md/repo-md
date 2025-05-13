@@ -4,6 +4,7 @@ import ConfigPanel from './components/ConfigPanel'
 import ResultPanel from './components/ResultPanel'
 import FunctionList from './components/FunctionList'
 import { ApiResult } from './types'
+import { FileText, Github, ExternalLink } from 'lucide-react'
 
 function App() {
   const [projectId, setProjectId] = useState('')
@@ -168,22 +169,62 @@ function App() {
     handleRun(fnName, params || {})
   }, [handleRun])
 
+  const [showConfig, setShowConfig] = useState(false);
+
+  const toggleConfig = () => {
+    setShowConfig(!showConfig);
+  };
+
   return (
     <div className="container">
-      <h1>Repo.md API Demo</h1>
+      <div className="app-header">
+        <h1>Repo.md API Demo</h1>
+        <div className="header-actions">
+          <a
+            href="https://repo.md/docs"
+            target="_blank"
+            className="header-button"
+            title="Documentation"
+          >
+            <FileText size={18} />
+            <span>Docs</span>
+          </a>
+          <a
+            href="https://github.com/repo-md/repo-md"
+            target="_blank"
+            rel="noopener"
+            className="header-button"
+            title="GitHub Repository"
+          >
+            <Github size={18} />
+            <span>GitHub</span>
+          </a>
+          <a
+            href="https://repo.md"
+            target="_blank"
+            className="header-button"
+            title="Repo.md Website"
+          >
+            <ExternalLink size={18} />
+            <span>Repo.md</span>
+          </a>
+        </div>
+      </div>
 
-      <ConfigPanel
-        projectId={projectId}
-        setProjectId={setProjectId}
-        orgSlug={orgSlug}
-        setOrgSlug={setOrgSlug}
-        apiSecret={apiSecret}
-        setApiSecret={setApiSecret}
-        strategy={strategy}
-        setStrategy={setStrategy}
-        revision={revision}
-        setRevision={setRevision}
-      />
+      {showConfig && (
+        <ConfigPanel
+          projectId={projectId}
+          setProjectId={setProjectId}
+          orgSlug={orgSlug}
+          setOrgSlug={setOrgSlug}
+          apiSecret={apiSecret}
+          setApiSecret={setApiSecret}
+          strategy={strategy}
+          setStrategy={setStrategy}
+          revision={revision}
+          setRevision={setRevision}
+        />
+      )}
 
       <div className="main-content">
         <div className="column-left">
@@ -195,7 +236,12 @@ function App() {
         </div>
 
         <div className="column-right">
-          <ResultPanel result={result} loading={loading} />
+          <ResultPanel
+            result={result}
+            loading={loading}
+            toggleConfig={toggleConfig}
+            showConfig={showConfig}
+          />
         </div>
       </div>
     </div>

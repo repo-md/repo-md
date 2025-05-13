@@ -2,13 +2,16 @@ import React from 'react'
 import { ApiResult } from '../types'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
+import { Settings, Code } from 'lucide-react'
 
 interface ResultPanelProps {
   result: ApiResult | null
   loading: boolean
+  toggleConfig: () => void
+  showConfig: boolean
 }
 
-const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading }) => {
+const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading, toggleConfig, showConfig }) => {
   // Format execution time to be more readable
   const formatExecutionTime = (time?: number) => {
     if (!time) return '';
@@ -22,19 +25,54 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading }) => {
     }
   };
 
+  // Function to extract parameter info
+  const getParamsInfo = () => {
+    if (!result || !result.success) return '';
+
+    // Simple extraction for now - this could be enhanced
+    return '';
+  };
+
   return (
     <div className="result-panel">
-      <div className="result-header">
-        <div className="result-title">
-          {loading ? 'Loading...' : result ? `Result: ${result.operation}` : 'Result'}
+      <div className="result-navbar">
+        <div className="result-nav-left">
+          {loading ? (
+            <div className="loading-indicator">Loading...</div>
+          ) : (
+            result && (
+              <>
+                <div className="method-name">{result.operation}</div>
+                <div className="method-params">{getParamsInfo()}</div>
+              </>
+            )
+          )}
         </div>
 
-        {!loading && result && result.executionTime !== undefined && (
-          <div className="execution-time">
-            Execution time: {formatExecutionTime(result.executionTime)}
-          </div>
-        )}
+        <div className="result-nav-right">
+          <button
+            className="nav-button code-sample-button"
+            title="View Code Sample"
+            disabled
+          >
+            <Code size={18} />
+          </button>
+
+          <button
+            className={`nav-button settings-button ${showConfig ? 'active' : ''}`}
+            onClick={toggleConfig}
+            title="Toggle Settings"
+          >
+            <Settings size={18} />
+          </button>
+        </div>
       </div>
+
+      {!loading && result && result.executionTime !== undefined && (
+        <div className="execution-time-bar">
+          Execution time: {formatExecutionTime(result.executionTime)}
+        </div>
+      )}
 
       {!loading && result && (
         <div className={`result-content ${!result.success ? 'error' : ''}`}>
