@@ -193,7 +193,7 @@ button:disabled {
 }
 
 .function-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   border: 1px solid #eaeaea;
   border-radius: 4px;
   padding: 10px;
@@ -207,31 +207,96 @@ button:disabled {
   padding-bottom: 5px;
 }
 
-.function-buttons {
+.function-items {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
 }
 
-.function-button {
+.function-item {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.function-name {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-family: monospace;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.function-name:hover {
+  background-color: #f0f8ff;
+}
+
+.function-name.selected {
   background-color: #e9f5ff;
   color: #4c86f9;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  border: 1px solid #4c86f9;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-weight: bold;
 }
 
-.function-button:hover {
+.function-params-indicator {
+  color: #888;
+  margin-left: 10px;
+  font-size: 12px;
+}
+
+.function-params-form {
+  margin-top: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.param-input {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.param-input label {
+  font-size: 12px;
+  color: #666;
+}
+
+.required-indicator {
+  color: #e53935;
+  margin-left: 2px;
+}
+
+.param-input input {
+  padding: 6px 8px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.run-function-button {
+  margin-top: 8px;
+  padding: 6px 12px;
   background-color: #4c86f9;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-end;
 }
 
-.function-button:disabled {
-  background-color: #f0f0f0;
-  color: #999;
-  border-color: #ccc;
+.run-function-button:hover {
+  background-color: #3a6bc5;
+}
+
+.run-function-button:disabled {
+  background-color: #cccccc;
   cursor: not-allowed;
 }

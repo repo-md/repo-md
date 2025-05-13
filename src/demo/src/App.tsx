@@ -164,9 +164,9 @@ function App() {
     }
   }, [projectId, orgSlug, apiSecret, strategy, revision])
 
-  // Execute any function by name
-  const handleExecuteFunction = useCallback((fnName: string) => {
-    handleRun(fnName)
+  // Execute any function by name with optional parameters
+  const handleExecuteFunction = useCallback((fnName: string, params?: Record<string, string>) => {
+    handleRun(fnName, params || {})
   }, [handleRun])
 
   return (
