@@ -12,14 +12,14 @@ const prefix = LOG_PREFIXES.REPO_MD || "[RepoMD]";
  * Each key is the alias name, and the value is the target method name
  */
 export const aliases = {
-  // Media related aliases
-  'getAllMedias': 'getAllMedia',
-  
   // Posts related aliases
   'getPostsBySlug': 'getPostBySlug',
   
   // Files related aliases
-  'getSourceFiles': 'getSourceFilesList'
+  'getSourceFiles': 'getSourceFilesList',
+  
+  // URL related aliases
+  'getSqliteURL': 'getSqliteUrl'
   // Add more aliases here as needed
 };
 

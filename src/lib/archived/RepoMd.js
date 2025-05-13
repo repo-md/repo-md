@@ -377,7 +377,8 @@ class RepoMD {
   }
 
   // Fetch media data
-  async getAllMedias(useCache = true) {
+
+  async getAllMedia(useCache = true) {
     const mediaData = await this.fetchR2Json("/medias.json", {
       defaultValue: {},
       useCache,
@@ -389,14 +390,10 @@ class RepoMD {
 
     return mediaData;
   }
-  async getAllMedia(useCache = true) {
-    // compatibility alias
-    return await this.getAllMedias(useCache);
-  }
 
   // Get all media items with formatted URLs
   async getMediaItems(useCache = true) {
-    return await this.getAllMedias(useCache);
+    return await this.getAllMedia(useCache);
   }
 
   // Get a single blog post by ID

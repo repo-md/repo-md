@@ -44,7 +44,7 @@ export function createMediaHandler(config) {
    * @param {boolean} useCache - Whether to use cache
    * @returns {Promise<Object>} - Media data
    */
-  async function getAllMedias(useCache = true) {
+  async function getAllMedia(useCache = true) {
     // No need to call ensureLatestRev - fetchR2Json will handle revision resolution
     const mediaData = await fetchR2Json('/medias.json', {
       defaultValue: {},
@@ -59,12 +59,12 @@ export function createMediaHandler(config) {
   }
 
   /**
-   * Legacy alias for getAllMedias
+   * Alias with plural naming (for backward compatibility)
    * @param {boolean} useCache - Whether to use cache
    * @returns {Promise<Object>} - Media data
    */
-  async function getAllMedia(useCache = true) {
-    return await getAllMedias(useCache);
+  async function getAllMedias(useCache = true) {
+    return await getAllMedia(useCache);
   }
 
   /**
@@ -73,7 +73,7 @@ export function createMediaHandler(config) {
    * @returns {Promise<Object>} - Media items
    */
   async function getMediaItems(useCache = true) {
-    return await getAllMedias(useCache);
+    return await getAllMedia(useCache);
   }
 
   /**

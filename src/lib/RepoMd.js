@@ -150,7 +150,9 @@ class RepoMD {
         - projectId: ${projectId}
         - rev: ${rev}
         - strategy: ${strategy}
-        - instance: ${this._instanceId = Math.random().toString(36).substring(2, 10)}
+        - instance: ${(this._instanceId = Math.random()
+          .toString(36)
+          .substring(2, 10))}
       `);
     }
   }
@@ -298,7 +300,7 @@ class RepoMD {
       fetchR2Json: this.fetchR2Json,
       debug: this.debug,
     });
-    
+
     // Apply any configured method aliases to this instance
     applyAliases(this, this.debug);
   }
@@ -334,7 +336,7 @@ class RepoMD {
   }
 
   // SQLite URL method
-  async getSqliteURL() {
+  async getSqliteUrl() {
     return await this.urls.getSqliteUrl();
   }
 
@@ -343,12 +345,17 @@ class RepoMD {
     return await this.media.getMediaUrl(path);
   }
 
-  async getAllMedias(useCache = true) {
-    return await this.media.getAllMedias(useCache);
-  }
-
   async getAllMedia(useCache = true) {
     return await this.media.getAllMedia(useCache);
+  }
+
+  async getAllMedias(useCache = true) {
+    if (this.debug) {
+      console.warn(
+        `${prefix} ⚠️ Deprecated: 'getAllMedias' is an alias of 'getAllMedia', it might be removed in a future version.`
+      );
+    }
+    return await this.media.getAllMedias(useCache);
   }
 
   async getMediaItems(useCache = true) {
@@ -462,31 +469,35 @@ class RepoMD {
 
   destroy() {
     if (this.debug) {
-      console.log(`${prefix} 🧹 Cleaning up RepoMD instance resources (instance: ${this._instanceId || 'unknown'})`);
+      console.log(
+        `${prefix} 🧹 Cleaning up RepoMD instance resources (instance: ${
+          this._instanceId || "unknown"
+        })`
+      );
     }
-    
+
     // Clear all cache for this instance
-    cache.clear('posts');
-    cache.clear('similarity');
-    cache.clear('media');
-    
+    cache.clear("posts");
+    cache.clear("similarity");
+    cache.clear("media");
+
     // Clear any references to services
     this.posts = null;
     this.similarity = null;
     this.media = null;
     this.project = null;
     this.files = null;
-    
+
     // Clear URL generator and API client
     this.urls = null;
     this.api = null;
-    
+
     // Clear any pending fetch operations if supported by platform
-    if (typeof AbortController !== 'undefined' && this._abortController) {
+    if (typeof AbortController !== "undefined" && this._abortController) {
       this._abortController.abort();
       this._abortController = null;
     }
-    
+
     // Flag as destroyed to prevent further use
     this._destroyed = true;
   }
