@@ -25,7 +25,7 @@ class RepoMD {
     org = "iplanwebsites",
     orgSlug = "iplanwebsites",
     orgId = null,
-    project = "tbd",
+    // project = "tbd",
     projectId = "680e97604a0559a192640d2c",
     projectSlug = "undefined-project-slug",
     rev = "latest", // Default to "latest"
@@ -33,9 +33,10 @@ class RepoMD {
     debug = false,
     //maxCacheSize = 50,
     //cacheTTL = 300000, // 5 minutes
+    strategy = "auto", // auto, browser, server
   } = {}) {
     this.org = org;
-    this.project = project;
+    // this.project = project;
     this.projectId = projectId;
     this.projectSlug = projectSlug;
     this.orgSlug = orgSlug;
@@ -48,7 +49,7 @@ class RepoMD {
     this.similarityCache = {}; // Cache for in-memory similarity scores between post hashes
     this.similarityData = null; // Cache for pre-computed similarity data from posts-similarity.json
     this.similarPostsHashes = null; // Cache for pre-computed similar posts data from posts-similar-hash.json
-
+    this.strategy = strategy;
     // Resize cache if different settings are provided
     //if (maxCacheSize !== lru.maxSize) {
     //    lru.resize(maxCacheSize);
