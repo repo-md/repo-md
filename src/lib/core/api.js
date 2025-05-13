@@ -117,6 +117,40 @@ export function createApiClient(config) {
   }
 
   /**
+   * Fetch project active revision directly from the /rev endpoint
+   * @returns {Promise<string>} - Active revision ID
+   */
+  async function fetchProjectActiveRev() {
+    let path;
+
+    // Check if we have a valid projectId and use it preferentially
+    if (projectId && projectId !== "undefined-project-id") {
+      path = `/project-id/${projectId}/rev`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project ID path for rev: ${path}`);
+      }
+    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
+      path = `/orgs/${orgSlug}/projects/slug/${projectSlug}/rev`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project slug path for rev: ${path}`);
+      }
+    } else {
+      // If neither valid projectId nor projectSlug is available, throw an error
+      throw new Error(
+        "No valid projectId or projectSlug provided for fetching project revision"
+      );
+    }
+
+    const response = await fetchPublicApi(path);
+
+    if (!response || !response.rev) {
+      throw new Error(`No active revision found for project ${projectId || projectSlug}`);
+    }
+
+    return response.rev;
+  }
+
+  /**
    * Get the active project revision ID
    * @param {boolean} forceRefresh - Whether to force a refresh from the server
    * @returns {Promise<string>} - Active revision ID
@@ -128,20 +162,32 @@ export function createApiClient(config) {
     }
 
     // Check in-memory state if not forcing refresh
-    if (!forceRefresh && revisionState.value) {
+    if (!forceRefresh && revisionState.value && !revisionState.isExpired()) {
       return revisionState.value;
     }
 
     try {
       // Create a new promise for this request
       currentRevisionPromise = (async () => {
-        const projectDetails = await fetchProjectDetails();
+        let activeRev;
 
-        if (!projectDetails || typeof projectDetails !== "object") {
-          throw new Error("Invalid project details response format");
+        try {
+          // Try the faster /rev endpoint first
+          activeRev = await fetchProjectActiveRev();
+        } catch (error) {
+          if (debug) {
+            console.warn(`${prefix} ⚠️ Failed to get revision from /rev endpoint, falling back to project details: ${error.message}`);
+          }
+
+          // Fall back to the original method if /rev fails
+          const projectDetails = await fetchProjectDetails();
+
+          if (!projectDetails || typeof projectDetails !== "object") {
+            throw new Error("Invalid project details response format");
+          }
+
+          activeRev = projectDetails.activeRev;
         }
-
-        const { activeRev } = projectDetails;
 
         if (!activeRev) {
           throw new Error(
@@ -253,6 +299,7 @@ export function createApiClient(config) {
   return {
     fetchPublicApi,
     fetchProjectDetails,
+    fetchProjectActiveRev,
     getActiveProjectRev,
     ensureLatestRev,
   };
