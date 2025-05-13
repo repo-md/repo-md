@@ -454,6 +454,20 @@ button:disabled {
   color: #e53935;
 }
 
+.initial-content {
+  color: #4c86f9 !important;
+  background-color: rgba(76, 134, 249, 0.05) !important;
+  font-family: 'Inter', sans-serif !important;
+  line-height: 1.6;
+  padding: 20px !important;
+}
+
+.initial-content div {
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
 /* Function List Styling */
 .function-list {
   margin: 0;
