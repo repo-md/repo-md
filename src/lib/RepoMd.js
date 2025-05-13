@@ -52,6 +52,24 @@ class RepoMD {
     this.secret = secret;
     this.strategy = strategy;
     this.activeRev = null; // Store resolved latest revision ID
+    
+    // Initialize stats tracking
+    this.stats = {
+      posts: {
+        totalLoaded: 0,
+        byMethod: {
+          memoryCache: 0,
+          directHashFile: 0,
+          directSlugFile: 0,
+          pathMap: 0,
+          directPath: 0,
+          allPosts: 0
+        },
+        individualLoads: 0,
+        allPostsLoaded: false,
+        lastUpdated: Date.now()
+      }
+    };
 
     // Configure cache for this instance
     cache.configure("posts", { maxSize: 1000 }, debug);
@@ -238,8 +256,21 @@ class RepoMD {
 
   // Fetch a JSON file from R2 storage
   async fetchR2Json(path, opts = {}) {
-    // Get the URL, which will resolve revision if needed
-    const url = await this.urls.getRevisionUrl(path);
+    let url;
+    
+    // Check if this is a shared folder resource
+    if (opts.useSharedFolder) {
+      // Use project URL for shared resources (not revision-specific)
+      url = this.urls.getProjectUrl(path);
+      
+      if (this.debug) {
+        console.log(`${prefix} 🔍 Using shared folder path: ${url}`);
+      }
+    } else {
+      // Get the URL, which will resolve revision if needed
+      url = await this.urls.getRevisionUrl(path);
+    }
+    
     return await this.fetchJson(url, opts);
   }
 
@@ -268,6 +299,7 @@ class RepoMD {
       getRevisionUrl: this.urls.getRevisionUrl,
       fetchR2Json: this.fetchR2Json,
       _fetchMapData: this._fetchMapData,
+      stats: this.stats,
       debug: this.debug,
     });
 
@@ -338,6 +370,15 @@ class RepoMD {
   // SQLite URL method
   async getSqliteUrl() {
     return await this.urls.getSqliteUrl();
+  }
+  
+  // Client stats method
+  getClientStats() {
+    // Update timestamp
+    this.stats.posts.lastUpdated = Date.now();
+    
+    // Return a copy of the stats object to prevent direct modification
+    return JSON.parse(JSON.stringify(this.stats));
   }
 
   // Media methods (proxy to Media module)

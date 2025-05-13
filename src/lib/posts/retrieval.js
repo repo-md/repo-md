@@ -14,11 +14,12 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * @param {Function} config.getRevisionUrl - Function to get revision-specific URLs (async)
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
  * @param {Function} config._fetchMapData - Function to fetch map data
+ * @param {Object} config.stats - Stats object for tracking usage metrics
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - Post retrieval functions
  */
 export function createPostRetrieval(config) {
-  const { getRevisionUrl, fetchR2Json, _fetchMapData, debug = false } = config;
+  const { getRevisionUrl, fetchR2Json, _fetchMapData, stats, debug = false } = config;
   
   // Local post cache reference
   let postsCache = null;
@@ -51,6 +52,13 @@ export function createPostRetrieval(config) {
           `${prefix} 💾 Using cached posts array (${postsCache.length} posts) in ${duration}ms`
         );
       }
+      
+      // Update stats for memory cache usage
+      if (stats) {
+        stats.posts.byMethod.memoryCache++;
+        stats.posts.lastUpdated = Date.now();
+      }
+      
       return postsCache;
     }
 
@@ -68,6 +76,14 @@ export function createPostRetrieval(config) {
         console.log(
           `${prefix} 📄 Cached ${posts.length} posts in memory in ${duration}ms`
         );
+      }
+      
+      // Update stats for all posts loaded
+      if (stats) {
+        stats.posts.totalLoaded += posts.length;
+        stats.posts.byMethod.allPosts++;
+        stats.posts.allPostsLoaded = true;
+        stats.posts.lastUpdated = Date.now();
       }
     }
 
@@ -95,10 +111,19 @@ export function createPostRetrieval(config) {
     }
 
     try {
-      return await fetchR2Json(path, {
+      const post = await fetchR2Json(path, {
         defaultValue: null,
         useCache: true,
       });
+      
+      if (post && stats) {
+        stats.posts.totalLoaded++;
+        stats.posts.byMethod.directPath++;
+        stats.posts.individualLoads++;
+        stats.posts.lastUpdated = Date.now();
+      }
+      
+      return post;
     } catch (error) {
       if (debug) {
         console.error(`${prefix} ❌ Error fetching post at path ${path}:`, error);
@@ -147,6 +172,13 @@ export function createPostRetrieval(config) {
             } in ${duration}ms`
           );
         }
+        
+        // Update stats for memory cache usage
+        if (stats) {
+          stats.posts.byMethod.memoryCache++;
+          stats.posts.lastUpdated = Date.now();
+        }
+        
         return post;
       }
     }
@@ -173,6 +205,39 @@ export function createPostRetrieval(config) {
             `${prefix} ✅ Successfully loaded post directly from slug file in ${duration}ms`
           );
         }
+        
+        // Update stats for direct slug file usage
+        if (stats) {
+          stats.posts.totalLoaded++;
+          stats.posts.byMethod.directSlugFile++;
+          stats.posts.individualLoads++;
+          stats.posts.lastUpdated = Date.now();
+          
+          // Check if we should side-load all posts
+          if (!postsCache && stats.posts.individualLoads >= 5 && !stats.posts.allPostsLoaded) {
+            if (debug) {
+              console.log(
+                `${prefix} 🔄 Individual post loads threshold reached (${stats.posts.individualLoads}), side-loading all posts for better performance`
+              );
+            }
+            
+            // Side-load all posts in the background (don't await)
+            getAllPosts().then(posts => {
+              if (debug) {
+                console.log(
+                  `${prefix} ✅ Side-loaded ${posts.length} posts after threshold reached`
+                );
+              }
+            }).catch(error => {
+              if (debug) {
+                console.error(
+                  `${prefix} ❌ Error side-loading all posts: ${error.message}`
+                );
+              }
+            });
+          }
+        }
+        
         return post;
       }
     } catch (error) {
@@ -203,6 +268,9 @@ export function createPostRetrieval(config) {
             `${prefix} ✅ Successfully loaded post via hash from slug mapping in ${duration}ms`
           );
         }
+        
+        // Stats are already updated by getPostByHash, no need to update here
+        
         return post;
       }
     }
@@ -223,6 +291,13 @@ export function createPostRetrieval(config) {
         console.log(
           `${prefix} ✅ Found post by slug in full posts list in ${duration}ms using ${lookupMethod}`
         );
+      }
+      
+      // Update stats for all posts usage (if not already updated by getAllPosts)
+      if (stats && !stats.posts.allPostsLoaded) {
+        stats.posts.byMethod.allPosts++;
+        stats.posts.allPostsLoaded = true;
+        stats.posts.lastUpdated = Date.now();
       }
     } else {
       if (debug) {
@@ -274,6 +349,13 @@ export function createPostRetrieval(config) {
             } in ${duration}ms`
           );
         }
+        
+        // Update stats for memory cache usage
+        if (stats) {
+          stats.posts.byMethod.memoryCache++;
+          stats.posts.lastUpdated = Date.now();
+        }
+        
         return post;
       } else {
         if (debug) {
@@ -284,18 +366,21 @@ export function createPostRetrieval(config) {
       }
     }
 
-    // Try to directly load the post by its hash from the individual JSON file
-    const hashPath = `/_posts/hash/${hash}.json`;
+    // Try to directly load the post by its hash from the shared folder
+    // This path is one level above the revision folder, so we use a different URL generation approach
+    const hashPath = `/_shared/posts/${hash}.json`;
     if (debug) {
       console.log(
-        `${prefix} 🔍 Trying to load individual post file directly: ${hashPath}`
+        `${prefix} 🔍 Trying to load individual post file directly from shared folder: ${hashPath}`
       );
     }
     
     try {
+      // Use a special URL generation approach for shared resources
       const post = await fetchR2Json(hashPath, {
         defaultValue: null,
         useCache: true,
+        useSharedFolder: true, // Signal that this should use the shared folder path
       });
       
       if (post) {
@@ -306,6 +391,39 @@ export function createPostRetrieval(config) {
             `${prefix} ✅ Successfully loaded post directly from hash file in ${duration}ms`
           );
         }
+        
+        // Update stats for direct hash file usage
+        if (stats) {
+          stats.posts.totalLoaded++;
+          stats.posts.byMethod.directHashFile++;
+          stats.posts.individualLoads++;
+          stats.posts.lastUpdated = Date.now();
+          
+          // Check if we should side-load all posts
+          if (!postsCache && stats.posts.individualLoads >= 5 && !stats.posts.allPostsLoaded) {
+            if (debug) {
+              console.log(
+                `${prefix} 🔄 Individual post loads threshold reached (${stats.posts.individualLoads}), side-loading all posts for better performance`
+              );
+            }
+            
+            // Side-load all posts in the background (don't await)
+            getAllPosts().then(posts => {
+              if (debug) {
+                console.log(
+                  `${prefix} ✅ Side-loaded ${posts.length} posts after threshold reached`
+                );
+              }
+            }).catch(error => {
+              if (debug) {
+                console.error(
+                  `${prefix} ❌ Error side-loading all posts: ${error.message}`
+                );
+              }
+            });
+          }
+        }
+        
         return post;
       }
     } catch (error) {
@@ -336,6 +454,14 @@ export function createPostRetrieval(config) {
             `${prefix} ✅ Successfully loaded post by path from hash mapping in ${duration}ms`
           );
         }
+        
+        // Update stats for path map usage
+        if (stats) {
+          stats.posts.totalLoaded++;
+          stats.posts.byMethod.pathMap++;
+          stats.posts.lastUpdated = Date.now();
+        }
+        
         return post;
       }
     }
@@ -358,6 +484,13 @@ export function createPostRetrieval(config) {
             post.title || hash
           } in ${duration}ms using ${lookupMethod}`
         );
+      }
+      
+      // Update stats for all posts usage (if not already updated by getAllPosts)
+      if (stats && !stats.posts.allPostsLoaded) {
+        stats.posts.byMethod.allPosts++;
+        stats.posts.allPostsLoaded = true;
+        stats.posts.lastUpdated = Date.now();
       }
     } else {
       if (debug) {
