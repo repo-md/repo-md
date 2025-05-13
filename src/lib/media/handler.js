@@ -13,18 +13,16 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * @param {Object} config - Configuration object
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
  * @param {Function} config.getProjectUrl - Function to get project URL
- * @param {Function} config.ensureLatestRev - Function to ensure latest revision is resolved
- * @param {Function} config.getRevisionUrl - Function to get revision URL
+ * @param {Function} config.getRevisionUrl - Function to get revision URL (async)
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - Media handling functions
  */
 export function createMediaHandler(config) {
-  const { 
-    fetchR2Json, 
-    getProjectUrl, 
-    getRevisionUrl, 
-    ensureLatestRev, 
-    debug = false 
+  const {
+    fetchR2Json,
+    getProjectUrl,
+    getRevisionUrl,
+    debug = false
   } = config;
 
   /**
@@ -47,7 +45,7 @@ export function createMediaHandler(config) {
    * @returns {Promise<Object>} - Media data
    */
   async function getAllMedias(useCache = true) {
-    await ensureLatestRev();
+    // No need to call ensureLatestRev - fetchR2Json will handle revision resolution
     const mediaData = await fetchR2Json('/medias.json', {
       defaultValue: {},
       useCache,

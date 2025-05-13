@@ -18,11 +18,12 @@ const R2_DOMAIN = 'https://r2.repo.md';
  * @param {string} config.projectId - Project ID
  * @param {string} config.activeRev - Active revision ID
  * @param {string} config.rev - Requested revision ID
+ * @param {Function} config.resolveLatestRev - Function to resolve the latest revision
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - URL generator functions
  */
 export function createUrlGenerator(config) {
-  const { orgSlug, projectId, activeRev, rev, debug = false } = config;
+  const { orgSlug, projectId, activeRev, rev, resolveLatestRev, debug = false } = config;
 
   /**
    * Get URL for a project resource
@@ -38,17 +39,58 @@ export function createUrlGenerator(config) {
   }
 
   /**
-   * Get URL for a revision-specific resource
+   * Get URL for a revision-specific resource, resolving "latest" revision if needed
    * @param {string} path - Resource path
-   * @returns {string} - Full URL
+   * @returns {Promise<string>} - Full URL
    */
-  function getRevisionUrl(path = '') {
-    const resolvedRev = rev === 'latest' ? activeRev : rev;
-    const url = getProjectUrl('/' + resolvedRev + path);
-    
-    if (debug) {
-      console.log(`${prefix} 🔗 Generated revision URL: ${url}`);
+  async function getRevisionUrl(path = '') {
+    // If we have a specific revision (not "latest"), use it directly
+    if (rev !== 'latest') {
+      const url = getProjectUrl('/' + rev + path);
+      if (debug) {
+        console.log(`${prefix} 🔗 Generated revision URL with specific rev: ${url}`);
+      }
+      return url;
     }
+
+    // If we already have the active revision, use it
+    if (activeRev) {
+      const url = getProjectUrl('/' + activeRev + path);
+      if (debug) {
+        console.log(`${prefix} 🔗 Generated revision URL with cached activeRev: ${url}`);
+      }
+      return url;
+    }
+
+    // If we need to resolve the latest revision
+    if (debug) {
+      console.log(`${prefix} 🔄 Resolving latest revision for URL generation`);
+    }
+
+    // Call the provided resolver function
+    let resolvedRev;
+    try {
+      resolvedRev = await resolveLatestRev();
+
+      if (!resolvedRev) {
+        throw new Error(`Failed to resolve latest revision for URL generation - received empty revision`);
+      }
+
+      // Update module state with the resolved revision for future calls
+      activeRev = resolvedRev;
+    } catch (error) {
+      if (debug) {
+        console.error(`${prefix} ❌ Error resolving revision: ${error.message}`);
+      }
+      throw error;
+    }
+
+    const url = getProjectUrl('/' + resolvedRev + path);
+
+    if (debug) {
+      console.log(`${prefix} 🔗 Generated revision URL with resolved rev (${resolvedRev}): ${url}`);
+    }
+
     return url;
   }
 
@@ -69,10 +111,10 @@ export function createUrlGenerator(config) {
 
   /**
    * Get URL for the SQLite database
-   * @returns {string} - Full URL
+   * @returns {Promise<string>} - Full URL
    */
-  function getSqliteUrl() {
-    return getRevisionUrl('/content.sqlite');
+  async function getSqliteUrl() {
+    return await getRevisionUrl('/content.sqlite');
   }
 
   /**

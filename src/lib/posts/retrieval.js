@@ -11,15 +11,14 @@ const prefix = LOG_PREFIXES.REPO_MD;
 /**
  * Create a post retrieval service
  * @param {Object} config - Configuration object
- * @param {Function} config.getRevisionUrl - Function to get revision-specific URLs
- * @param {Function} config.ensureLatestRev - Function to ensure latest revision is resolved
+ * @param {Function} config.getRevisionUrl - Function to get revision-specific URLs (async)
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
  * @param {Function} config._fetchMapData - Function to fetch map data
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - Post retrieval functions
  */
 export function createPostRetrieval(config) {
-  const { getRevisionUrl, ensureLatestRev, fetchR2Json, _fetchMapData, debug = false } = config;
+  const { getRevisionUrl, fetchR2Json, _fetchMapData, debug = false } = config;
   
   // Local post cache reference
   let postsCache = null;

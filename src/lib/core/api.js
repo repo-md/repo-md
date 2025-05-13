@@ -32,14 +32,14 @@ export function createApiClient(config) {
 
   // Store the in-flight promise for getActiveProjectRev to prevent duplicate calls
   let currentRevisionPromise = null;
-  
+
   /**
    * Generate the base project path used for API calls
    * @param {string} [suffix=''] - Optional suffix to append to the path
    * @returns {string} - The project path for API calls
    * @throws {Error} - If no valid projectId or projectSlug is provided
    */
-  function getProjectBasePath(suffix = '') {
+  function getProjectBasePath(suffix = "") {
     // Check if we have a valid projectId and use it preferentially
     if (projectId && projectId !== "undefined-project-id") {
       const path = `/project-id/${projectId}${suffix}`;
@@ -120,7 +120,7 @@ export function createApiClient(config) {
   async function fetchProjectDetails() {
     // Get the base path for this project
     const path = getProjectBasePath();
-    
+
     // EX: https://api.repo.md/v1/orgs/iplanwebsites/projects/680e97604a0559a192640d2c
     // or: https://api.repo.md/v1/orgs/iplanwebsites/projects/slug/port1g
     const project = await fetchPublicApi(path);
@@ -132,24 +132,47 @@ export function createApiClient(config) {
    * @returns {Promise<string>} - Active revision ID
    */
   async function fetchProjectActiveRev() {
-    // Get the base path with /rev suffix
-    const path = getProjectBasePath('/rev');
-    
-    const response = await fetchPublicApi(path);
-    
-    if (!response || !response.rev) {
-      throw new Error(`No active revision found for project ${projectId || projectSlug}`);
+    try {
+      // Get the base path with /rev suffix
+      const path = getProjectBasePath("/rev");
+
+      const response = await fetchPublicApi(path);
+
+      if (!response) {
+        throw new Error(
+          `Empty response from /rev endpoint for project ${
+            projectId || projectSlug
+          }`
+        );
+      }
+
+      if (debug) {
+        console.log(
+          `${prefix} ✅ Successfully fetched revision: ${response.rev} from /rev endpoint`
+        );
+      }
+
+      return response;
+    } catch (error) {
+      if (debug) {
+        console.error(
+          `${prefix} ❌ Error fetching revision from /rev endpoint: ${error.message}`
+        );
+      }
+      throw error;
     }
-    
-    return response.rev;
   }
 
   /**
    * Get the active project revision ID
    * @param {boolean} forceRefresh - Whether to force a refresh from the server
+   * @param {boolean} skipDetails - Whether to skip fetching project details as fallback
    * @returns {Promise<string>} - Active revision ID
    */
-  async function getActiveProjectRev(forceRefresh = false) {
+  async function getActiveProjectRev(
+    forceRefresh = false,
+    skipDetails = false
+  ) {
     // Return the ongoing promise if there's already a request in progress
     if (currentRevisionPromise && !forceRefresh) {
       return currentRevisionPromise;
@@ -164,16 +187,23 @@ export function createApiClient(config) {
       // Create a new promise for this request
       currentRevisionPromise = (async () => {
         let activeRev;
-        
+
         try {
           // Try the faster /rev endpoint first
           activeRev = await fetchProjectActiveRev();
         } catch (error) {
-          if (debug) {
-            console.warn(`${prefix} ⚠️ Failed to get revision from /rev endpoint, falling back to project details: ${error.message}`);
+          if (skipDetails) {
+            // If we're explicitly told to skip fetching project details, just propagate the error
+            throw error;
           }
-          
-          // Fall back to the original method if /rev fails
+
+          if (debug) {
+            console.warn(
+              `${prefix} ⚠️ Failed to get revision from /rev endpoint, falling back to project details: ${error.message}`
+            );
+          }
+
+          // Fall back to the original method if /rev fails and we're not skipping details
           const projectDetails = await fetchProjectDetails();
 
           if (!projectDetails || typeof projectDetails !== "object") {
@@ -240,14 +270,29 @@ export function createApiClient(config) {
             );
           }
 
-          // Schedule background refresh, don't await it
-          getActiveProjectRev(true).catch((err) => {
-            if (debug) {
-              console.error(
-                `${prefix} ⚠️ Background revalidation error: ${err.message}`
-              );
-            }
-          });
+          // Schedule background refresh using the faster /rev endpoint, don't await it
+          // This will update the revisionState for future calls
+          fetchProjectActiveRev()
+            .then((rev) => {
+              revisionState = {
+                value: rev,
+                timestamp: Date.now(),
+                isExpired: () =>
+                  Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
+              };
+              if (debug) {
+                console.log(
+                  `${prefix} ✅ Background refresh complete, new rev: ${rev}`
+                );
+              }
+            })
+            .catch((err) => {
+              if (debug) {
+                console.error(
+                  `${prefix} ⚠️ Background revalidation error: ${err.message}`
+                );
+              }
+            });
 
           // Still return the stale value for this request
           return revisionState.value;
@@ -266,21 +311,60 @@ export function createApiClient(config) {
         );
       }
 
-      const latestId = await getActiveProjectRev();
+      // Call getActiveProjectRev but tell it to skip the project details fallback
+      // since ensureLatestRev will handle that fallback if needed
+      try {
+        const latestId = await getActiveProjectRev(false, true);
 
-      if (!latestId) {
-        throw new Error(
-          `Could not determine latest revision ID for project ${
-            projectId || projectSlug
-          }`
-        );
+        if (debug) {
+          console.log(
+            `${prefix} ✅ Resolved 'latest' to revision: ${latestId} (from /rev endpoint)`
+          );
+        }
+
+        return latestId;
+      } catch (error) {
+        if (debug) {
+          console.warn(
+            `${prefix} ⚠️ Failed to get revision from /rev endpoint, falling back to project details: ${error.message}`
+          );
+        }
+
+        // Try fetching project details directly as a last resort
+        try {
+          const projectDetails = await fetchProjectDetails();
+
+          if (!projectDetails || typeof projectDetails !== "object") {
+            throw new Error("Invalid project details response format");
+          }
+
+          const latestId = projectDetails.activeRev;
+
+          if (!latestId) {
+            throw new Error(`No active revision found in project details`);
+          }
+
+          // Update the cache
+          revisionState = {
+            value: latestId,
+            timestamp: Date.now(),
+            isExpired: () =>
+              Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
+          };
+
+          if (debug) {
+            console.log(
+              `${prefix} ✅ Resolved 'latest' to revision: ${latestId} (from project details)`
+            );
+          }
+
+          return latestId;
+        } catch (detailsError) {
+          throw new Error(
+            `Could not determine latest revision ID. /rev endpoint error: ${error.message}, project details error: ${detailsError.message}`
+          );
+        }
       }
-
-      if (debug) {
-        console.log(`${prefix} ✅ Resolved 'latest' to revision: ${latestId}`);
-      }
-
-      return latestId;
     } catch (error) {
       const errorMessage = `Failed to resolve latest revision: ${error.message}`;
       if (debug) {

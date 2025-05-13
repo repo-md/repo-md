@@ -55,12 +55,35 @@ class RepoMD {
     cache.configure("similarity", { maxSize: 500 }, debug);
     cache.configure("media", { maxSize: 200 }, debug);
 
-    // Initialize URL generator
+    // Create resolver function for the URL generator
+    const resolveLatestRev = async () => {
+      try {
+        // Try to use the faster /rev endpoint directly
+        const resolvedRev = await this.api.fetchProjectActiveRev();
+
+        // Update our cached activeRev
+        this.activeRev = resolvedRev;
+
+        if (this.debug) {
+          console.log(`${prefix} ✅ Resolved latest revision: ${resolvedRev} via resolver function`);
+        }
+
+        return resolvedRev;
+      } catch (error) {
+        if (this.debug) {
+          console.warn(`${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`);
+        }
+        throw error;
+      }
+    };
+
+    // Initialize URL generator with the resolver function
     this.urls = createUrlGenerator({
       orgSlug,
       projectId,
       activeRev: this.activeRev,
       rev,
+      resolveLatestRev,
       debug,
     });
 
@@ -71,6 +94,34 @@ class RepoMD {
       projectSlug,
       debug,
     });
+
+    // If we're using "latest" revision, try to eagerly resolve it to avoid issues with lazy loading
+    if (rev === "latest" && !this.activeRev) {
+      // This is non-blocking - we don't await it but start the process early
+      this.api.fetchProjectActiveRev()
+        .then(resolvedRev => {
+          this.activeRev = resolvedRev;
+
+          // Update URL generator with the resolved activeRev
+          this.urls = createUrlGenerator({
+            orgSlug: this.orgSlug,
+            projectId: this.projectId,
+            activeRev: this.activeRev,
+            rev: this.rev,
+            resolveLatestRev,
+            debug: this.debug,
+          });
+
+          if (this.debug) {
+            console.log(`${prefix} 🚀 Eagerly resolved 'latest' to revision: ${this.activeRev}`);
+          }
+        })
+        .catch(error => {
+          if (this.debug) {
+            console.warn(`${prefix} ⚠️ Eager resolution failed, will resolve lazily: ${error.message}`);
+          }
+        });
+    }
 
     // Create bind functions for passing to other modules
     this.fetchJson = this.fetchJson.bind(this);
@@ -107,7 +158,9 @@ class RepoMD {
           );
         }
 
-        const latestId = await this.api.getActiveProjectRev();
+        // Use the API's ensureLatestRev helper which handles cached revisions
+        // and will use the faster /rev endpoint through fetchProjectActiveRev
+        const latestId = await this.api.ensureLatestRev(this.rev, this.activeRev);
 
         if (!latestId) {
           throw new Error(
@@ -119,12 +172,31 @@ class RepoMD {
 
         this.activeRev = latestId;
 
+        // Recreate the resolver function
+        const resolveLatestRev = async () => {
+          try {
+            // Try to use the faster /rev endpoint directly
+            const resolvedRev = await this.api.fetchProjectActiveRev();
+
+            // Update our cached activeRev
+            this.activeRev = resolvedRev;
+
+            return resolvedRev;
+          } catch (error) {
+            if (this.debug) {
+              console.warn(`${prefix} ⚠️ Failed to resolve latest rev during URL generation: ${error.message}`);
+            }
+            throw error;
+          }
+        };
+
         // Update URL generator with the resolved activeRev
         this.urls = createUrlGenerator({
           orgSlug: this.orgSlug,
           projectId: this.projectId,
           activeRev: this.activeRev,
           rev: this.rev,
+          resolveLatestRev,
           debug: this.debug,
         });
 
@@ -145,8 +217,8 @@ class RepoMD {
 
   // Fetch a JSON file from R2 storage
   async fetchR2Json(path, opts = {}) {
-    await this.ensureLatestRev();
-    const url = this.urls.getRevisionUrl(path);
+    // Get the URL, which will resolve revision if needed
+    const url = await this.urls.getRevisionUrl(path);
     return await this.fetchJson(url, opts);
   }
 
@@ -173,7 +245,6 @@ class RepoMD {
     // Initialize post retrieval service
     this.posts = createPostRetrieval({
       getRevisionUrl: this.urls.getRevisionUrl,
-      ensureLatestRev: this.ensureLatestRev,
       fetchR2Json: this.fetchR2Json,
       _fetchMapData: this._fetchMapData,
       debug: this.debug,
@@ -194,7 +265,6 @@ class RepoMD {
       fetchR2Json: this.fetchR2Json,
       getProjectUrl: this.urls.getProjectUrl,
       getRevisionUrl: this.urls.getRevisionUrl,
-      ensureLatestRev: this.ensureLatestRev,
       debug: this.debug,
     });
 
@@ -207,22 +277,21 @@ class RepoMD {
     // Initialize file handling service
     this.files = createFileHandler({
       fetchR2Json: this.fetchR2Json,
-      ensureLatestRev: this.ensureLatestRev,
       debug: this.debug,
     });
   }
 
   // URL generation methods (proxy to URL module)
-  getR2Url(path = "") {
-    return this.urls.getRevisionUrl(path);
+  async getR2Url(path = "") {
+    return await this.urls.getRevisionUrl(path);
   }
 
   getR2ProjectUrl(path = "") {
     return this.urls.getProjectUrl(path);
   }
 
-  getR2RevUrl(path = "") {
-    return this.urls.getRevisionUrl(path);
+  async getR2RevUrl(path = "") {
+    return await this.urls.getRevisionUrl(path);
   }
 
   createViteProxy(folder = "_repo") {
@@ -244,8 +313,7 @@ class RepoMD {
 
   // SQLite URL method
   async getSqliteURL() {
-    await this.ensureLatestRev();
-    return this.urls.getRevisionUrl("/content.sqlite");
+    return await this.urls.getSqliteUrl();
   }
 
   // Media methods (proxy to Media module)

@@ -11,12 +11,11 @@ const prefix = LOG_PREFIXES.REPO_MD;
  * Create a file handling service
  * @param {Object} config - Configuration object
  * @param {Function} config.fetchR2Json - Function to fetch JSON from R2
- * @param {Function} config.ensureLatestRev - Function to ensure latest revision is resolved
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - File handling functions
  */
 export function createFileHandler(config) {
-  const { fetchR2Json, ensureLatestRev, debug = false } = config;
+  const { fetchR2Json, debug = false } = config;
 
   // Configuration for file endpoints
   const fileEndpoints = {
@@ -40,12 +39,12 @@ export function createFileHandler(config) {
   // Generic file fetching function
   async function fetchFile(configKey, useCache = true) {
     const config = fileEndpoints[configKey];
-    await ensureLatestRev();
 
     if (debug) {
       console.log(`${prefix} 📡 ${config.message}`);
     }
 
+    // fetchR2Json will handle revision resolution
     return await fetchR2Json(config.path, {
       defaultValue: config.defaultValue,
       useCache,
