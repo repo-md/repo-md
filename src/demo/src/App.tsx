@@ -82,19 +82,15 @@ function App() {
   // Keep a reference to the current RepoMD instance
   const repoRef = useRef<RepoMD | null>(null)
 
-  // Extract all functions from the RepoMD instance
+  // Extract all functions from the RepoMD prototype without creating an instance
   useEffect(() => {
-    // Create a temporary instance to extract methods
-    const tempRepo = new RepoMD({
-      debug: false,
-    })
-
-    // Get all function/method names from the instance
-    const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(tempRepo))
+    // Get all function/method names from the RepoMD prototype directly
+    // This avoids creating a temporary instance
+    const methodNames = Object.getOwnPropertyNames(RepoMD.prototype)
       .filter(name => {
-        // Exclude internal methods and ones that likely require parameters
+        // Exclude internal methods and constructor
         return (
-          typeof tempRepo[name as keyof typeof tempRepo] === 'function' &&
+          typeof RepoMD.prototype[name as keyof typeof RepoMD.prototype] === 'function' &&
           !name.startsWith('_') &&
           name !== 'constructor'
         )
@@ -102,11 +98,7 @@ function App() {
 
     setFunctions(methodNames)
 
-    // Clean up if destroy method exists
-    if (typeof (tempRepo as any).destroy === 'function') {
-      (tempRepo as any).destroy();
-    }
-
+    // Clean up function for when the component unmounts
     return () => {
       if (repoRef.current && typeof (repoRef.current as any).destroy === 'function') {
         (repoRef.current as any).destroy();
@@ -115,8 +107,18 @@ function App() {
     }
   }, [])
 
+  // Use a ref to track if this is the first mount
+  const isFirstMount = useRef(true);
+  
   // Create or recreate the RepoMD instance when config changes
   useEffect(() => {
+    // Skip the first mount since React strict mode in development will run effects twice
+    // This prevents double initialization during initial render
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    
     // Use default values if fields are missing
     const currentProjectId = projectId || '680e97604a0559a192640d2c';
     const currentOrgSlug = orgSlug || 'iplanwebsites';
@@ -148,8 +150,10 @@ function App() {
     const startTime = performance.now()
 
     try {
-      // Ensure we have an instance
+      // Ensure we have an instance - this is the only place we create the instance
+      // if it doesn't exist, which lazy-loads it when actually needed
       if (!repoRef.current) {
+        console.log('Creating RepoMD instance on first operation');
         repoRef.current = new RepoMD({
           projectId: currentProjectId,
           orgSlug: currentOrgSlug,
