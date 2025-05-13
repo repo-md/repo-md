@@ -191,13 +191,19 @@ function App() {
         disabled={loading}
       />
 
-      <FunctionList
-        functions={functions}
-        handleExecute={handleExecuteFunction}
-        disabled={loading}
-      />
+      <div className="main-content">
+        <div className="column-left">
+          <FunctionList
+            functions={functions}
+            handleExecute={handleExecuteFunction}
+            disabled={loading}
+          />
+        </div>
 
-      <ResultPanel result={result} loading={loading} />
+        <div className="column-right">
+          <ResultPanel result={result} loading={loading} />
+        </div>
+      </div>
     </div>
   )
 }

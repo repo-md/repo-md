@@ -28,6 +28,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
   // State for function parameters
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, Record<string, string>>>({});
+  const [searchFilter, setSearchFilter] = useState<string>('');
 
   // Define function parameter requirements
   const functionParams: Record<string, FunctionParam[]> = {
@@ -142,10 +143,15 @@ const FunctionList: React.FC<FunctionListProps> = ({
     handleExecute(fnName, params);
   };
 
+  // Filter functions based on search
+  const filteredFunctions = searchFilter
+    ? functions.filter(fn => fn.toLowerCase().includes(searchFilter.toLowerCase()))
+    : functions;
+
   // Group functions by their prefix (post, media, etc.)
   const groupedFunctions: Record<string, string[]> = {};
 
-  functions.forEach(fn => {
+  filteredFunctions.forEach(fn => {
     if (fn.startsWith('_') || fn === 'constructor') return; // Skip internal methods
 
     // Determine group based on method name or pattern
@@ -183,6 +189,25 @@ const FunctionList: React.FC<FunctionListProps> = ({
   return (
     <div className="function-list">
       <h2>All Available Functions</h2>
+
+      <div className="function-filter">
+        <input
+          type="text"
+          placeholder="Search functions..."
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          className="function-search-input"
+        />
+        {searchFilter && (
+          <button
+            className="clear-search-button"
+            onClick={() => setSearchFilter('')}
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       <p className="function-description">
         Click on a function to select it. Functions with required parameters will show input fields.
       </p>
