@@ -476,6 +476,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .function-filter {
