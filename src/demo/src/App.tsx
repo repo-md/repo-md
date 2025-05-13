@@ -6,11 +6,59 @@ import FunctionList from './components/FunctionList'
 import { ApiResult } from './types'
 import { FileText, Github, ExternalLink } from 'lucide-react'
 
+// Import function parameters from FunctionList
+// Define parameter types for functions
+interface FunctionParam {
+  name: string;
+  required: boolean;
+  type: 'string' | 'number' | 'boolean';
+  defaultValue?: string | number | boolean;
+}
+
+// Define function parameters
+const functionParams: Record<string, FunctionParam[]> = {
+  getPostBySlug: [
+    { name: 'slug', required: true, type: 'string' }
+  ],
+  getPostByHash: [
+    { name: 'hash', required: true, type: 'string' }
+  ],
+  getPostByPath: [
+    { name: 'path', required: true, type: 'string' }
+  ],
+  getRecentPosts: [
+    { name: 'count', required: false, type: 'number', defaultValue: 3 }
+  ],
+  getSimilarPostsByHash: [
+    { name: 'hash', required: true, type: 'string' },
+    { name: 'count', required: false, type: 'number', defaultValue: 5 }
+  ],
+  getSimilarPostsBySlug: [
+    { name: 'slug', required: true, type: 'string' },
+    { name: 'count', required: false, type: 'number', defaultValue: 5 }
+  ],
+  getSimilarPostsHashByHash: [
+    { name: 'hash', required: true, type: 'string' },
+    { name: 'limit', required: false, type: 'number', defaultValue: 10 }
+  ],
+  getSimilarPostsSlugBySlug: [
+    { name: 'slug', required: true, type: 'string' },
+    { name: 'limit', required: false, type: 'number', defaultValue: 10 }
+  ],
+  getFileContent: [
+    { name: 'path', required: true, type: 'string' }
+  ],
+  getPostsSimilarityByHashes: [
+    { name: 'hash1', required: true, type: 'string' },
+    { name: 'hash2', required: true, type: 'string' }
+  ]
+};
+
 function App() {
   const [projectId, setProjectId] = useState('')
   const [orgSlug, setOrgSlug] = useState('iplanwebsites') // Default value
   const [apiSecret, setApiSecret] = useState('')
-  const [strategy, setStrategy] = useState('auto') // Default strategy
+  const [strategy, setStrategy] = useState<'auto' | 'server' | 'browser'>('auto') // Default strategy
   const [revision, setRevision] = useState('') // Empty by default, will default to "latest" in RepoMD
   const [result, setResult] = useState<ApiResult | null>(null)
   const [loading, setLoading] = useState(false)
@@ -39,13 +87,15 @@ function App() {
 
     setFunctions(methodNames)
 
-    // Clean up
-    tempRepo.destroy?.()
+    // Clean up if destroy method exists
+    if (typeof (tempRepo as any).destroy === 'function') {
+      (tempRepo as any).destroy();
+    }
 
     return () => {
-      if (repoRef.current?.destroy) {
-        repoRef.current.destroy()
-        repoRef.current = null
+      if (repoRef.current && typeof (repoRef.current as any).destroy === 'function') {
+        (repoRef.current as any).destroy();
+        repoRef.current = null;
       }
     }
   }, [])
@@ -55,10 +105,10 @@ function App() {
     // Don't create an instance if we don't have the required fields
     if (!projectId || !orgSlug) return
 
-    // Destroy the previous instance if it exists
-    if (repoRef.current?.destroy) {
-      repoRef.current.destroy()
-      repoRef.current = null
+    // Destroy the previous instance if it exists and has a destroy method
+    if (repoRef.current && typeof (repoRef.current as any).destroy === 'function') {
+      (repoRef.current as any).destroy();
+      repoRef.current = null;
     }
 
     // Create a new instance
@@ -79,6 +129,7 @@ function App() {
         success: false,
         error: 'Project ID is required',
         operation,
+        params
       })
       return
     }
@@ -88,6 +139,7 @@ function App() {
         success: false,
         error: 'Organization Slug is required',
         operation,
+        params
       })
       return
     }
@@ -132,10 +184,62 @@ function App() {
           }
           data = await repo.getPostBySlug(params.slug)
           break
+        case 'getPostByHash':
+          if (!params.hash) {
+            throw new Error('Hash is required for this operation')
+          }
+          data = await repo.getPostByHash(params.hash)
+          break
+        case 'getPostByPath':
+          if (!params.path) {
+            throw new Error('Path is required for this operation')
+          }
+          data = await repo.getPostByPath(params.path)
+          break
+        case 'getSimilarPostsBySlug':
+          if (!params.slug) {
+            throw new Error('Slug is required for this operation')
+          }
+          const countSlug = params.count ? parseInt(params.count) : 5
+          data = await repo.getSimilarPostsBySlug(params.slug, countSlug)
+          break
+        case 'getSimilarPostsByHash':
+          if (!params.hash) {
+            throw new Error('Hash is required for this operation')
+          }
+          const countHash = params.count ? parseInt(params.count) : 5
+          data = await repo.getSimilarPostsByHash(params.hash, countHash)
+          break
+        case 'getSimilarPostsHashByHash':
+          if (!params.hash) {
+            throw new Error('Hash is required for this operation')
+          }
+          const limitHash = params.limit ? parseInt(params.limit) : 10
+          data = await repo.getSimilarPostsHashByHash(params.hash, limitHash)
+          break
+        case 'getSimilarPostsSlugBySlug':
+          if (!params.slug) {
+            throw new Error('Slug is required for this operation')
+          }
+          const limitSlug = params.limit ? parseInt(params.limit) : 10
+          data = await repo.getSimilarPostsSlugBySlug(params.slug, limitSlug)
+          break
+        case 'getFileContent':
+          if (!params.path) {
+            throw new Error('Path is required for this operation')
+          }
+          data = await repo.getFileContent(params.path)
+          break
+        case 'getPostsSimilarityByHashes':
+          if (!params.hash1 || !params.hash2) {
+            throw new Error('Hash1 and Hash2 are required for this operation')
+          }
+          data = await repo.getPostsSimilarityByHashes(params.hash1, params.hash2)
+          break
         default:
           // Try to execute the function if it exists on the repo instance
           if (typeof repo[operation as keyof typeof repo] === 'function') {
-            // For simplicity, we'll call methods without parameters for now
+            // For operations without specific parameter handling, we'll try to call with no parameters
             data = await (repo[operation as keyof typeof repo] as Function)()
           } else {
             throw new Error(`Unknown operation: ${operation}`)
@@ -148,6 +252,7 @@ function App() {
         success: true,
         data,
         operation,
+        params,
         executionTime: endTime - startTime
       })
     } catch (error) {
@@ -157,6 +262,7 @@ function App() {
         success: false,
         error: error instanceof Error ? error.message : String(error),
         operation,
+        params,
         executionTime: endTime - startTime
       })
     } finally {
@@ -178,7 +284,7 @@ function App() {
   return (
     <div className="container">
       <div className="app-header">
-        <h1>Repo.md API Demo</h1>
+        <h3>Repo.md API Demo</h3>
         <div className="header-actions">
           <a
             href="https://repo.md/docs"
@@ -232,6 +338,7 @@ function App() {
             functions={functions}
             handleExecute={handleExecuteFunction}
             disabled={loading}
+            functionParams={functionParams}
           />
         </div>
 
@@ -241,6 +348,11 @@ function App() {
             loading={loading}
             toggleConfig={toggleConfig}
             showConfig={showConfig}
+            handleRun={result ?
+              (params) => handleRun(result.operation, params || result.params || {}) :
+              undefined
+            }
+            functionParams={functionParams}
           />
         </div>
       </div>

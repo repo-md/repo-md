@@ -1,17 +1,61 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { ApiResult } from '../types'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
-import { Settings, Code } from 'lucide-react'
+import { Settings, Code, Play } from 'lucide-react'
+
+// Define parameter types for functions
+interface FunctionParam {
+  name: string;
+  required: boolean;
+  type: 'string' | 'number' | 'boolean';
+  defaultValue?: string | number | boolean;
+}
 
 interface ResultPanelProps {
   result: ApiResult | null
   loading: boolean
   toggleConfig: () => void
   showConfig: boolean
+  handleRun?: (params?: Record<string, string>) => void
+  functionParams?: Record<string, FunctionParam[]>
 }
 
-const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading, toggleConfig, showConfig }) => {
+const ResultPanel: React.FC<ResultPanelProps> = ({
+  result,
+  loading,
+  toggleConfig,
+  showConfig,
+  handleRun,
+  functionParams = {}
+}) => {
+  // State for parameter values
+  const [paramValues, setParamValues] = useState<Record<string, string>>({});
+
+  // Reset param values when result changes
+  useEffect(() => {
+    if (result?.params) {
+      setParamValues(result.params);
+    } else {
+      setParamValues({});
+    }
+  }, [result?.operation]);
+
+  // Handle parameter change
+  const handleParamChange = (paramName: string, value: string) => {
+    setParamValues(prev => ({
+      ...prev,
+      [paramName]: value
+    }));
+  };
+
+  // Run function with current parameters
+  const runWithParams = useCallback(() => {
+    if (handleRun && result?.operation) {
+      handleRun(paramValues);
+    }
+  }, [handleRun, paramValues, result?.operation]);
+
   // Format execution time to be more readable
   const formatExecutionTime = (time?: number) => {
     if (!time) return '';
@@ -25,13 +69,16 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading, toggleConfig
     }
   };
 
-  // Function to extract parameter info
-  const getParamsInfo = () => {
-    if (!result || !result.success) return '';
-
-    // Simple extraction for now - this could be enhanced
-    return '';
+  // Get function parameters for the current operation
+  const getCurrentFunctionParams = () => {
+    if (!result?.operation) return [];
+    return functionParams[result.operation] || [];
   };
+
+  // Check if current function has parameters
+  const hasParams = result?.operation ?
+    (functionParams[result.operation] && functionParams[result.operation].length > 0) :
+    false;
 
   return (
     <div className="result-panel">
@@ -41,15 +88,26 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading, toggleConfig
             <div className="loading-indicator">Loading...</div>
           ) : (
             result && (
-              <>
-                <div className="method-name">{result.operation}</div>
-                <div className="method-params">{getParamsInfo()}</div>
-              </>
+              <div className="method-name">
+                {result.operation}
+              </div>
             )
           )}
         </div>
 
         <div className="result-nav-right">
+          {result && !hasParams && (
+            <button
+              className="nav-button run-button"
+              title="Run Again"
+              onClick={() => handleRun && handleRun({})}
+              disabled={loading}
+            >
+              <Play size={18} />
+              <span>Run</span>
+            </button>
+          )}
+
           <button
             className="nav-button code-sample-button"
             title="View Code Sample"
@@ -67,6 +125,36 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading, toggleConfig
           </button>
         </div>
       </div>
+
+      {!loading && result && hasParams && (
+        <div className="query-bar">
+          <div className="query-params">
+            {getCurrentFunctionParams().map(param => (
+              <div key={param.name} className="param-input">
+                <label>
+                  {param.name}
+                  {param.required && <span className="required-indicator">*</span>}
+                </label>
+                <input
+                  type={param.type === 'number' ? 'number' : 'text'}
+                  value={paramValues[param.name] || ''}
+                  onChange={(e) => handleParamChange(param.name, e.target.value)}
+                  placeholder={param.defaultValue !== undefined ? String(param.defaultValue) : ''}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            className="nav-button run-button"
+            title="Run with Parameters"
+            onClick={runWithParams}
+            disabled={loading}
+          >
+            <Play size={18} />
+            <span>Run</span>
+          </button>
+        </div>
+      )}
 
       {!loading && result && result.executionTime !== undefined && (
         <div className="execution-time-bar">

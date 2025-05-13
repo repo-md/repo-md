@@ -317,11 +317,16 @@ button:disabled {
 .method-name {
   font-weight: bold;
   font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .method-params {
   color: #666;
   font-size: 14px;
+  font-weight: normal;
+  font-family: monospace;
 }
 
 .nav-button {
@@ -337,6 +342,7 @@ button:disabled {
   cursor: pointer;
   transition: all 0.2s;
   color: #444;
+  gap: 6px;
 }
 
 .nav-button:hover {
@@ -354,6 +360,25 @@ button:disabled {
 .nav-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.run-button {
+  background-color: #4c86f9;
+  border-color: #4c86f9;
+  color: white;
+  width: auto;
+  padding: 0 12px;
+}
+
+.run-button:hover {
+  background-color: #3a6bc5;
+  border-color: #3a6bc5;
+  color: white;
+}
+
+.run-button span {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .button-icon {
@@ -492,10 +517,39 @@ button:disabled {
   font-weight: bold;
 }
 
-.function-params-indicator {
-  color: #888;
-  margin-left: 10px;
-  font-size: 12px;
+.function-label {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.param-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.param-tag {
+  display: inline-block;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-weight: normal;
+  transition: all 0.2s;
+}
+
+.selected .param-tag {
+  background-color: #e0eeff;
+  color: #4c86f9;
+  border-color: #c0d8ff;
+}
+
+.function-name:hover .param-tag {
+  background-color: #e8f4ff;
+  border-color: #d0e6ff;
 }
 
 .function-params-form {
@@ -529,6 +583,56 @@ button:disabled {
   border-radius: 3px;
   border: 1px solid #ddd;
   font-size: 14px;
+}
+
+/* Query Bar Styles */
+.query-bar {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 15px;
+  gap: 10px;
+}
+
+.query-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: 1;
+}
+
+.query-bar .param-input {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  background-color: white;
+  border-radius: 4px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+}
+
+.query-bar .param-input label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  white-space: nowrap;
+}
+
+.query-bar .param-input input {
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #eee;
+  padding: 4px 8px;
+  font-size: 14px;
+  background-color: transparent;
+  min-width: 120px;
+}
+
+.query-bar .param-input input:focus {
+  outline: none;
+  border-bottom: 1px solid #4c86f9;
 }
 
 .run-function-button {

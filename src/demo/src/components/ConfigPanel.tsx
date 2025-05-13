@@ -8,8 +8,8 @@ interface ConfigPanelProps {
   setOrgSlug: (value: string) => void
   apiSecret: string
   setApiSecret: (value: string) => void
-  strategy: string
-  setStrategy: (value: string) => void
+  strategy: 'auto' | 'server' | 'browser'
+  setStrategy: (value: 'auto' | 'server' | 'browser') => void
   revision: string
   setRevision: (value: string) => void
 }
@@ -46,7 +46,9 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
 
     if (storedProjectId) setProjectId(storedProjectId);
     if (storedOrgSlug) setOrgSlug(storedOrgSlug);
-    if (storedStrategy) setStrategy(storedStrategy);
+    if (storedStrategy && (storedStrategy === 'auto' || storedStrategy === 'server' || storedStrategy === 'browser')) {
+      setStrategy(storedStrategy);
+    }
     const storedRevision = localStorage.getItem(STORAGE_KEY_REVISION);
     if (storedRevision) setRevision(storedRevision);
   }, [setProjectId, setOrgSlug, setStrategy, setRevision]);
@@ -65,8 +67,10 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
 
   // Handler for strategy changes
   const handleStrategyChange = (value: string) => {
-    setStrategy(value);
-    localStorage.setItem(STORAGE_KEY_STRATEGY, value);
+    // Type cast the value as it's coming from a select element
+    const typedValue = value as 'auto' | 'server' | 'browser';
+    setStrategy(typedValue);
+    localStorage.setItem(STORAGE_KEY_STRATEGY, typedValue);
   };
 
   // Handler for revision changes
