@@ -11,6 +11,7 @@ function App() {
   const [orgSlug, setOrgSlug] = useState('iplanwebsites') // Default value
   const [apiSecret, setApiSecret] = useState('')
   const [strategy, setStrategy] = useState('auto') // Default strategy
+  const [revision, setRevision] = useState('') // Empty by default, will default to "latest" in RepoMD
   const [result, setResult] = useState<ApiResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [functions, setFunctions] = useState<string[]>([])
@@ -66,10 +67,11 @@ function App() {
       orgSlug,
       strategy,
       secret: apiSecret || undefined,
+      rev: revision || 'latest', // Use 'latest' as default if empty
       debug: true
     })
 
-  }, [projectId, orgSlug, apiSecret, strategy])
+  }, [projectId, orgSlug, apiSecret, strategy, revision])
 
   const handleRun = useCallback(async (operation: string, params: Record<string, string> = {}) => {
     if (!projectId) {
@@ -101,6 +103,7 @@ function App() {
           orgSlug,
           strategy,
           secret: apiSecret || undefined,
+          rev: revision || 'latest', // Use 'latest' as default if empty
           debug: true
         })
       }
@@ -159,7 +162,7 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }, [projectId, orgSlug, apiSecret, strategy])
+  }, [projectId, orgSlug, apiSecret, strategy, revision])
 
   // Execute any function by name
   const handleExecuteFunction = useCallback((fnName: string) => {
@@ -179,6 +182,8 @@ function App() {
         setApiSecret={setApiSecret}
         strategy={strategy}
         setStrategy={setStrategy}
+        revision={revision}
+        setRevision={setRevision}
       />
 
       <Operations

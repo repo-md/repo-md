@@ -9,12 +9,15 @@ interface ConfigPanelProps {
   setApiSecret: (value: string) => void
   strategy: string
   setStrategy: (value: string) => void
+  revision: string
+  setRevision: (value: string) => void
 }
 
 // Storage keys
 const STORAGE_KEY_PROJECT_ID = 'repomd_demo_projectId';
 const STORAGE_KEY_ORG_SLUG = 'repomd_demo_orgSlug';
 const STORAGE_KEY_STRATEGY = 'repomd_demo_strategy';
+const STORAGE_KEY_REVISION = 'repomd_demo_revision';
 
 // Sample project data
 const SAMPLE_PROJECT = {
@@ -30,7 +33,9 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   apiSecret,
   setApiSecret,
   strategy,
-  setStrategy
+  setStrategy,
+  revision,
+  setRevision
 }) => {
   // Load values from localStorage on component mount
   useEffect(() => {
@@ -41,7 +46,9 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
     if (storedProjectId) setProjectId(storedProjectId);
     if (storedOrgSlug) setOrgSlug(storedOrgSlug);
     if (storedStrategy) setStrategy(storedStrategy);
-  }, [setProjectId, setOrgSlug, setStrategy]);
+    const storedRevision = localStorage.getItem(STORAGE_KEY_REVISION);
+    if (storedRevision) setRevision(storedRevision);
+  }, [setProjectId, setOrgSlug, setStrategy, setRevision]);
 
   // Handler for project ID changes
   const handleProjectIdChange = (value: string) => {
@@ -59,6 +66,12 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   const handleStrategyChange = (value: string) => {
     setStrategy(value);
     localStorage.setItem(STORAGE_KEY_STRATEGY, value);
+  };
+
+  // Handler for revision changes
+  const handleRevisionChange = (value: string) => {
+    setRevision(value);
+    localStorage.setItem(STORAGE_KEY_REVISION, value);
   };
 
   // Handler for using sample project
@@ -111,7 +124,19 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
       </div>
 
       <div className="form-group">
-        <label htmlFor="apiSecret">Secret Key (optional)</label>
+        <label htmlFor="revision">Revision <span className="optional-label">(optional)</span></label>
+        <input
+          id="revision"
+          type="text"
+          value={revision}
+          onChange={(e) => handleRevisionChange(e.target.value)}
+          placeholder="latest"
+        />
+        <small>Leave empty to use latest revision</small>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="apiSecret">Secret Key <span className="optional-label">(optional)</span></label>
         <input
           id="apiSecret"
           type="password"

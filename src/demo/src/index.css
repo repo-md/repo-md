@@ -48,6 +48,13 @@ body {
   font-size: 12px;
 }
 
+.optional-label {
+  color: #999;
+  font-size: 0.9em;
+  font-weight: normal;
+  font-style: italic;
+}
+
 .info-box {
   background-color: #e9f5ff;
   padding: 15px;
