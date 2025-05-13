@@ -258,10 +258,12 @@ function App() {
   return (
     <div className="container">
       <div className="app-header">
-      <h3>
-      <a href="https://repo.md" target="_blank" className=""><img src="https://repo.md/brand/repo/logo_purple.svg" alt="Repo.md" style={{maxHeight: '20px'}} /></a> 
-
-        API playground</h3>
+      <h3 className="title-container">
+        <a href="https://repo.md" target="_blank" className="logo-link">
+          <img src="https://repo.md/brand/repo/logo_purple.svg" alt="Repo.md" style={{maxHeight: '24px'}} />
+        </a>
+        <span className="title-text">API playground</span>
+      </h3>
         <div className="header-actions">
           <a
             href="https://repo.md/docs"

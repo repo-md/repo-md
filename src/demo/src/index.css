@@ -40,6 +40,23 @@ body {
   height: 60px;
 }
 
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.title-text {
+  font-weight: 500;
+  color: #333;
+}
+
 .header-actions {
   display: flex;
   gap: 10px;
