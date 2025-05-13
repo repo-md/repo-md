@@ -1,6 +1,6 @@
 {
   "name": "repo-md-js-sdk-source",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "type": "module",
   "main_dist": "./dist/repomd.js",
   "module_dist": "./dist/repomd.js",
@@ -62,8 +62,7 @@
     "compute-cosine-similarity": "^1.1.0",
     "minisearch": "^6.3.0",
     "notion-to-md": "^3.1.8",
-    "quick-lru": "^6.1.1",
-    "react-syntax-highlighter": "^15.6.1"
+    "quick-lru": "^6.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -79,6 +78,7 @@
     "terser": "^5.39.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.32.1",
-    "vite": "^5.4.2"
+    "vite": "^5.4.2",
+    "react-syntax-highlighter": "^15.6.1"
   }
 }
