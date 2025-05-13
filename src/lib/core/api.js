@@ -1,0 +1,259 @@
+/**
+ * API request module for RepoMD
+ * Handles communication with the repo.md backend API
+ */
+
+import { LOG_PREFIXES } from "../logger.js";
+import { fetchJson } from "../utils.js";
+
+const prefix = LOG_PREFIXES.REPO_MD;
+const API_DOMAIN = "api.repo.md";
+const API_BASE = `https://${API_DOMAIN}/v1`;
+const REV_EXPIRY_MS = 60 * 60 * 1000; // 1 hour in milliseconds
+
+/**
+ * Create an API client for the repo.md API
+ * @param {Object} config - Configuration object
+ * @param {string} config.orgSlug - Organization slug
+ * @param {string} config.projectId - Project ID
+ * @param {string} config.projectSlug - Project slug
+ * @param {boolean} config.debug - Whether to log debug info
+ * @returns {Object} - API client functions
+ */
+export function createApiClient(config) {
+  const { orgSlug, projectId, projectSlug, debug = false } = config;
+
+  // Simple in-memory storage for active revision with expiry tracking
+  let revisionState = {
+    value: null,
+    timestamp: 0,
+    isExpired: () => Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
+  };
+
+  // Store the in-flight promise for getActiveProjectRev to prevent duplicate calls
+  let currentRevisionPromise = null;
+
+  /**
+   * Fetch data from the public API
+   * @param {string} path - API path
+   * @param {Object} options - Fetch options
+   * @returns {Promise<any>} - Parsed response data
+   */
+  async function fetchPublicApi(path = "/") {
+    const url = `${API_BASE}${path}`;
+
+    try {
+      const result = await fetchJson(
+        url,
+        {
+          errorMessage: "Error fetching public API route: " + path,
+          useCache: true,
+          returnErrorObject: true,
+        },
+        debug
+      );
+
+      // Check if we got an error object back
+      if (result && result.success === false) {
+        throw new Error(result.error || `Failed to fetch data from ${url}`);
+      }
+
+      // If the result is null or undefined, it likely means there was an error
+      if (result === null || result === undefined) {
+        throw new Error(
+          `Failed to fetch data from ${url} - please verify your project credentials`
+        );
+      }
+
+      return result.data;
+    } catch (error) {
+      const errorMsg = `API Request Failed: ${error.message}`;
+
+      if (debug) {
+        console.error(`${prefix} ❌ ${errorMsg}`);
+        console.error(`${prefix} 🔍 Failed URL: ${url}`);
+      }
+
+      // Provide a user-friendly message that includes project information
+      const projectInfo = projectId
+        ? `project ID: ${projectId}`
+        : projectSlug
+        ? `project slug: ${projectSlug}`
+        : "unknown project";
+
+      throw new Error(`Failed to access ${projectInfo}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Fetch project details
+   * @returns {Promise<Object>} - Project details
+   */
+  async function fetchProjectDetails() {
+    let path;
+
+    // Check if we have a valid projectId and use it preferentially
+    if (projectId && projectId !== "undefined-project-id") {
+      path = `/project-id/${projectId}`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project ID path: ${path}`);
+      }
+    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
+      path = `/orgs/${orgSlug}/projects/slug/${projectSlug}`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project slug path: ${path}`);
+      }
+    } else {
+      // If neither valid projectId nor projectSlug is available, throw an error
+      throw new Error(
+        "No valid projectId or projectSlug provided for fetching project details"
+      );
+    }
+
+    // EX: https://api.repo.md/v1/orgs/iplanwebsites/projects/680e97604a0559a192640d2c
+    // or: https://api.repo.md/v1/orgs/iplanwebsites/projects/slug/port1g
+    const project = await fetchPublicApi(path);
+    return project;
+  }
+
+  /**
+   * Get the active project revision ID
+   * @param {boolean} forceRefresh - Whether to force a refresh from the server
+   * @returns {Promise<string>} - Active revision ID
+   */
+  async function getActiveProjectRev(forceRefresh = false) {
+    // Return the ongoing promise if there's already a request in progress
+    if (currentRevisionPromise && !forceRefresh) {
+      return currentRevisionPromise;
+    }
+
+    // Check in-memory state if not forcing refresh
+    if (!forceRefresh && revisionState.value) {
+      return revisionState.value;
+    }
+
+    try {
+      // Create a new promise for this request
+      currentRevisionPromise = (async () => {
+        const projectDetails = await fetchProjectDetails();
+
+        if (!projectDetails || typeof projectDetails !== "object") {
+          throw new Error("Invalid project details response format");
+        }
+
+        const { activeRev } = projectDetails;
+
+        if (!activeRev) {
+          throw new Error(
+            `No active revision found for project ${projectId || projectSlug}`
+          );
+        }
+
+        // Update the local state
+        revisionState = {
+          value: activeRev,
+          timestamp: Date.now(),
+          isExpired: () => Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
+        };
+
+        return activeRev;
+      })();
+
+      // Wait for the result
+      const result = await currentRevisionPromise;
+      return result;
+    } catch (error) {
+      if (debug) {
+        console.error(
+          `${prefix} ❌ Error getting active project revision: ${error.message}`
+        );
+      }
+      throw new Error(
+        `Failed to get active project revision: ${error.message}`
+      );
+    } finally {
+      // Clear the current promise to allow new requests
+      currentRevisionPromise = null;
+    }
+  }
+
+  /// Ensure latest revision is resolved using stale-while-revalidate pattern
+  async function ensureLatestRev(rev, activeRev) {
+    try {
+      // If we have a specific revision, just return it
+      if (rev !== "latest") {
+        return rev;
+      }
+
+      // If activeRev is provided, use it directly
+      if (activeRev) {
+        return activeRev;
+      }
+
+      // Use stored revision if available
+      if (revisionState.value) {
+        // If the stored value is expired, trigger a background refresh
+        if (revisionState.isExpired()) {
+          if (debug) {
+            console.log(
+              `${prefix} 🔄 Stored revision expired, revalidating in background`
+            );
+          }
+
+          // Schedule background refresh, don't await it
+          getActiveProjectRev(true).catch((err) => {
+            if (debug) {
+              console.error(
+                `${prefix} ⚠️ Background revalidation error: ${err.message}`
+              );
+            }
+          });
+
+          // Still return the stale value for this request
+          return revisionState.value;
+        }
+
+        // Return the stored value if it's not expired
+        return revisionState.value;
+      }
+
+      // If no stored value, we need to fetch it now
+      if (debug) {
+        console.log(
+          `${prefix} 🔄 Resolving latest revision for project ${
+            projectId || projectSlug
+          }`
+        );
+      }
+
+      const latestId = await getActiveProjectRev();
+
+      if (!latestId) {
+        throw new Error(
+          `Could not determine latest revision ID for project ${
+            projectId || projectSlug
+          }`
+        );
+      }
+
+      if (debug) {
+        console.log(`${prefix} ✅ Resolved 'latest' to revision: ${latestId}`);
+      }
+
+      return latestId;
+    } catch (error) {
+      const errorMessage = `Failed to resolve latest revision: ${error.message}`;
+      if (debug) {
+        console.error(`${prefix} ❌ ${errorMessage}`);
+      }
+      throw new Error(errorMessage);
+    }
+  }
+
+  return {
+    fetchPublicApi,
+    fetchProjectDetails,
+    getActiveProjectRev,
+    ensureLatestRev,
+  };
+}
