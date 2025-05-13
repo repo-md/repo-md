@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {RepoMD} from '../../lib/index.js'
 import ConfigPanel from './components/ConfigPanel'
-import Operations from './components/Operations'
 import ResultPanel from './components/ResultPanel'
 import FunctionList from './components/FunctionList'
 import { ApiResult } from './types'
@@ -184,11 +183,6 @@ function App() {
         setStrategy={setStrategy}
         revision={revision}
         setRevision={setRevision}
-      />
-
-      <Operations
-        handleRun={handleRun}
-        disabled={loading}
       />
 
       <div className="main-content">
