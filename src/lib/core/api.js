@@ -32,6 +32,34 @@ export function createApiClient(config) {
 
   // Store the in-flight promise for getActiveProjectRev to prevent duplicate calls
   let currentRevisionPromise = null;
+  
+  /**
+   * Generate the base project path used for API calls
+   * @param {string} [suffix=''] - Optional suffix to append to the path
+   * @returns {string} - The project path for API calls
+   * @throws {Error} - If no valid projectId or projectSlug is provided
+   */
+  function getProjectBasePath(suffix = '') {
+    // Check if we have a valid projectId and use it preferentially
+    if (projectId && projectId !== "undefined-project-id") {
+      const path = `/project-id/${projectId}${suffix}`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project ID path: ${path}`);
+      }
+      return path;
+    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
+      const path = `/orgs/${orgSlug}/projects/slug/${projectSlug}${suffix}`;
+      if (debug) {
+        console.log(`${prefix} 🔍 Using project slug path: ${path}`);
+      }
+      return path;
+    } else {
+      // If neither valid projectId nor projectSlug is available, throw an error
+      throw new Error(
+        "No valid projectId or projectSlug provided for API request"
+      );
+    }
+  }
 
   /**
    * Fetch data from the public API
@@ -90,26 +118,9 @@ export function createApiClient(config) {
    * @returns {Promise<Object>} - Project details
    */
   async function fetchProjectDetails() {
-    let path;
-
-    // Check if we have a valid projectId and use it preferentially
-    if (projectId && projectId !== "undefined-project-id") {
-      path = `/project-id/${projectId}`;
-      if (debug) {
-        console.log(`${prefix} 🔍 Using project ID path: ${path}`);
-      }
-    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
-      path = `/orgs/${orgSlug}/projects/slug/${projectSlug}`;
-      if (debug) {
-        console.log(`${prefix} 🔍 Using project slug path: ${path}`);
-      }
-    } else {
-      // If neither valid projectId nor projectSlug is available, throw an error
-      throw new Error(
-        "No valid projectId or projectSlug provided for fetching project details"
-      );
-    }
-
+    // Get the base path for this project
+    const path = getProjectBasePath();
+    
     // EX: https://api.repo.md/v1/orgs/iplanwebsites/projects/680e97604a0559a192640d2c
     // or: https://api.repo.md/v1/orgs/iplanwebsites/projects/slug/port1g
     const project = await fetchPublicApi(path);
@@ -121,32 +132,15 @@ export function createApiClient(config) {
    * @returns {Promise<string>} - Active revision ID
    */
   async function fetchProjectActiveRev() {
-    let path;
-
-    // Check if we have a valid projectId and use it preferentially
-    if (projectId && projectId !== "undefined-project-id") {
-      path = `/project-id/${projectId}/rev`;
-      if (debug) {
-        console.log(`${prefix} 🔍 Using project ID path for rev: ${path}`);
-      }
-    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
-      path = `/orgs/${orgSlug}/projects/slug/${projectSlug}/rev`;
-      if (debug) {
-        console.log(`${prefix} 🔍 Using project slug path for rev: ${path}`);
-      }
-    } else {
-      // If neither valid projectId nor projectSlug is available, throw an error
-      throw new Error(
-        "No valid projectId or projectSlug provided for fetching project revision"
-      );
-    }
-
+    // Get the base path with /rev suffix
+    const path = getProjectBasePath('/rev');
+    
     const response = await fetchPublicApi(path);
-
+    
     if (!response || !response.rev) {
       throw new Error(`No active revision found for project ${projectId || projectSlug}`);
     }
-
+    
     return response.rev;
   }
 
@@ -170,7 +164,7 @@ export function createApiClient(config) {
       // Create a new promise for this request
       currentRevisionPromise = (async () => {
         let activeRev;
-
+        
         try {
           // Try the faster /rev endpoint first
           activeRev = await fetchProjectActiveRev();
@@ -178,7 +172,7 @@ export function createApiClient(config) {
           if (debug) {
             console.warn(`${prefix} ⚠️ Failed to get revision from /rev endpoint, falling back to project details: ${error.message}`);
           }
-
+          
           // Fall back to the original method if /rev fails
           const projectDetails = await fetchProjectDetails();
 
