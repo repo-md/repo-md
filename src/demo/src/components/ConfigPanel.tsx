@@ -82,9 +82,23 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
 
   return (
     <div className="config-panel">
-      <h2>Configuration</h2>
+    
 
       <div className="config-form">
+      
+
+        <div className="form-group">
+          <label htmlFor="orgSlug">Org Slug (required)</label>
+          <input
+            id="orgSlug"
+            type="text"
+            value={orgSlug}
+            onChange={(e) => handleOrgSlugChange(e.target.value)}
+            placeholder="Enter org slug"
+          />
+          <small>Example: my-company</small>
+        </div>
+
         <div className="form-group">
           <label htmlFor="projectId">Project ID (required)</label>
           <input
@@ -97,17 +111,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
           <small>Example: 680e97604a0559a192640d2c</small>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="orgSlug">Org Slug (required)</label>
-          <input
-            id="orgSlug"
-            type="text"
-            value={orgSlug}
-            onChange={(e) => handleOrgSlugChange(e.target.value)}
-            placeholder="Enter org slug"
-          />
-          <small>Example: iplanwebsites</small>
-        </div>
 
         <div className="form-group">
           <label htmlFor="strategy">Strategy</label>

@@ -1,5 +1,7 @@
 import React from 'react'
 import { ApiResult } from '../types'
+import JSONPretty from 'react-json-pretty'
+import 'react-json-pretty/themes/monikai.css'
 
 interface ResultPanelProps {
   result: ApiResult | null
@@ -37,9 +39,20 @@ const ResultPanel: React.FC<ResultPanelProps> = ({ result, loading }) => {
       {!loading && result && (
         <div className={`result-content ${!result.success ? 'error' : ''}`}>
           {result.success ? (
-            <pre>
-              {JSON.stringify(result.data, null, 2)}
-            </pre>
+            <div className="json-viewer-container">
+              <JSONPretty
+                id="json-pretty"
+                data={result.data}
+                theme={{
+                  main: 'line-height:1.3;color:#66d9ef;background:#272822;overflow:auto;',
+                  error: 'line-height:1.3;color:#66d9ef;background:#272822;overflow:auto;',
+                  key: 'color:#f92672;',
+                  string: 'color:#fd971f;',
+                  value: 'color:#a6e22e;',
+                  boolean: 'color:#ac81fe;',
+                }}
+              />
+            </div>
           ) : (
             <div className="error">
               Error ({result.operation}): {result.error}

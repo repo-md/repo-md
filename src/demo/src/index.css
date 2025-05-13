@@ -31,16 +31,24 @@ body {
   flex-direction: row;
   gap: 20px;
   width: 100%;
+  height: calc(100vh - 200px);
+  overflow: hidden;
 }
 
 .column-left {
   flex: 0 0 20%;
   min-width: 300px;
   max-width: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
 }
 
 .column-right {
   flex: 1;
+  position: sticky;
+  top: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .config-panel {
@@ -170,11 +178,15 @@ button:disabled {
 }
 
 .result-panel {
-  margin-top: 20px;
+  position: relative;
   padding: 15px;
   background-color: #f8f8f8;
   border-radius: 4px;
-  min-height: 100px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .result-header {
@@ -200,12 +212,17 @@ button:disabled {
 .result-content {
   white-space: pre-wrap;
   font-family: monospace;
-  background-color: #f0f0f0;
+  background-color: #272822;
   padding: 10px;
   border-radius: 4px;
   overflow-x: auto;
-  max-height: 500px;
+  flex: 1;
   overflow-y: auto;
+}
+
+.json-viewer-container {
+  height: 100%;
+  overflow: auto;
 }
 
 .error {
@@ -214,13 +231,14 @@ button:disabled {
 
 /* Function List Styling */
 .function-list {
-  margin: 20px 0;
+  margin: 0;
   border: 1px solid #eaeaea;
   border-radius: 4px;
   padding: 15px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .function-filter {
