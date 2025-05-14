@@ -7,9 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Build library: `npm run build`
 - Build CLI: `npm run build:cli`
 - Build demo: `npm run build:demo`
-- Development: `npm run dev`
-- Demo development: `npm run dev:demo`
 - Typecheck: `npm run typecheck`
+
+DONT RUN DEMOS, the user will test it. you can test builds .
 
 ## Code Style Guidelines
 

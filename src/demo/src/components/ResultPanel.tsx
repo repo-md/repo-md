@@ -10,8 +10,9 @@ import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 interface FunctionParam {
   name: string;
   required: boolean;
-  type: 'string' | 'number' | 'boolean';
-  defaultValue?: string | number | boolean;
+  type: string;
+  default?: any;
+  description?: string;
 }
 
 interface ResultPanelProps {
@@ -128,14 +129,14 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
     } else if (currentFunctionParams.length === 1) {
       // Single parameter
       const param = currentFunctionParams[0];
-      const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
+      const paramValue = params[param.name] || (param.default !== undefined ? String(param.default) : "''");
       const formattedValue = param.type === 'string' ? `'${paramValue}'` : paramValue;
       functionCall = `const data = await repo.${operation}(${formattedValue});`;
     } else {
       // Multiple parameters
       let paramList = currentFunctionParams
         .map(param => {
-          const paramValue = params[param.name] || (param.defaultValue !== undefined ? String(param.defaultValue) : "''");
+          const paramValue = params[param.name] || (param.default !== undefined ? String(param.default) : "''");
           const formattedValue = param.type === 'string' ? `'${paramValue}'` : paramValue;
           return formattedValue;
         })
@@ -225,7 +226,7 @@ fetchData();`;
                   type={param.type === 'number' ? 'number' : 'text'}
                   value={paramValues[param.name] || ''}
                   onChange={(e) => handleParamChange(param.name, e.target.value)}
-                  placeholder={param.defaultValue !== undefined ? String(param.defaultValue) : ''}
+                  placeholder={param.default !== undefined ? String(param.default) : ''}
                 />
               </div>
             ))}

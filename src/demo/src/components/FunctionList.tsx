@@ -17,8 +17,9 @@ const groupColors: Record<string, string> = {
 interface FunctionParam {
   name: string;
   required: boolean;
-  type: 'string' | 'number' | 'boolean';
-  defaultValue?: string | number | boolean;
+  type: string;
+  default?: any;
+  description?: string;
 }
 
 interface FunctionListProps {
@@ -125,12 +126,16 @@ const FunctionList: React.FC<FunctionListProps> = ({
                 const requiredParams = hasParams ?
                   functionParams[fnName].filter(p => p.required).map(p => p.name) :
                   [];
+                const paramTooltip = hasParams ? 
+                  functionParams[fnName].map(p => `${p.name}${p.required ? '*' : ''}: ${p.type}${p.default !== undefined ? ` = ${p.default}` : ''}`).join('\n') : 
+                  '';
 
                 return (
                   <div key={fnName} className="function-item">
                     <div
                       className={`function-name ${isSelected ? 'selected' : ''}`}
                       onClick={() => handleFunctionSelect(fnName)}
+                      title={paramTooltip}
                     >
                       <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }}></span>
                       <span className="function-label">{fnName}</span>

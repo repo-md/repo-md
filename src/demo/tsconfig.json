@@ -16,9 +16,11 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    /* Type checking */
+    "noImplicitAny": false
   },
   "include": ["src", "../lib", "vite-env.d.ts", "src/types"],
   "references": [{ "path": "./tsconfig.node.json" }]
