@@ -26,11 +26,14 @@ export function createUrlGenerator(config) {
   const {
     orgSlug,
     projectId,
-    activeRev,
+    activeRev: initialActiveRev, // Rename to make it clear this is initial value
     rev,
     resolveLatestRev,
     debug = false,
   } = config;
+
+  // Create a mutable state variable for the active revision
+  let activeRevState = initialActiveRev;
 
   /**
    * Get URL for a project resource
@@ -63,8 +66,8 @@ export function createUrlGenerator(config) {
     }
 
     // If we already have the active revision, use it
-    if (activeRev) {
-      const url = getProjectUrl("/" + activeRev + path);
+    if (activeRevState) {
+      const url = getProjectUrl("/" + activeRevState + path);
       if (debug) {
         console.log(
           `${prefix} 🔗 Generated revision URL with cached activeRev: ${url}`
@@ -89,8 +92,8 @@ export function createUrlGenerator(config) {
         );
       }
 
-      // Update module state with the resolved revision for future calls
-      activeRev = resolvedRev;
+      // Update our state variable instead of trying to modify the constant parameter
+      activeRevState = resolvedRev;
     } catch (error) {
       if (debug) {
         console.error(
@@ -166,5 +169,7 @@ export function createUrlGenerator(config) {
     getSqliteUrl,
     getSharedFolderUrl,
     createViteProxy,
+    // Expose method to get the current active revision
+    getActiveRevState: () => activeRevState,
   };
 }
