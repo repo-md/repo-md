@@ -9,7 +9,7 @@ import { createViteProxy as frameworkCreateViteProxy } from "../frameworkSnipets
 const prefix = LOG_PREFIXES.REPO_MD;
 
 // Constants
-const R2_DOMAIN = "https://static.repo.md"; //'https://r2.repo.md';
+const R2_DOMAIN = "https://static.repo.md"; // 
 
 /**
  * Create a URL generator for a specific project
@@ -117,7 +117,7 @@ export function createUrlGenerator(config) {
    * @returns {string} - Full URL
    */
   function getMediaUrl(path) {
-    // https://r2.repo.md/iplanwebsites/680e97604a0559a192640d2c/_shared/medias/9ad367214fab7207e61dbea46f32e9943d55b7e8cefb55e02f57e06f0db6dd0f-sm.jpeg
+    // https://static.repo.md/iplanwebsites/680e97604a0559a192640d2c/_shared/medias/9ad367214fab7207e61dbea46f32e9943d55b7e8cefb55e02f57e06f0db6dd0f-sm.jpeg
     const url = getProjectUrl(`/_shared/medias/${path}`);
 
     if (debug) {
@@ -125,7 +125,7 @@ export function createUrlGenerator(config) {
     }
     return url;
   }
-
+ 
   /**
    * Get URL for the SQLite database
    * @returns {Promise<string>} - Full URL

@@ -1,6 +1,6 @@
 {
   "name": "repo-md-js-sdk-source",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "type": "module",
   "main_dist": "./dist/repomd.js",
   "module_dist": "./dist/repomd.js",
@@ -12,6 +12,7 @@
   ],
   "private": true,
   "scripts": {
+    "publish-npm": "npm run build-npm:force && cd dist && npm publish && cd .. && npm run version-bump-patch",
     "build": "npm run clean && npm run build:lib && npm run build:cli && node npm/copy-to-dist.js",
     "build:lib": "vite build",
     "build:cli": "vite build --config cli.vite.config.ts",
@@ -29,7 +30,6 @@
     "prepublish-checks": "npm run lint && npm run typecheck",
     "build-npm": "bash npm/build-npm.sh",
     "build-npm:force": "bash npm/build-npm.sh --skip-checks",
-    "publish-npm": "npm run build-npm:force && cd dist && npm publish && cd .. && npm run version-bump-patch",
     "preview-npm": "npm run build && npm pack --dry-run",
     "inspect-package": "cd dist && npm pack --dry-run",
     "npm-whoami": "npm whoami || echo 'Not logged in to npm'",
