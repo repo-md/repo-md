@@ -9,9 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Build demo: `npm run build:demo`
 - Development: `npm run dev`
 - Demo development: `npm run dev:demo`
-- Lint: `npm run lint`
 - Typecheck: `npm run typecheck`
-- Test: `npm run test` (runs lint and typecheck)
 
 ## Code Style Guidelines
 
@@ -19,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Imports**: Group and order by: built-in modules, external modules, internal modules
 - **Formatting**: 2-space indentation, semi-colons required, single quotes preferred
 - **React Components**: Use functional components with TypeScript interfaces for props
-- **Error Handling**: Use try/catch blocks with specific error messages
+- **Error Handling**: Use try/catch blocks with specific error messages, but only when necessary, if error is handled in a function above, or has no risk of crashing, dont trycatch uselessly.
 - **Naming**: camelCase for variables/functions, PascalCase for types/interfaces/components
-- **Comments**: Use JSDoc for exported functions, minimal inline comments
+- **Comments**: DO NOT use JSDoc for exported functions, simple one-line comment for readability, minimal inline comments
 - **Exports**: Prefer named exports, use default exports for React components
