@@ -18,6 +18,10 @@ A lightweight JavaScript client library for fetching and working with content st
 
 > **Note:** This is an early preview release of our JavaScript SDK. API routes and method names might change as we extend functionalities. We look forward to seeing developers play with it!
 
+## Playground
+
+Test the API in the repo.md API playground: https://playground.repo.md/
+
 ## Installation
 
 ### NPM
