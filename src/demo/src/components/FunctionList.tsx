@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Import the parameter types from App.tsx
 
@@ -48,6 +48,15 @@ const FunctionList: React.FC<FunctionListProps> = ({
     // Set selected function for display purposes
     setSelectedFunction(fnName);
   };
+
+  // Check URL for initial method selection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const method = urlParams.get('method');
+    if (method && functions.includes(method)) {
+      handleFunctionSelect(method);
+    }
+  }, [functions]);
 
   // Filter functions based on search
   const filteredFunctions = searchFilter
@@ -126,14 +135,21 @@ const FunctionList: React.FC<FunctionListProps> = ({
                 const requiredParams = hasParams ?
                   functionParams[fnName].filter(p => p.required).map(p => p.name) :
                   [];
-                const paramTooltip = hasParams ? 
-                  functionParams[fnName].map(p => `${p.name}${p.required ? '*' : ''}: ${p.type}${p.default !== undefined ? ` = ${p.default}` : ''}`).join('\n') : 
+
+                // Format tooltip to show all parameters with type information
+                // Include an indicator for required params and default values if present
+                const paramTooltip = hasParams ?
+                  // Start with required params first
+                  functionParams[fnName]
+                    .sort((a, b) => (a.required === b.required) ? 0 : a.required ? -1 : 1)
+                    .map(p => `${p.name}${p.required ? '*' : ''}: ${p.type}${p.default !== undefined ? ` = ${p.default}` : ''}`)
+                    .join('\n') :
                   '';
 
                 return (
                   <div key={fnName} className="function-item">
                     <div
-                      className={`function-name ${isSelected ? 'selected' : ''}`}
+                      className={`function-name ${isSelected ? 'selected' : ''} ${requiredParams.length > 0 ? 'has-required-params' : ''}`}
                       onClick={() => handleFunctionSelect(fnName)}
                       title={paramTooltip}
                     >
@@ -142,7 +158,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
                       {requiredParams.length > 0 && (
                         <div className="param-tags">
                           {requiredParams.map(paramName => (
-                            <span key={paramName} className="param-tag">
+                            <span key={paramName} className="param-tag required-param">
                               {paramName}
                             </span>
                           ))}

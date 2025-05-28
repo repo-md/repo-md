@@ -139,3 +139,14 @@ export const ViteConfig: Record<string, any>;
 export const ReactDevProxy: Record<string, any>;
 export const setupProxyExample: string;
 export const reactPackageJsonProxy: Record<string, any>;
+
+// Schema exports
+export const repoMdOptionsSchema: any;
+export const schemas: Record<string, any>;
+export const functionParamMetadata: Record<string, any>;
+export function validateFunctionParams(functionName: string, params: any): { 
+  success: boolean;
+  data: any;
+  error?: string;
+};
+export function applyValidation(instance: any, methodNames?: string[]): void;

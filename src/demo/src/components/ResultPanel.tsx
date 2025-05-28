@@ -5,15 +5,7 @@ import 'react-json-pretty/themes/monikai.css'
 import { Settings, Code, Play } from 'lucide-react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
-
-// Define parameter types for functions
-interface FunctionParam {
-  name: string;
-  required: boolean;
-  type: string;
-  default?: any;
-  description?: string;
-}
+import { ParameterInput, FunctionParam } from './params'
 
 interface ResultPanelProps {
   result: ApiResult | null
@@ -47,12 +39,35 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
 
   // Reset param values when result changes
   useEffect(() => {
-    if (result?.params) {
-      setParamValues(result.params);
-    } else {
-      setParamValues({});
+    // Start with empty object or existing params
+    const initialParams: Record<string, string> = result?.params ? { ...result.params } : {};
+    
+    // Initialize all required parameters with empty strings if they're not already set
+    if (result?.operation) {
+      const params = functionParams[result.operation] || [];
+      
+      // Set initial empty values for all required parameters only (let optional use defaults)
+      const requiredParams = params.filter(p => p.required);
+      requiredParams.forEach(param => {
+        if (initialParams[param.name] === undefined) {
+          initialParams[param.name] = '';
+        }
+      });
+      
+      // For optional boolean parameters, set them to empty string to trigger "default" in the UI
+      const optionalParams = params.filter(p => !p.required);
+      optionalParams.forEach(param => {
+        if (param.type === 'boolean' && initialParams[param.name] === undefined) {
+          // Use empty string to represent "use default"
+          initialParams[param.name] = '';
+        }
+      });
+      
+      console.log(`[ResultPanel] Initializing params for ${result.operation}:`, initialParams);
     }
-  }, [result?.operation]);
+    
+    setParamValues(initialParams);
+  }, [result?.operation, functionParams]);
 
   // Handle parameter change
   const handleParamChange = (paramName: string, value: string) => {
@@ -82,16 +97,71 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
     }
   };
 
-  // Get function parameters for the current operation
+  // Get function parameters for the current operation, sorted by required status
   const getCurrentFunctionParams = () => {
     if (!result?.operation) return [];
-    return functionParams[result.operation] || [];
+    const params = functionParams[result.operation] || [];
+    
+    // Sort params: required params first, then optional params
+    return [...params].sort((a, b) => {
+      if (a.required && !b.required) return -1;
+      if (!a.required && b.required) return 1;
+      return a.name.localeCompare(b.name); // Sort alphabetically within each group
+    });
   };
 
   // Check if current function has parameters
-  const hasParams = result?.operation ?
+  let hasParams = result?.operation ?
     (functionParams[result.operation] && functionParams[result.operation].length > 0) :
     false;
+    
+  // SPECIAL CASE FIX: Force hasParams to be true for specific methods that require parameters
+  // This ensures the parameter UI is always shown for these methods
+  if (result?.operation && ['getPostByPath', 'getPostBySlug', 'getPostByHash', 'getFileContent'].includes(result.operation)) {
+    if (!hasParams) {
+      console.warn(`Forcing hasParams=true for ${result.operation} which should always show parameters`);
+      hasParams = true;
+    }
+  }
+    
+  // Check if current function has required parameters
+  // Log to debug required parameter detection
+  const hasRequiredParams = result?.operation ?
+    (functionParams[result.operation] && functionParams[result.operation].some(p => p.required)) :
+    false;
+    
+  // Debug check for parameters
+  if (result?.operation) {
+    const params = functionParams[result.operation] || [];
+    const requiredParams = params.filter(p => p.required).map(p => p.name);
+    const optionalParams = params.filter(p => !p.required).map(p => p.name);
+    console.log(`[ResultPanel] Operation ${result.operation} params:`, {
+      params,
+      requiredParams,
+      optionalParams,
+      hasParams,
+      paramValues
+    });
+    
+    // EXTRA DEBUG: Check if we're missing any required parameters in the component state
+    const missingRequiredParams = requiredParams.filter(name => !paramValues[name]);
+    if (missingRequiredParams.length > 0) {
+      console.warn(`[ResultPanel] Missing required params for ${result.operation}:`, missingRequiredParams);
+    }
+    
+    // Special debug for getPostByPath which seems to have issues
+    if (result.operation === 'getPostByPath') {
+      console.log('SPECIAL DEBUG FOR getPostByPath:');
+      console.log('- functionParams entry:', functionParams['getPostByPath']);
+      console.log('- hasParams value:', hasParams);
+      console.log('- Current param values:', paramValues);
+      console.log('- Query bar visible:', !loading && result && hasParams);
+      
+      // Force additional check on the functionParams
+      const pathParam = functionParams['getPostByPath']?.find(p => p.name === 'path');
+      console.log('- Direct check on path param:', pathParam);
+    }
+  }
 
   // Generate code sample for the current operation
   const generateCodeSample = () => {
@@ -216,26 +286,77 @@ fetchData();`;
       {!loading && result && hasParams && (
         <div className="query-bar">
           <div className="query-params">
+            {/* Debug info for params */}
+            {process.env.NODE_ENV === 'development' && (
+              <div style={{ fontSize: '10px', color: '#999', margin: '-5px 0 5px', width: '100%' }}>
+                <div><strong>Operation:</strong> {result.operation}</div>
+                <div><strong>Parameter count:</strong> {getCurrentFunctionParams().length}</div>
+                <div><strong>Required params:</strong> {getCurrentFunctionParams().filter(p => p.required).map(p => p.name).join(', ')}</div>
+                <div><strong>Optional params:</strong> {getCurrentFunctionParams().filter(p => !p.required).map(p => p.name).join(', ')}</div>
+              </div>
+            )}
+            
+            {/* Render each parameter with ParameterInput component */}
             {getCurrentFunctionParams().map(param => (
-              <div key={param.name} className="param-input">
+              <ParameterInput
+                key={param.name}
+                param={param}
+                value={paramValues[param.name] || ''}
+                onChange={handleParamChange}
+                className="query-param"
+              />
+            ))}
+            
+            {/* SPECIAL CASE: Force input fields for critical parameters that might be missing */}
+            {result.operation === 'getPostByPath' && !getCurrentFunctionParams().some(p => p.name === 'path') && (
+              <div className="param-input">
                 <label>
-                  {param.name}
-                  {param.required && <span className="required-indicator">*</span>}
+                  path<span className="required-indicator">*</span>
                 </label>
                 <input
-                  type={param.type === 'number' ? 'number' : 'text'}
-                  value={paramValues[param.name] || ''}
-                  onChange={(e) => handleParamChange(param.name, e.target.value)}
-                  placeholder={param.default !== undefined ? String(param.default) : ''}
+                  type="text"
+                  value={paramValues['path'] || ''}
+                  onChange={(e) => handleParamChange('path', e.target.value)}
+                  placeholder="Enter file path"
                 />
               </div>
-            ))}
+            )}
+            
+            {/* Force hash input for getPostByHash */}
+            {result.operation === 'getPostByHash' && !getCurrentFunctionParams().some(p => p.name === 'hash') && (
+              <div className="param-input">
+                <label>
+                  hash<span className="required-indicator">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={paramValues['hash'] || ''}
+                  onChange={(e) => handleParamChange('hash', e.target.value)}
+                  placeholder="Enter content hash"
+                />
+              </div>
+            )}
+            
+            {/* Force slug input for getPostBySlug */}
+            {result.operation === 'getPostBySlug' && !getCurrentFunctionParams().some(p => p.name === 'slug') && (
+              <div className="param-input">
+                <label>
+                  slug<span className="required-indicator">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={paramValues['slug'] || ''}
+                  onChange={(e) => handleParamChange('slug', e.target.value)}
+                  placeholder="Enter post slug"
+                />
+              </div>
+            )}
           </div>
           <button
             className="nav-button run-button"
             title="Run with Parameters"
             onClick={runWithParams}
-            disabled={loading}
+            disabled={loading || (hasRequiredParams && getCurrentFunctionParams().some(p => p.required && !paramValues[p.name]))}
           >
             <Play size={18} />
             <span>Run</span>

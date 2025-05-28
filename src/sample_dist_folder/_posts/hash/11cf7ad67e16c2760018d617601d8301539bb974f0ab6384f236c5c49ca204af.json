@@ -1,0 +1,54 @@
+{
+  "fileName": "about",
+  "slug": "about",
+  "title": "about",
+  "frontmatter": {
+    "name": "About Emma Reyes",
+    "email": "demo@demo.com",
+    "public": true
+  },
+  "firstParagraphText": "Emma in Studio",
+  "plain": "About Emma Reyes\n\nArtist, Educator, Explorer\n\nMy Artistic Journey\n\nBorn and raised in the Pacific Northwest, I've always been drawn to the intersection of natural beauty and human creativity. My journey as an artist began with traditional painting, but quickly evolved to incorporate a diverse range of materials and techniques.\n\nAfter earning my MFA from the Pacific Northwest College of Art in 2015, I established my studio practice in Portland, where the vibrant art community and proximity to nature continue to inspire my work.\n\nArtistic Approach\n\nMy work exists at the crossroads of several disciplines:\n\nMixed Media Painting - Combining traditional painting techniques with collage and assemblage\n\nTextile Integration - Incorporating hand-stitched elements and fabric remnants\n\nNatural Elements - Using found objects from nature to create texture and meaning\n\nSustainable Practices - Emphasizing repurposed materials and environmental consciousness\n\nI believe that art should be accessible without sacrificing depth. My pieces invite viewers to approach them on multiple levels—appreciating initial beauty while discovering layers of meaning with continued engagement.\n\nEducation & Training\n\nMFA in Contemporary Art Practice - Pacific Northwest College of Art, 2015\n\nBA in Fine Arts - University of Washington, 2011\n\nArtist Residency - Sitka Center for Art and Ecology, 2018\n\nMaster Workshop - Mixed Media Techniques with Claire Thompson, 2019\n\nTeaching & Community\n\nAlongside my studio practice, I'm passionate about arts education. I regularly lead workshops for adults and youth at the Portland Art Center, focusing on experimental techniques and creative exploration.\n\nI believe strongly in art as a tool for community building and social change. Through my involvement with the Arts for All initiative, I help bring creative opportunities to underserved neighborhoods throughout Portland.\n\nPersonal Influences\n\nMy work is deeply influenced by:\n\nThe textural complexity of the Pacific Northwest landscape\n\nJapanese aesthetic principles, particularly wabi-sabi\n\nThe feminist art movement of the 1970s\n\nContemporary collage artists like Wangechi Mutu and Mark Bradford\n\nThe poetry of Mary Oliver and her attention to natural detail\n\nWhen not in the studio, you'll find me hiking with my dog Luna, foraging for natural materials, or exploring small galleries and museums across the region.",
+  "wordCount": 342,
+  "html": "<h1 id=\"about-emma-reyes\"><a href=\"#about-emma-reyes\">About Emma Reyes</a></h1>\n<h2 id=\"artist-educator-explorer\"><a href=\"#artist-educator-explorer\">Artist, Educator, Explorer</a></h2>\n<p><img src=\"/_repo/medias/bd2b7d7d7b2e7e1e03595ce48837c8dca9fedb1e10e5c088beb229edca820bb0-md.webp\" alt=\"Emma in Studio\" width=\"700\" height=\"330\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 330;\"></p>\n<hr>\n<h2 id=\"my-artistic-journey\"><a href=\"#my-artistic-journey\">My Artistic Journey</a></h2>\n<p>Born and raised in the Pacific Northwest, I've always been drawn to the intersection of natural beauty and human creativity. My journey as an artist began with traditional painting, but quickly evolved to incorporate a diverse range of materials and techniques.</p>\n<p>After earning my MFA from the Pacific Northwest College of Art in 2015, I established my studio practice in Portland, where the vibrant art community and proximity to nature continue to inspire my work.</p>\n<hr>\n<h2 id=\"artistic-approach\"><a href=\"#artistic-approach\">Artistic Approach</a></h2>\n<p><img src=\"/_repo/medias/698855131c83690810ecdb2089ec85ac5c9f7d5f327446e67a4d626718d4b7d4-md.webp\" alt=\"Creative Process\" width=\"700\" height=\"465\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 465;\"></p>\n<p>My work exists at the crossroads of several disciplines:</p>\n<ul>\n<li><strong>Mixed Media Painting</strong> - Combining traditional painting techniques with collage and assemblage</li>\n<li><strong>Textile Integration</strong> - Incorporating hand-stitched elements and fabric remnants</li>\n<li><strong>Natural Elements</strong> - Using found objects from nature to create texture and meaning</li>\n<li><strong>Sustainable Practices</strong> - Emphasizing repurposed materials and environmental consciousness</li>\n</ul>\n<p>I believe that art should be accessible without sacrificing depth. My pieces invite viewers to approach them on multiple levels—appreciating initial beauty while discovering layers of meaning with continued engagement.</p>\n<hr>\n<h2 id=\"education--training\"><a href=\"#education--training\">Education &#x26; Training</a></h2>\n<ul>\n<li><strong>MFA in Contemporary Art Practice</strong> - Pacific Northwest College of Art, 2015</li>\n<li><strong>BA in Fine Arts</strong> - University of Washington, 2011</li>\n<li><strong>Artist Residency</strong> - Sitka Center for Art and Ecology, 2018</li>\n<li><strong>Master Workshop</strong> - Mixed Media Techniques with Claire Thompson, 2019</li>\n</ul>\n<hr>\n<h2 id=\"teaching--community\"><a href=\"#teaching--community\">Teaching &#x26; Community</a></h2>\n<p><img src=\"/_repo/medias/f4d70c0197c0fdbdebddfafebbb45b2636477eb4fa6c71d8f46228e77e05b940-md.webp\" alt=\"Workshop Session\" width=\"700\" height=\"927\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 927;\"></p>\n<p>Alongside my studio practice, I'm passionate about arts education. I regularly lead workshops for adults and youth at the Portland Art Center, focusing on experimental techniques and creative exploration.</p>\n<p>I believe strongly in art as a tool for community building and social change. Through my involvement with the Arts for All initiative, I help bring creative opportunities to underserved neighborhoods throughout Portland.</p>\n<hr>\n<h2 id=\"personal-influences\"><a href=\"#personal-influences\">Personal Influences</a></h2>\n<p>My work is deeply influenced by:</p>\n<ul>\n<li>The textural complexity of the Pacific Northwest landscape</li>\n<li>Japanese aesthetic principles, particularly wabi-sabi</li>\n<li>The feminist art movement of the 1970s</li>\n<li>Contemporary collage artists like Wangechi Mutu and Mark Bradford</li>\n<li>The poetry of Mary Oliver and her attention to natural detail</li>\n</ul>\n<p>When not in the studio, you'll find me hiking with my dog Luna, foraging for natural materials, or exploring small galleries and museums across the region.</p>\n<hr>",
+  "toc": [
+    {
+      "id": "about-emma-reyes",
+      "title": "About Emma Reyes",
+      "depth": 1
+    },
+    {
+      "id": "artist-educator-explorer",
+      "title": "Artist, Educator, Explorer",
+      "depth": 2
+    },
+    {
+      "id": "my-artistic-journey",
+      "title": "My Artistic Journey",
+      "depth": 2
+    },
+    {
+      "id": "artistic-approach",
+      "title": "Artistic Approach",
+      "depth": 2
+    },
+    {
+      "id": "education--training",
+      "title": "Education & Training",
+      "depth": 2
+    },
+    {
+      "id": "teaching--community",
+      "title": "Teaching & Community",
+      "depth": 2
+    },
+    {
+      "id": "personal-influences",
+      "title": "Personal Influences",
+      "depth": 2
+    }
+  ],
+  "originalFilePath": "pages/about.md",
+  "hash": "11cf7ad67e16c2760018d617601d8301539bb974f0ab6384f236c5c49ca204af",
+  "links": []
+}

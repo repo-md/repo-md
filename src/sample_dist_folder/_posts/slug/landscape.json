@@ -1,0 +1,64 @@
+{
+  "fileName": "landscape",
+  "slug": "landscape",
+  "title": "landscape",
+  "frontmatter": {
+    "name": "Natural Landscapes",
+    "email": "demo@demo.com",
+    "public": true
+  },
+  "firstParagraphText": "Mountain Vista",
+  "plain": "Natural Landscapes\n\nCapturing Earth's Breathtaking Moments\n\nNature's Canvas\n\nThese landscape photographs document my journey through diverse terrains and changing seasons. From misty mountains to serene lakeshores, each image represents a moment of connection with the natural world.\n\nI strive to capture not just the visual beauty of these places, but also the feeling of being present in these powerful environments.\n\nFeatured Landscapes\n\n\"Dawn's Embrace\"\n\nSunrise photography, natural color\n\nThe first light of day transforms an ordinary scene into something magical, revealing layers of color and texture often missed in the full light of day.\n\n\"Ancient Stones\"\n\nGolden hour photography, wide angle\n\nThis composition explores the relationship between earth and sky, highlighting the timelessness of natural formations against the ever-changing heavens.\n\n\"Mist Valley\"\n\nMorning photography, atmospheric conditions\n\nCapturing the ethereal quality of morning fog as it drifts through the valley, creating a dreamlike landscape that exists between worlds.\n\nView Full Collection →\n\nLocations\n\nMy landscape work has taken me from the Pacific Northwest forests to the dramatic coastlines of New Zealand. Each location presents unique challenges and rewards for landscape photography:\n\nMountain Ranges: Playing with scale and perspective\n\nCoastal Areas: Capturing the dynamic relationship between land and sea\n\nForests: Finding composition within chaos\n\nDeserts: Minimalism and the power of open space\n\nI believe in minimal post-processing, preferring instead to wait for the perfect natural conditions that bring a landscape to life.\n\nEnvironmental Statement\n\nThese photographs are not just art but also a record of our natural heritage. Through my work, I hope to inspire appreciation and conservation of these increasingly fragile environments.",
+  "wordCount": 260,
+  "html": "<h1 id=\"natural-landscapes\"><a href=\"#natural-landscapes\">Natural Landscapes</a></h1>\n<h2 id=\"capturing-earths-breathtaking-moments\"><a href=\"#capturing-earths-breathtaking-moments\">Capturing Earth's Breathtaking Moments</a></h2>\n<p><img src=\"/_repo/medias/d0f9be7b3dfd76264c5e4758d2667703213e6fc8319db142325eb799a0c4adea-md.webp\" alt=\"Mountain Vista\" width=\"700\" height=\"1050\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 1050;\"></p>\n<hr>\n<h2 id=\"natures-canvas\"><a href=\"#natures-canvas\">Nature's Canvas</a></h2>\n<p>These landscape photographs document my journey through diverse terrains and changing seasons. From misty mountains to serene lakeshores, each image represents a moment of connection with the natural world.</p>\n<p>I strive to capture not just the visual beauty of these places, but also the feeling of being present in these powerful environments.</p>\n<hr>\n<h2 id=\"featured-landscapes\"><a href=\"#featured-landscapes\">Featured Landscapes</a></h2>\n<h3 id=\"dawns-embrace\"><a href=\"#dawns-embrace\">\"Dawn's Embrace\"</a></h3>\n<p><em>Sunrise photography, natural color</em>\n<img src=\"/_repo/medias/d2139b8154281fec21c19cbe43189010b91a334b540dd28d079c4562df2479ce-md.webp\" alt=\"Dawn&#x27;s Embrace\" width=\"700\" height=\"450\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 450;\"></p>\n<p>The first light of day transforms an ordinary scene into something magical, revealing layers of color and texture often missed in the full light of day.</p>\n<h3 id=\"ancient-stones\"><a href=\"#ancient-stones\">\"Ancient Stones\"</a></h3>\n<p><em>Golden hour photography, wide angle</em>\n<img src=\"/_repo/medias/17fc69510b7796a27fb0f682ee5cdad9aa002e45597c7850f282f2f8d44a998d-md.webp\" alt=\"Ancient Stones\" width=\"700\" height=\"393\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 393;\"></p>\n<p>This composition explores the relationship between earth and sky, highlighting the timelessness of natural formations against the ever-changing heavens.</p>\n<h3 id=\"mist-valley\"><a href=\"#mist-valley\">\"Mist Valley\"</a></h3>\n<p><em>Morning photography, atmospheric conditions</em>\n<img src=\"/_repo/medias/7a609544b62918264b6cfd1f05ae38f9ed9a7922465a4ecc2edbb1a769f887d0-md.webp\" alt=\"Mist Valley\" width=\"700\" height=\"467\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 467;\"></p>\n<p>Capturing the ethereal quality of morning fog as it drifts through the valley, creating a dreamlike landscape that exists between worlds.</p>\n<p><a href=\"#\">View Full Collection →</a></p>\n<hr>\n<h2 id=\"locations\"><a href=\"#locations\">Locations</a></h2>\n<p>My landscape work has taken me from the Pacific Northwest forests to the dramatic coastlines of New Zealand. Each location presents unique challenges and rewards for landscape photography:</p>\n<ul>\n<li><strong>Mountain Ranges:</strong> Playing with scale and perspective</li>\n<li><strong>Coastal Areas:</strong> Capturing the dynamic relationship between land and sea</li>\n<li><strong>Forests:</strong> Finding composition within chaos</li>\n<li><strong>Deserts:</strong> Minimalism and the power of open space</li>\n</ul>\n<p><img src=\"/_repo/medias/f0483a76239a862aeb3e8ceb320c14e1f7b8fd3b8e32f75df23eca2950984c52-md.webp\" alt=\"Dramatic Coastline\" width=\"700\" height=\"473\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 473;\"></p>\n<p>I believe in minimal post-processing, preferring instead to wait for the perfect natural conditions that bring a landscape to life.</p>\n<hr>\n<h2 id=\"environmental-statement\"><a href=\"#environmental-statement\">Environmental Statement</a></h2>\n<p>These photographs are not just art but also a record of our natural heritage. Through my work, I hope to inspire appreciation and conservation of these increasingly fragile environments.</p>\n<p><img src=\"/_repo/medias/618b1017c5fb49071d3ed64fef43746d1ef52eaf112cd153fa82dec4199181b1-md.webp\" alt=\"Pristine Wilderness\" width=\"700\" height=\"479\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 479;\"></p>\n<hr>",
+  "toc": [
+    {
+      "id": "natural-landscapes",
+      "title": "Natural Landscapes",
+      "depth": 1
+    },
+    {
+      "id": "capturing-earths-breathtaking-moments",
+      "title": "Capturing Earth's Breathtaking Moments",
+      "depth": 2
+    },
+    {
+      "id": "natures-canvas",
+      "title": "Nature's Canvas",
+      "depth": 2
+    },
+    {
+      "id": "featured-landscapes",
+      "title": "Featured Landscapes",
+      "depth": 2
+    },
+    {
+      "id": "dawns-embrace",
+      "title": "\"Dawn's Embrace\"",
+      "depth": 3
+    },
+    {
+      "id": "ancient-stones",
+      "title": "\"Ancient Stones\"",
+      "depth": 3
+    },
+    {
+      "id": "mist-valley",
+      "title": "\"Mist Valley\"",
+      "depth": 3
+    },
+    {
+      "id": "locations",
+      "title": "Locations",
+      "depth": 2
+    },
+    {
+      "id": "environmental-statement",
+      "title": "Environmental Statement",
+      "depth": 2
+    }
+  ],
+  "originalFilePath": "projects/landscape.md",
+  "hash": "e676a884fe2ef9716f213b1bea335c51f463d9f0fb698b7be3c0862704b6f849",
+  "links": []
+}

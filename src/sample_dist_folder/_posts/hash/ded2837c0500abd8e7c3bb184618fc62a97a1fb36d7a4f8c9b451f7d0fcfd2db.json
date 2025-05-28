@@ -1,0 +1,17 @@
+{
+  "fileName": "portraits",
+  "slug": "portraits",
+  "title": "Street Portraits",
+  "frontmatter": {
+    "title": "Street Portraits",
+    "public": true
+  },
+  "firstParagraphText": "Here are some photos I took\n![[Pasted image 20250429154120.png]]",
+  "plain": "Here are some photos I took",
+  "wordCount": 6,
+  "html": "<p>Here are some photos I took\n<img src=\"/_repo/medias/fc6f61bedaee80775a10d40524e728a19798e391a4d18863a5e08d1d56e778bd-md.webp\" alt=\"Pasted image 20250429154120.png\" title=\"Pasted image 20250429154120.png\" width=\"375\" height=\"500\" loading=\"lazy\" class=\"obsidian-media best-path\" style=\"aspect-ratio: 375 / 500;\"></p>",
+  "toc": [],
+  "originalFilePath": "projects/portraits.md",
+  "hash": "ded2837c0500abd8e7c3bb184618fc62a97a1fb36d7a4f8c9b451f7d0fcfd2db",
+  "links": []
+}

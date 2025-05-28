@@ -609,15 +609,33 @@ button:disabled {
   transition: all 0.2s;
 }
 
+.param-tag.required-param {
+  background-color: #e6f0ff;
+  color: #4c86f9;
+  border-color: #c0d8ff;
+  font-weight: 500;
+}
+
 .selected .param-tag {
   background-color: #e0eeff;
   color: #4c86f9;
   border-color: #c0d8ff;
 }
 
+.selected .param-tag.required-param {
+  background-color: #4c86f9;
+  color: white;
+  border-color: #3a6bc5;
+}
+
 .function-name:hover .param-tag {
   background-color: #e8f4ff;
   border-color: #d0e6ff;
+}
+
+.function-name.has-required-params {
+  border-left: 2px solid #4c86f9;
+  padding-left: 6px;
 }
 
 .function-params-form {
@@ -670,6 +688,7 @@ button:disabled {
   flex: 1;
 }
 
+/* General parameter styles */
 .query-bar .param-input {
   display: flex;
   flex-direction: row;
@@ -679,8 +698,10 @@ button:disabled {
   border-radius: 4px;
   padding: 4px 8px;
   border: 1px solid #ddd;
+  min-height: 36px;
 }
 
+/* Parameter labels */
 .query-bar .param-input label {
   font-size: 13px;
   font-weight: 500;
@@ -688,19 +709,88 @@ button:disabled {
   white-space: nowrap;
 }
 
-.query-bar .param-input input {
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid #eee;
-  padding: 4px 8px;
+.required-indicator {
+  color: #e53935;
+  margin-left: 3px;
+  font-weight: bold;
+}
+
+.optional-indicator {
+  color: #9e9e9e;
+  margin-left: 3px;
+  font-size: 12px;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.param-description {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Input fields */
+.param-input input[type="text"],
+.param-input input[type="number"] {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 6px 8px;
   font-size: 14px;
-  background-color: transparent;
+  background-color: #fff;
   min-width: 120px;
 }
 
-.query-bar .param-input input:focus {
+.param-input input[type="text"]:focus,
+.param-input input[type="number"]:focus,
+.param-input select:focus {
   outline: none;
-  border-bottom: 1px solid #4c86f9;
+  border-color: #4c86f9;
+}
+
+.param-input input[type="number"] {
+  width: 80px;
+}
+
+/* Boolean parameter styling */
+.boolean-param-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.boolean-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  flex: 1;
+}
+
+.boolean-select {
+  min-width: 120px;
+  max-width: 200px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.boolean-select:focus {
+  border-color: #4c86f9;
+  outline: none;
+}
+
+/* Select dropdown */
+.param-input select {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background-color: #fff;
+  min-width: 120px;
+  font-size: 14px;
 }
 
 .run-function-button {

@@ -1,0 +1,54 @@
+{
+  "fileName": "contact",
+  "slug": "contact",
+  "title": "contact",
+  "frontmatter": {
+    "name": "Contact Emma Reyes",
+    "email": "demo@demo.com",
+    "public": true
+  },
+  "firstParagraphText": "Studio Space",
+  "plain": "Contact\n\nLet's Start a Conversation\n\nGet in Touch\n\nI'm always excited to discuss art, potential collaborations, commissions, or exhibition opportunities. Whether you have a specific project in mind or just want to share your thoughts on my work, please reach out!\n\nEmail: studio@emmareyes.com\n\nPhone: (503) 555-0123\n\nLocation: Portland, OR\n\nSend Me a Message\n\nHave a question or want to work together? Fill out the form below, and I'll get back to you within 48 hours.\n\nSend Message\n\nStudio Visits\n\nMy Portland studio is open for visits by appointment. Studio visits provide an opportunity to see works in progress, browse available pieces, and discuss potential commissions in person.\n\nFollow Me\n\nConnect with me on social media for updates on my latest work and creative process:\n\nInstagram\n\nPinterest\n\nArtsy\n\nLinkedIn\n\nOffice Hours\n\nMonday - Friday: 10:00 AM - 6:00 PM (PST)\n\nWeekends: By appointment only\n\nLooking forward to connecting and sharing my artistic journey with you!",
+  "wordCount": 152,
+  "html": "<h1 id=\"contact\"><a href=\"#contact\">Contact</a></h1>\n<h2 id=\"lets-start-a-conversation\"><a href=\"#lets-start-a-conversation\">Let's Start a Conversation</a></h2>\n<p><img src=\"/_repo/medias/a68301a360cb0c921b31c4410a0b9ac9cd9b43561693e7bb3dffaccf8d17a17d-md.webp\" alt=\"Studio Space\" width=\"700\" height=\"1050\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 1050;\"></p>\n<hr>\n<h2 id=\"get-in-touch\"><a href=\"#get-in-touch\">Get in Touch</a></h2>\n<p>I'm always excited to discuss art, potential collaborations, commissions, or exhibition opportunities. Whether you have a specific project in mind or just want to share your thoughts on my work, please reach out!</p>\n<p><strong>Email:</strong> <a href=\"mailto:studio@emmareyes.com\">studio@emmareyes.com</a><br>\n<strong>Phone:</strong> (503) 555-0123<br>\n<strong>Location:</strong> Portland, OR</p>\n<h2 id=\"send-me-a-message\"><a href=\"#send-me-a-message\">Send Me a Message</a></h2>\n<p>Have a question or want to work together? Fill out the form below, and I'll get back to you within 48 hours.</p>\n<p>Send Message</p>\n<h2 id=\"studio-visits\"><a href=\"#studio-visits\">Studio Visits</a></h2>\n<p><img src=\"/_repo/medias/1ffdaedbbcf69bf388b0c709e27a99bace685eb53cb709b89df598c460359adf-md.webp\" alt=\"Creative Process\" width=\"700\" height=\"1050\" loading=\"lazy\" class=\"md-image best-path\" style=\"aspect-ratio: 700 / 1050;\"></p>\n<p>My Portland studio is open for visits by appointment. Studio visits provide an opportunity to see works in progress, browse available pieces, and discuss potential commissions in person.</p>\n<h2 id=\"follow-me\"><a href=\"#follow-me\">Follow Me</a></h2>\n<p>Connect with me on social media for updates on my latest work and creative process:</p>\n<ul>\n<li><a href=\"#\">Instagram</a></li>\n<li><a href=\"#\">Pinterest</a></li>\n<li><a href=\"#\">Artsy</a></li>\n<li><a href=\"#\">LinkedIn</a></li>\n</ul>\n<h2 id=\"office-hours\"><a href=\"#office-hours\">Office Hours</a></h2>\n<p>Monday - Friday: 10:00 AM - 6:00 PM (PST)<br>\nWeekends: By appointment only</p>\n<hr>\n<p>Looking forward to connecting and sharing my artistic journey with you!</p>",
+  "toc": [
+    {
+      "id": "contact",
+      "title": "Contact",
+      "depth": 1
+    },
+    {
+      "id": "lets-start-a-conversation",
+      "title": "Let's Start a Conversation",
+      "depth": 2
+    },
+    {
+      "id": "get-in-touch",
+      "title": "Get in Touch",
+      "depth": 2
+    },
+    {
+      "id": "send-me-a-message",
+      "title": "Send Me a Message",
+      "depth": 2
+    },
+    {
+      "id": "studio-visits",
+      "title": "Studio Visits",
+      "depth": 2
+    },
+    {
+      "id": "follow-me",
+      "title": "Follow Me",
+      "depth": 2
+    },
+    {
+      "id": "office-hours",
+      "title": "Office Hours",
+      "depth": 2
+    }
+  ],
+  "originalFilePath": "pages/contact.md",
+  "hash": "4aa820554dbc40068b600c30428c47df7201a7fee2bbc87700e4a0b5a9622dd7",
+  "links": []
+}

@@ -16,6 +16,15 @@ import * as openaiModule from './openai/index.js';
 // Import alias mechanism
 import { aliases, createAliasFunction, applyAliases } from './aliases.js';
 
+// Import schema/validation utilities
+import { 
+  repoMdOptionsSchema,
+  schemas, 
+  validateFunctionParams, 
+  functionParamMetadata,
+  applyValidation
+} from './schemas/index.js';
+
 // Re-export all public APIs
 export {
   // Main classes and utilities
@@ -36,6 +45,13 @@ export {
   aliases,
   createAliasFunction,
   applyAliases,
+  
+  // Schema and validation exports
+  repoMdOptionsSchema,
+  schemas,
+  validateFunctionParams,
+  functionParamMetadata,
+  applyValidation
 };
 
 // Default export

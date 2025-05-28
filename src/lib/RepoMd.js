@@ -14,6 +14,7 @@ import { createPostSimilarity } from "./posts/similarity.js";
 import { createMediaHandler } from "./media/handler.js";
 import { createProjectConfig } from "./project/config.js";
 import { createFileHandler } from "./files/index.js";
+import { createMediaSimilarity } from "./media/similarity.js";
 
 // Import OpenAI utilities
 import {
@@ -24,8 +25,10 @@ import {
 // Import exported logo and tool specs
 import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
-// Import alias mechanism
+// Import alias mechanism, validation and logging
 import { applyAliases } from "./aliases.js";
+import { applyValidation, repoMdOptionsSchema } from "./schemas/index.js";
+import { applyLogging } from "./core/logger-wrapper.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
 
@@ -295,11 +298,11 @@ class RepoMD {
 
     // Initialize post similarity service
     this.similarity = createPostSimilarity({
-      fetchR2Json: this.fetchR2Json,
-      _fetchMapData: this._fetchMapData,
-      getRecentPosts: this.posts.getRecentPosts,
-      getPostBySlug: this.posts.getPostBySlug,
-      augmentPostsByProperty: this.posts.augmentPostsByProperty,
+      fetchR2Json: this.fetchR2Json.bind(this),
+      _fetchMapData: this._fetchMapData.bind(this),
+      getRecentPosts: this.getRecentPosts.bind(this),
+      getPostBySlug: this.getPostBySlug.bind(this),
+      augmentPostsByProperty: this.augmentPostsByProperty.bind(this),
       debug: this.debug,
     });
 
@@ -323,8 +326,27 @@ class RepoMD {
       debug: this.debug,
     });
 
+    // Initialize media similarity service
+    this.mediaSimilarity = createMediaSimilarity({
+      fetchR2Json: this.fetchR2Json.bind(this),
+      _fetchMapData: this._fetchMapData.bind(this),
+      getAllMedia: this.getAllMedia.bind(this),
+      debug: this.debug,
+    });
+
     // Apply any configured method aliases to this instance
     applyAliases(this, this.debug);
+    
+    // Apply parameter validation to methods
+    applyValidation(this);
+    
+    // Apply method logging
+    applyLogging(this, this.debug);
+    
+    if (this.debug) {
+      console.log(`${prefix} ✓ Applied parameter validation to methods`);
+      console.log(`${prefix} ✓ Applied method logging to API methods`);
+    }
   }
 
   // URL generation methods (proxy to URL module)
@@ -500,6 +522,31 @@ class RepoMD {
 
   handleOpenAiRequest(request) {
     return handleOpenAiRequest(request, this);
+  }
+
+  // Media similarity methods (proxy to MediaSimilarity module)
+  async getMediaEmbeddings() {
+    return await this.mediaSimilarity.getMediaEmbeddings();
+  }
+
+  async getMediaSimilarity() {
+    return await this.mediaSimilarity.getMediaSimilarity();
+  }
+
+  async getMediaSimilarityByHashes(hash1, hash2) {
+    return await this.mediaSimilarity.getMediaSimilarityByHashes(hash1, hash2);
+  }
+
+  async getTopSimilarMediaHashes() {
+    return await this.mediaSimilarity.getTopSimilarMediaHashes();
+  }
+
+  async getSimilarMediaHashByHash(hash, limit = 10) {
+    return await this.mediaSimilarity.getSimilarMediaHashByHash(hash, limit);
+  }
+
+  async getSimilarMediaByHash(hash, count = 5) {
+    return await this.mediaSimilarity.getSimilarMediaByHash(hash, count);
   }
 
   destroy() {
