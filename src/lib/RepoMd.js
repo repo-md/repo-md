@@ -4,6 +4,7 @@
 
 import { LOG_PREFIXES } from "./logger.js";
 import { fetchJson } from "./utils.js";
+import envizion from "envizion";
 
 // Import modular components
 import { createUrlGenerator } from "./core/urls.js";
@@ -55,7 +56,7 @@ class RepoMD {
     this.secret = secret;
     this.strategy = strategy;
     this.activeRev = null; // Store resolved latest revision ID
-    
+
     // Initialize stats tracking
     this.stats = {
       posts: {
@@ -66,12 +67,12 @@ class RepoMD {
           directSlugFile: 0,
           pathMap: 0,
           directPath: 0,
-          allPosts: 0
+          allPosts: 0,
         },
         individualLoads: 0,
         allPostsLoaded: false,
-        lastUpdated: Date.now()
-      }
+        lastUpdated: Date.now(),
+      },
     };
 
     // Configure cache for this instance
@@ -165,16 +166,27 @@ class RepoMD {
     // Initialize other services after bind functions are available
     this.initializeServices();
 
+    // Generate instance ID
+    this._instanceId = Math.random().toString(36).substring(2, 10);
+
     if (this.debug) {
       console.log(`${prefix} 🚀 Initialized RepoMD instance with:
         - org: ${org}
         - projectId: ${projectId}
         - rev: ${rev}
         - strategy: ${strategy}
-        - instance: ${(this._instanceId = Math.random()
-          .toString(36)
-          .substring(2, 10))}
+        - instance: ${this._instanceId}
       `);
+    }
+
+    // Display version and build information using envizion (browser only)
+    if (typeof window !== "undefined") {
+      envizion({
+        title: "RepoMD SDK",
+        subtitle: `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
+        version: import.meta.env.VITE_APP_VERSION || "?",
+        buildDate: import.meta.env.VITE_APP_BUILD_DATE || "?",
+      });
     }
   }
 
@@ -336,13 +348,13 @@ class RepoMD {
 
     // Apply any configured method aliases to this instance
     applyAliases(this, this.debug);
-    
+
     // Apply parameter validation to methods
     applyValidation(this);
-    
+
     // Apply method logging
     applyLogging(this, this.debug);
-    
+
     if (this.debug) {
       console.log(`${prefix} ✓ Applied parameter validation to methods`);
       console.log(`${prefix} ✓ Applied method logging to API methods`);
@@ -387,12 +399,12 @@ class RepoMD {
   async getSqliteUrl() {
     return await this.urls.getSqliteUrl();
   }
-  
+
   // Client stats method
   getClientStats() {
     // Update timestamp
     this.stats.posts.lastUpdated = Date.now();
-    
+
     // Return a copy of the stats object to prevent direct modification
     return JSON.parse(JSON.stringify(this.stats));
   }
