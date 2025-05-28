@@ -51,7 +51,6 @@ try {
 }
 
 // Extract parameter metadata directly from the Zod schemas
-// This avoids duplication and ensures we always have accurate information
 const extractParamsFromSchemas = () => {
   const params: Record<string, FunctionParam[]> = {};
 
@@ -73,7 +72,7 @@ const extractParamsFromSchemas = () => {
         // Default values
         let paramType = 'unknown';
         let required = true;
-        let defaultValue = undefined;
+        let defaultValue: any = undefined;
 
         // Process special case: booleanSchema (z.boolean().optional().default(true))
         if (paramName === 'useCache' && fnName !== 'fetchJson') {
@@ -92,7 +91,7 @@ const extractParamsFromSchemas = () => {
         }
 
         // Try to extract type and optional status
-        if (zodParam._def) {
+        if (zodParam && typeof zodParam === 'object' && '_def' in zodParam) {
           // Check if parameter is optional
           const isOptional = zodParam instanceof z.ZodOptional;
           required = !isOptional;
@@ -111,32 +110,28 @@ const extractParamsFromSchemas = () => {
             paramType = 'array';
           } else if (typeObj instanceof z.ZodObject) {
             paramType = 'object';
-          } else if (typeObj instanceof z.ZodRecord) {
-            paramType = 'object';
           } else if (typeObj instanceof z.ZodEnum) {
             paramType = `enum (${typeObj._def.values.join(', ')})`;
           }
 
           // Try to extract default value
-          if (isOptional && typeObj._def && typeObj._def.defaultValue !== undefined) {
+          if (isOptional && typeObj._def && 'defaultValue' in typeObj._def) {
             defaultValue = typeObj._def.defaultValue;
           }
 
           // Special cases for common parameters with known defaults
-          if (paramName === 'forceRefresh' && paramType === 'boolean' && defaultValue === undefined) {
+          if (paramName === 'forceRefresh' && paramType === 'boolean') {
             defaultValue = false;
           }
-          if (paramName === 'count' && fnName === 'getRecentPosts' && defaultValue === undefined) {
+          if (paramName === 'count' && fnName === 'getRecentPosts') {
             defaultValue = 3;
           }
           if (paramName === 'count' &&
-            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash') &&
-            defaultValue === undefined) {
+            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
             defaultValue = 5;
           }
           if (paramName === 'options' &&
-            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash') &&
-            defaultValue === undefined) {
+            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
             defaultValue = {};
           }
         }
