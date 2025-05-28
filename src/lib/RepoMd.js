@@ -5,6 +5,7 @@
 import { LOG_PREFIXES } from "./logger.js";
 import { fetchJson } from "./utils.js";
 import envizion from "envizion";
+import { getVersionInfo } from "./version.js";
 
 // Import modular components
 import { createUrlGenerator } from "./core/urls.js";
@@ -181,11 +182,12 @@ class RepoMD {
 
     // Display version and build information using envizion (browser only)
     if (typeof window !== "undefined") {
+      const { version, buildDate } = getVersionInfo();
       envizion({
         title: "RepoMD SDK",
         subtitle: `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
-        version: import.meta.env.VITE_APP_VERSION || "?",
-        buildDate: import.meta.env.VITE_APP_BUILD_DATE || "?",
+        version,
+        buildDate,
       });
     }
   }
