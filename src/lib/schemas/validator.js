@@ -1,5 +1,89 @@
-import { validateFunctionParams } from './types.js';
+import { validateFunctionParams, extractParamMetadata } from './types.js';
 import { schemas } from './schemas.js';
+
+// Cache for parameter metadata to avoid repeated schema introspection
+const parameterMetadataCache = new Map();
+
+/**
+ * Extract parameter metadata from schema using schema introspection
+ * @param {string} functionName - The name of the function
+ * @returns {Array} Array of parameter metadata objects
+ */
+function getParameterMetadata(functionName) {
+  if (parameterMetadataCache.has(functionName)) {
+    return parameterMetadataCache.get(functionName);
+  }
+
+  const schema = schemas[functionName];
+  if (!schema) {
+    return [];
+  }
+
+  const metadata = extractParamMetadata(schema);
+  parameterMetadataCache.set(functionName, metadata);
+  return metadata;
+}
+
+/**
+ * Convert positional arguments to parameter object using schema-driven approach
+ * @param {string} functionName - The name of the function
+ * @param {Array} args - The positional arguments
+ * @returns {Object} Parameter object
+ */
+function convertArgsToParamsObject(functionName, args) {
+  const paramMetadata = getParameterMetadata(functionName);
+  
+  if (paramMetadata.length === 0) {
+    // No schema metadata available, return first arg if it's an object, otherwise empty
+    return (args.length === 1 && args[0] !== null && typeof args[0] === 'object') ? args[0] : {};
+  }
+
+  // If we have only one argument and it's an object, assume it's already a params object
+  if (args.length === 1 && args[0] !== null && typeof args[0] === 'object') {
+    return args[0];
+  }
+
+  // Convert positional arguments to parameter object based on schema order
+  const paramsObj = {};
+  
+  paramMetadata.forEach((param, index) => {
+    if (index < args.length && args[index] !== undefined) {
+      paramsObj[param.name] = args[index];
+    } else if (param.default !== undefined) {
+      paramsObj[param.name] = param.default;
+    }
+  });
+
+  return paramsObj;
+}
+
+/**
+ * Convert validated parameter object back to positional arguments
+ * @param {string} functionName - The name of the function
+ * @param {Object} validatedData - The validated parameter object
+ * @returns {Array} Array of positional arguments
+ */
+function convertParamsObjectToArgs(functionName, validatedData) {
+  const paramMetadata = getParameterMetadata(functionName);
+  
+  if (paramMetadata.length === 0) {
+    // No schema metadata available, return the object as single argument
+    return [validatedData];
+  }
+
+  // Convert parameter object to positional arguments based on schema order
+  const args = [];
+  
+  paramMetadata.forEach((param) => {
+    if (validatedData.hasOwnProperty(param.name)) {
+      args.push(validatedData[param.name]);
+    } else if (param.default !== undefined) {
+      args.push(param.default);
+    }
+  });
+
+  return args;
+}
 
 /**
  * Creates a validation wrapper for a RepoMD method
@@ -17,301 +101,21 @@ export function createValidatedFunction(functionName, originalMethod) {
   }
   
   return function(...args) {
-    // For methods that expect positional parameters, convert them to an object
-    let paramsObj = {};
+    // Convert positional arguments to parameter object using schema introspection
+    const paramsObj = convertArgsToParamsObject(functionName, args);
 
-    // Check method signature and convert args to an object if needed
-    if (args.length === 1 && args[0] !== null && typeof args[0] === 'object') {
-      // Already an object - might be params object style
-      paramsObj = args[0];
-    } else {
-      // Handle positional parameters - convert to object based on function name
-      switch (functionName) {
-        case 'getPostBySlug':
-          if (typeof args[0] === 'string') {
-            paramsObj = { slug: args[0] };
-          }
-          break;
-          
-        case 'getPostByHash':
-          if (typeof args[0] === 'string') {
-            paramsObj = { hash: args[0] };
-          }
-          break;
-          
-        case 'getPostByPath':
-          if (typeof args[0] === 'string') {
-            paramsObj = { path: args[0] };
-          }
-          break;
-          
-        case 'getRecentPosts':
-          if (typeof args[0] === 'number') {
-            paramsObj = { count: args[0] };
-          }
-          break;
-          
-        case 'getFileContent':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              path: args[0], 
-              useCache: args.length > 1 ? !!args[1] : true 
-            };
-          }
-          break;
-          
-        case 'getPostsSimilarityByHashes':
-          if (typeof args[0] === 'string' && typeof args[1] === 'string') {
-            paramsObj = { hash1: args[0], hash2: args[1] };
-          }
-          break;
-          
-        case 'getSimilarPostsByHash':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              hash: args[0],
-              count: args.length > 1 && typeof args[1] === 'number' ? args[1] : 5,
-              options: args.length > 2 && typeof args[2] === 'object' ? args[2] : {}
-            };
-          }
-          break;
-          
-        case 'getSimilarPostsBySlug':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              slug: args[0],
-              count: args.length > 1 && typeof args[1] === 'number' ? args[1] : 5,
-              options: args.length > 2 && typeof args[2] === 'object' ? args[2] : {}
-            };
-          }
-          break;
-          
-        case 'getSimilarPostsSlugBySlug':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              slug: args[0],
-              limit: args.length > 1 && typeof args[1] === 'number' ? args[1] : 10
-            };
-          }
-          break;
-          
-        case 'getGraph':
-          if (typeof args[0] === 'boolean' || args[0] === undefined) {
-            paramsObj = { useCache: args[0] !== false };
-          }
-          break;
-          
-        case 'getR2Url':
-        case 'getR2ProjectUrl':
-        case 'getR2SharedFolderUrl':
-        case 'getR2RevUrl':
-          if (typeof args[0] === 'string' || args[0] === undefined) {
-            paramsObj = { path: args[0] || '' };
-          }
-          break;
-          
-        case 'createViteProxy':
-          if (typeof args[0] === 'string' || args[0] === undefined) {
-            paramsObj = { folder: args[0] || '_repo' };
-          }
-          break;
-          
-        case 'fetchPublicApi':
-          if (typeof args[0] === 'string' || args[0] === undefined) {
-            paramsObj = { path: args[0] || '/' };
-          } else if (args[0] === null) {
-            paramsObj = { path: '/' };
-          }
-          break;
-          
-        case 'getActiveProjectRev':
-          if (typeof args[0] === 'boolean' || args[0] === undefined) {
-            paramsObj = { 
-              forceRefresh: !!args[0], 
-              skipDetails: args.length > 1 ? !!args[1] : false 
-            };
-          }
-          break;
-          
-        case 'getMediaItems':
-        case 'getPostsEmbeddings':
-        case 'getPostsSimilarity':
-        case 'getTopSimilarPostsHashes':
-        case 'getSqliteUrl':
-        case 'fetchProjectDetails':
-        case 'getReleaseInfo':
-        case 'getProjectMetadata':
-        case 'getClientStats':
-          if (typeof args[0] === 'boolean' || args[0] === undefined) {
-            paramsObj = { useCache: args[0] !== false };
-          }
-          break;
-          
-        case 'fetchProjectActiveRev':
-          if (typeof args[0] === 'boolean' || args[0] === undefined) {
-            paramsObj = { forceRefresh: !!args[0] };
-          }
-          break;
-          
-        case 'handleOpenAiRequest':
-          if (typeof args[0] === 'object') {
-            paramsObj = { 
-              request: args[0], 
-              options: args.length > 1 && typeof args[1] === 'object' ? args[1] : {} 
-            };
-          }
-          break;
-          
-        case 'createOpenAiToolHandler':
-          if (typeof args[0] === 'object' || args[0] === undefined) {
-            paramsObj = { options: args[0] || {} };
-          }
-          break;
-          
-        case 'fetchR2Json':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              path: args[0], 
-              opts: args.length > 1 && typeof args[1] === 'object' ? args[1] : {} 
-            };
-          }
-          break;
-          
-        case 'fetchJson':
-          if (typeof args[0] === 'string') {
-            paramsObj = { 
-              url: args[0], 
-              opts: args.length > 1 && typeof args[1] === 'object' ? args[1] : {} 
-            };
-          }
-          break;
-          
-        // Default handler for functions with single object parameter
-        default:
-          // Try to use the first argument if no specific handler
-          paramsObj = args[0] || {};
-      }
-    }
-
-    // Validate parameters if we have a schema
-    if (hasSchema) {
-      const validation = validateFunctionParams(functionName, paramsObj);
-      
-      if (!validation.success) {
-        throw new Error(`Parameter validation failed for ${String(functionName)}: ${validation.error}`);
-      }
-      
-      // For functions that expect positional parameters, extract them from the validated object
-      let validatedArgs = [validation.data];
+    // Validate parameters using Zod schema
+    const validation = validateFunctionParams(functionName, paramsObj);
     
-      // Convert back to positional parameters if needed based on function name
-      switch (functionName) {
-        case 'getPostBySlug':
-          validatedArgs = [validation.data.slug];
-          break;
-            
-        case 'getPostByHash':
-          validatedArgs = [validation.data.hash];
-          break;
-          
-        case 'getPostByPath':
-          validatedArgs = [validation.data.path];
-          break;
-          
-        case 'getRecentPosts':
-          validatedArgs = [validation.data.count];
-          break;
-          
-        case 'getFileContent':
-          validatedArgs = [validation.data.path, validation.data.useCache];
-          break;
-          
-        case 'getPostsSimilarityByHashes':
-          validatedArgs = [validation.data.hash1, validation.data.hash2];
-          break;
-          
-        case 'getSimilarPostsByHash':
-          validatedArgs = [validation.data.hash, validation.data.count, validation.data.options];
-          break;
-          
-        case 'getSimilarPostsBySlug':
-          validatedArgs = [validation.data.slug, validation.data.count, validation.data.options];
-          break;
-          
-        case 'getSimilarPostsSlugBySlug':
-          validatedArgs = [validation.data.slug, validation.data.limit];
-          break;
-          
-        case 'getGraph':
-          validatedArgs = [validation.data.useCache];
-          break;
-          
-        case 'getR2Url':
-        case 'getR2ProjectUrl':
-        case 'getR2SharedFolderUrl':
-        case 'getR2RevUrl':
-          validatedArgs = [validation.data.path];
-          break;
-          
-        case 'createViteProxy':
-          validatedArgs = [validation.data.folder];
-          break;
-          
-        case 'fetchPublicApi':
-          validatedArgs = [validation.data.path];
-          break;
-          
-        case 'getActiveProjectRev':
-          validatedArgs = [validation.data.forceRefresh, validation.data.skipDetails];
-          break;
-          
-        case 'sortPostsByDate':
-          validatedArgs = [validation.data.posts];
-          break;
-          
-        case 'getPostsEmbeddings':
-        case 'getPostsSimilarity': 
-        case 'getTopSimilarPostsHashes':
-        case 'getSqliteUrl':
-        case 'fetchProjectDetails':
-        case 'getReleaseInfo':
-        case 'getProjectMetadata':
-        case 'getClientStats':
-        case 'getMediaItems':
-          validatedArgs = [validation.data.useCache];
-          break;
-          
-        case 'fetchProjectActiveRev':
-          validatedArgs = [validation.data.forceRefresh];
-          break;
-          
-        case 'handleOpenAiRequest':
-          validatedArgs = [validation.data.request, validation.data.options];
-          break;
-          
-        case 'createOpenAiToolHandler':
-          validatedArgs = [validation.data.options];
-          break;
-          
-        case 'fetchR2Json':
-          validatedArgs = [validation.data.path, validation.data.opts];
-          break;
-          
-        case 'fetchJson':
-          validatedArgs = [validation.data.url, validation.data.opts];
-          break;
-          
-        // For functions not specifically handled, pass the validated object
-        default:
-          validatedArgs = [validation.data];
-      }
-      
-      // Call the original method with validated arguments
-      return originalMethod.apply(this, validatedArgs);
-    } else {
-      // If no schema, just call the original method directly
-      return originalMethod.apply(this, args);
+    if (!validation.success) {
+      throw new Error(`Parameter validation failed for ${String(functionName)}: ${validation.error}`);
     }
+    
+    // Convert validated parameter object back to positional arguments using schema introspection
+    const validatedArgs = convertParamsObjectToArgs(functionName, validation.data);
+    
+    // Call the original method with validated arguments
+    return originalMethod.apply(this, validatedArgs);
   };
 }
 
