@@ -563,7 +563,7 @@ function App() {
       const validationResult = validateFunctionParams(operation as keyof typeof schemas, processedParams);
 
       if (!validationResult.success) {
-        throw new Error(`Parameter validation failed: ${validationResult.error}`);
+        throw new Error(`🎛️ Parameter validation failed: ${validationResult.error}`);
       }
 
       const validParams = validationResult.data;
