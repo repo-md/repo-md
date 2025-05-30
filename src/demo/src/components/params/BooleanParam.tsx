@@ -51,7 +51,7 @@ const BooleanParam: React.FC<BooleanParamProps> = ({ param, value, onChange, cla
   // The parameter processing logic will handle this correctly
   
   return (
-    <div className={`param-input ${className}`}>
+    <div className={`param-input ${param.required ? 'required' : 'optional'} ${className}`}>
       <div className="boolean-param-container">
         <div className="boolean-label">
           {param.name}
@@ -63,8 +63,9 @@ const BooleanParam: React.FC<BooleanParamProps> = ({ param, value, onChange, cla
         <select
           value={getSelectValue()}
           onChange={handleSelectChange}
-          className="boolean-select"
+          className={`boolean-select ${param.required ? 'required-input' : 'optional-input'}`}
           id={`param-${param.name}`}
+          required={param.required}
         >
           {!param.required && (
             <option value="default">Default ({param.default === true ? 'true' : 'false'})</option>

@@ -132,19 +132,15 @@ const FunctionList: React.FC<FunctionListProps> = ({
               {functionList.sort().map(fnName => {
                 const isSelected = selectedFunction === fnName;
                 const hasParams = functionParams[fnName] && functionParams[fnName].length > 0;
-                const requiredParams = hasParams ?
-                  functionParams[fnName].filter(p => p.required).map(p => p.name) :
-                  [];
+                const allParams = hasParams ? functionParams[fnName] : [];
+                const requiredParams = allParams.filter(p => p.required);
+                const optionalParams = allParams.filter(p => !p.required);
 
-                // Format tooltip to show all parameters with type information
-                // Include an indicator for required params and default values if present
-                const paramTooltip = hasParams ?
-                  // Start with required params first
-                  functionParams[fnName]
-                    .sort((a, b) => (a.required === b.required) ? 0 : a.required ? -1 : 1)
-                    .map(p => `${p.name}${p.required ? '*' : ''}: ${p.type}${p.default !== undefined ? ` = ${p.default}` : ''}`)
-                    .join('\n') :
-                  '';
+                // Format tooltip to show parameters grouped by required/optional
+                const paramTooltip = hasParams ? [
+                  requiredParams.length > 0 ? `Required:\n${requiredParams.map(p => `• ${p.name}: ${p.type}`).join('\n')}` : '',
+                  optionalParams.length > 0 ? `Optional:\n${optionalParams.map(p => `• ${p.name}: ${p.type}${p.default !== undefined ? ` (default: ${p.default})` : ''}`).join('\n')}` : ''
+                ].filter(Boolean).join('\n\n') : '';
 
                 return (
                   <div key={fnName} className="function-item">
@@ -157,11 +153,18 @@ const FunctionList: React.FC<FunctionListProps> = ({
                       <span className="function-label">{fnName}</span>
                       {requiredParams.length > 0 && (
                         <div className="param-tags">
-                          {requiredParams.map(paramName => (
-                            <span key={paramName} className="param-tag required-param">
-                              {paramName}
+                          {requiredParams.map(param => (
+                            <span key={param.name} className="param-tag required-param" title={`${param.name}: ${param.type}`}>
+                              {param.name}*
                             </span>
                           ))}
+                        </div>
+                      )}
+                      {optionalParams.length > 0 && requiredParams.length === 0 && (
+                        <div className="param-tags">
+                          <span className="param-tag optional-param">
+                            {optionalParams.length} optional
+                          </span>
                         </div>
                       )}
                     </div>

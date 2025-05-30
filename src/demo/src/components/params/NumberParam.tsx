@@ -9,10 +9,14 @@ interface NumberParamProps {
 }
 
 const NumberParam: React.FC<NumberParamProps> = ({ param, value, onChange, className = '' }) => {
-  const placeholder = param.default !== undefined ? String(param.default) : '';
+  const placeholder = param.default !== undefined 
+    ? `Default: ${String(param.default)}` 
+    : param.required 
+      ? `Enter ${param.name}...` 
+      : 'Optional';
   
   return (
-    <div className={`param-input ${className}`}>
+    <div className={`param-input ${param.required ? 'required' : 'optional'} ${className}`}>
       <label>
         {param.name}
         {param.required ? 
@@ -25,7 +29,9 @@ const NumberParam: React.FC<NumberParamProps> = ({ param, value, onChange, class
         value={value || ''}
         onChange={(e) => onChange(param.name, e.target.value)}
         placeholder={placeholder}
-        className="number-input"
+        className={`number-input ${param.required ? 'required-input' : 'optional-input'}`}
+        required={param.required}
+        min="0"
       />
       {param.description && <div className="param-description">{param.description}</div>}
     </div>
