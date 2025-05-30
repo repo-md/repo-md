@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
-// Import the parameter types from App.tsx
+import type React from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Function group color mapping
 const groupColors: Record<string, string> = {
@@ -18,7 +17,7 @@ interface FunctionParam {
   name: string;
   required: boolean;
   type: string;
-  default?: any;
+  default?: unknown;
   description?: string;
 }
 
@@ -37,26 +36,36 @@ const FunctionList: React.FC<FunctionListProps> = ({
 }) => {
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const hasInitialized = useRef(false);
 
   // Handle function selection/execution
-  const handleFunctionSelect = (fnName: string) => {
+  const handleFunctionSelect = useCallback((fnName: string) => {
     if (disabled) return;
+    
+    // Prevent re-executing the same function
+    if (selectedFunction === fnName) return;
 
     // Execute the function immediately
     handleExecute(fnName, {});
 
     // Set selected function for display purposes
     setSelectedFunction(fnName);
-  };
+  }, [disabled, handleExecute, selectedFunction]);
 
-  // Check URL for initial method selection
+  // Check URL for initial method selection - only run once on mount
   useEffect(() => {
+    if (hasInitialized.current || functions.length === 0) return;
+    
     const urlParams = new URLSearchParams(window.location.search);
     const method = urlParams.get('method');
     if (method && functions.includes(method)) {
-      handleFunctionSelect(method);
+      // Use setTimeout to avoid potential React batching issues
+      setTimeout(() => {
+        handleFunctionSelect(method);
+        hasInitialized.current = true;
+      }, 0);
     }
-  }, [functions]);
+  }, [functions, handleFunctionSelect]);
 
   // Filter functions based on search
   const filteredFunctions = searchFilter
@@ -66,8 +75,8 @@ const FunctionList: React.FC<FunctionListProps> = ({
   // Group functions by their prefix (post, media, etc.)
   const groupedFunctions: Record<string, string[]> = {};
 
-  filteredFunctions.forEach(fn => {
-    if (fn.startsWith('_') || fn === 'constructor') return; // Skip internal methods
+  for (const fn of filteredFunctions) {
+    if (fn.startsWith('_') || fn === 'constructor') continue; // Skip internal methods
 
     // Determine group based on method name or pattern
     let group = 'Other';
@@ -86,7 +95,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
     }
 
     groupedFunctions[group].push(fn);
-  });
+  }
 
   // Specific group order
   const groupOrder = [
@@ -113,6 +122,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
         />
         {searchFilter && (
           <button
+            type="button"
             className="clear-search-button"
             onClick={() => setSearchFilter('')}
           >
@@ -144,12 +154,13 @@ const FunctionList: React.FC<FunctionListProps> = ({
 
                 return (
                   <div key={fnName} className="function-item">
-                    <div
+                    <button
+                      type="button"
                       className={`function-name ${isSelected ? 'selected' : ''} ${requiredParams.length > 0 ? 'has-required-params' : ''}`}
                       onClick={() => handleFunctionSelect(fnName)}
                       title={paramTooltip}
                     >
-                      <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }}></span>
+                      <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }} />
                       <span className="function-label">{fnName}</span>
                       {requiredParams.length > 0 && (
                         <div className="param-tags">
@@ -167,7 +178,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
                           </span>
                         </div>
                       )}
-                    </div>
+                    </button>
                   </div>
                 );
               })}

@@ -483,16 +483,37 @@ function App() {
           // If param is provided explicitly and not empty (empty is treated as using default)
           if (params[param.name] !== undefined && params[param.name] !== '') {
             // Convert string values to appropriate types
-            if (param.type === 'number') {
-              processedParams[param.name] = Number(params[param.name]);
-            } else if (param.type === 'boolean' ||
-              param.type.includes('boolean') ||
-              (param.default !== undefined && typeof param.default === 'boolean')) {
-              // For boolean values, just convert to actual boolean
-              processedParams[param.name] = params[param.name] === 'true';
-              console.log(`Converted boolean param ${param.name}: ${params[param.name]} -> ${processedParams[param.name]}`);
+            const paramValue = params[param.name];
+            const paramType = param.type.toLowerCase();
+            
+            if (paramType === 'number' || paramType.includes('number')) {
+              const numberValue = Number(paramValue);
+              if (!isNaN(numberValue)) {
+                processedParams[param.name] = numberValue;
+                console.log(`Converted number param ${param.name}: "${paramValue}" -> ${numberValue}`);
+              } else {
+                console.warn(`Invalid number value for ${param.name}: "${paramValue}"`);
+                processedParams[param.name] = paramValue; // Keep original value for validation error
+              }
+            } else if (paramType === 'boolean' || 
+                      paramType.includes('boolean') ||
+                      (param.default !== undefined && typeof param.default === 'boolean')) {
+              // For boolean values, convert to actual boolean
+              processedParams[param.name] = paramValue === 'true';
+              console.log(`Converted boolean param ${param.name}: "${paramValue}" -> ${processedParams[param.name]}`);
+            } else if (paramType.includes('array') || paramType.includes('[]')) {
+              // Handle array parameters
+              try {
+                processedParams[param.name] = JSON.parse(paramValue);
+                console.log(`Converted array param ${param.name}: "${paramValue}" -> ${processedParams[param.name]}`);
+              } catch {
+                // Fallback to comma-separated string parsing
+                processedParams[param.name] = paramValue.split(',').map(s => s.trim());
+                console.log(`Converted array param ${param.name} (fallback): "${paramValue}" -> ${processedParams[param.name]}`);
+              }
             } else {
-              processedParams[param.name] = params[param.name];
+              // String and other types - keep as string
+              processedParams[param.name] = paramValue;
             }
           }
           // For empty values on optional parameters, don't include them at all
@@ -642,11 +663,13 @@ function App() {
 
   // Update URL when method changes
   useEffect(() => {
-    if (selectedMethod) {
+    const currentMethod = new URLSearchParams(window.location.search).get('method');
+    
+    if (selectedMethod && currentMethod !== selectedMethod) {
       const url = new URL(window.location.href);
       url.searchParams.set('method', selectedMethod);
       window.history.replaceState({}, '', url.toString());
-    } else {
+    } else if (!selectedMethod && currentMethod) {
       const url = new URL(window.location.href);
       url.searchParams.delete('method');
       window.history.replaceState({}, '', url.toString());
@@ -655,9 +678,12 @@ function App() {
 
   // Execute any function by name with optional parameters
   const handleExecuteFunction = useCallback((fnName: string, params?: Record<string, string>) => {
-    setSelectedMethod(fnName);
+    // Only update selectedMethod if it's different to prevent loops
+    if (selectedMethod !== fnName) {
+      setSelectedMethod(fnName);
+    }
     handleRun(fnName, params || {})
-  }, [handleRun])
+  }, [handleRun, selectedMethod])
 
   const [configCollapsed, setConfigCollapsed] = useState(true);
 

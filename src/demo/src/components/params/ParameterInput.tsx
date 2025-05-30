@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import StringParam from './StringParam';
 import NumberParam from './NumberParam';
 import BooleanParam from './BooleanParam';
@@ -9,7 +10,7 @@ export interface FunctionParam {
   name: string;
   required: boolean;
   type: string;
-  default?: any;
+  default?: unknown;
   description?: string;
 }
 
@@ -90,7 +91,6 @@ const ParameterInput: React.FC<ParameterInputProps> = ({ param, value, onChange,
           className={className}
         />
       );
-    case 'string':
     default:
       return (
         <StringParam 

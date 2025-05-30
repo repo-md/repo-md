@@ -1,5 +1,4 @@
-import React from 'react';
-import { FunctionParam } from './ParameterInput';
+import type { FunctionParam } from './ParameterInput';
 
 interface StringParamProps {
   param: FunctionParam;
@@ -17,7 +16,7 @@ const StringParam: React.FC<StringParamProps> = ({ param, value, onChange, class
   
   return (
     <div className={`param-input ${param.required ? 'required' : 'optional'} ${className}`}>
-      <label>
+      <label htmlFor={`input-${param.name}`}>
         {param.name}
         {param.required ? 
           <span className="required-indicator">*</span> : 
@@ -25,6 +24,7 @@ const StringParam: React.FC<StringParamProps> = ({ param, value, onChange, class
         }
       </label>
       <input
+        id={`input-${param.name}`}
         type="text"
         value={value || ''}
         onChange={(e) => onChange(param.name, e.target.value)}

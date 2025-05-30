@@ -576,6 +576,11 @@ button:disabled {
   align-items: center;
   overflow: hidden;
   white-space: nowrap;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
 }
 
 .function-name:hover {
