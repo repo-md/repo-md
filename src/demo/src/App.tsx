@@ -84,21 +84,6 @@ const extractParamsFromSchemas = () => {
           console.log(`[DEBUG] Processing ${paramName} in ${fnName}:`, zodParam);
         }
 
-        // Process special case: booleanSchema (z.boolean().optional().default(true))
-        if (paramName === 'useCache' && fnName !== 'fetchJson') {
-          // booleanSchema is optional with default=true
-          paramType = 'boolean';
-          required = false;
-          defaultValue = true;
-
-          fnParams.push({
-            name: paramName,
-            type: paramType,
-            required,
-            default: defaultValue
-          });
-          continue;
-        }
 
         // Try to extract type and optional status
         if (zodParam && typeof zodParam === 'object' && '_def' in zodParam) {
@@ -180,21 +165,6 @@ const extractParamsFromSchemas = () => {
           }
         }
 
-        // Special cases for common parameters with known defaults
-        if (paramName === 'forceRefresh' && paramType === 'boolean') {
-          defaultValue = false;
-        }
-        if (paramName === 'count' && fnName === 'getRecentPosts') {
-          defaultValue = 3;
-        }
-        if (paramName === 'count' &&
-          (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
-          defaultValue = 5;
-        }
-        if (paramName === 'options' &&
-          (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
-          defaultValue = {};
-        }
 
         // Create the parameter entry
         fnParams.push({
@@ -213,28 +183,6 @@ const extractParamsFromSchemas = () => {
     }
   }
 
-  // Add known optional boolean parameters that might be missed
-  const booleanDefaults = [
-    'getAllPosts', 'fetchProjectDetails', 'getAllMedia', 'getProjectDetails',
-    'getPostsEmbeddings', 'getPostsSimilarity', 'getTopSimilarPostsHashes',
-    'getSqliteUrl', 'getClientStats', 'getMediaItems', 'getGraph'
-  ];
-
-  booleanDefaults.forEach(fnName => {
-    if (!params[fnName]) {
-      params[fnName] = [];
-    }
-
-    // Add useCache parameter if it doesn't exist
-    if (!params[fnName].some(p => p.name === 'useCache')) {
-      params[fnName].push({
-        name: 'useCache',
-        type: 'boolean',
-        required: false,
-        default: true
-      });
-    }
-  });
 
   return params;
 };
@@ -256,76 +204,9 @@ for (const [key, schema] of Object.entries(schemas)) {
 const extractedParams = extractParamsFromSchemas();
 console.log('Extracted params from schemas:', extractedParams);
 
-// Fallback for any missing functions - MAKE SURE TO INCLUDE ALL CRITICAL METHODS!
-const fallbackParams: Record<string, FunctionParam[]> = {
-  getAllPosts: [
-    { name: 'useCache', type: 'boolean', required: false, default: true },
-    { name: 'forceRefresh', type: 'boolean', required: false, default: false }
-  ],
-  getPostBySlug: [
-    { name: 'slug', type: 'string', required: true }
-  ],
-  getPostByHash: [
-    { name: 'hash', type: 'string', required: true }
-  ],
-  getPostByPath: [
-    { name: 'path', type: 'string', required: true }
-  ],
-  getRecentPosts: [
-    { name: 'count', type: 'number', required: false, default: 3 }
-  ],
-  getPostsSimilarityByHashes: [
-    { name: 'hash1', type: 'string', required: true },
-    { name: 'hash2', type: 'string', required: true }
-  ],
-  getSimilarPostsByHash: [
-    { name: 'hash', type: 'string', required: true },
-    { name: 'count', type: 'number', required: false, default: 5 }
-  ],
-  getSimilarPostsHashByHash: [
-    { name: 'hash', type: 'string', required: true },
-    { name: 'limit', type: 'number', required: false, default: 10 }
-  ],
-  getFileContent: [
-    { name: 'path', type: 'string', required: true },
-    { name: 'useCache', type: 'boolean', required: false, default: true }
-  ]
-};
+// Use only schema-extracted parameters
+const functionParams: Record<string, FunctionParam[]> = extractedParams;
 
-// Ensure critical methods are properly included (they seem to be missing in some contexts)
-console.log('Pre-merge getPostByPath params:', extractedParams['getPostByPath']);
-console.log('Pre-merge getPostByHash params:', extractedParams['getPostByHash']);
-console.log('Pre-merge getPostBySlug params:', extractedParams['getPostBySlug']);
-
-// List of critical methods that must have parameters
-const criticalMethods = ['getPostByHash', 'getPostBySlug', 'getPostByPath', 'getFileContent',
-  'getPostsSimilarityByHashes', 'getSimilarPostsByHash'];
-
-// Start with the fallbacks
-const functionParams: Record<string, FunctionParam[]> = { ...fallbackParams };
-
-// Add extracted parameters, but don't override fallbacks for critical methods
-Object.entries(extractedParams).forEach(([key, params]) => {
-  // Skip critical methods to ensure they always use the fallbacks
-  if (!criticalMethods.includes(key)) {
-    functionParams[key] = params;
-  } else {
-    // For critical methods, verify the extracted params have the needed properties
-    // If they don't, stick with the fallback
-    if (params &&
-      Array.isArray(params) &&
-      params.length > 0 &&
-      params.some(p => p.required)) {
-      console.log(`Using extracted params for critical method ${key}`);
-      functionParams[key] = params;
-    } else {
-      console.log(`Using fallback params for critical method ${key} (extracted params insufficient)`);
-    }
-  }
-});
-
-// Prioritize metadata from schemas over fallbacks, but fallbacks over functionParamMetadata
-// This is because the functionParamMetadata might be losing the optional/required status during build
 
 // Debug the final parameter configuration
 console.log('Final function params:', functionParams);
