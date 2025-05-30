@@ -25,11 +25,6 @@ const STORAGE_KEY_ORG_SLUG = 'repomd_demo_orgSlug';
 const STORAGE_KEY_STRATEGY = 'repomd_demo_strategy';
 const STORAGE_KEY_REVISION = 'repomd_demo_revision';
 
-// Sample project data
-const SAMPLE_PROJECT = {
-  projectId: '680e97604a0559a192640d2c',
-  orgSlug: 'iplanwebsites'
-};
 
 const ConfigPanel: React.FC<ConfigPanelProps> = ({
   projectId,
@@ -85,12 +80,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   const handleRevisionChange = (value: string) => {
     setRevision(value);
     localStorage.setItem(STORAGE_KEY_REVISION, value);
-  };
-
-  // Handler for using sample project
-  const handleUseSampleProject = () => {
-    handleProjectIdChange(SAMPLE_PROJECT.projectId);
-    handleOrgSlugChange(SAMPLE_PROJECT.orgSlug);
   };
 
   const handleTemplateChange = (template: ProjectTemplate | '') => {
@@ -209,15 +198,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
           />
           <small>For protected content</small>
             </div>
-          </div>
-
-          <div className="config-buttons">
-            <button
-              className="sample-project-button"
-              onClick={handleUseSampleProject}
-            >
-              Use Sample Project
-            </button>
           </div>
         </>
       )}

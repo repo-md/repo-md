@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { ApiResult } from '../types'
 import JSONPretty from 'react-json-pretty'
 import 'react-json-pretty/themes/monikai.css'
-import { Settings, Code, Play } from 'lucide-react'
+import { Code, Play } from 'lucide-react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import { ParameterInput, FunctionParam } from './params'
@@ -10,8 +10,6 @@ import { ParameterInput, FunctionParam } from './params'
 interface ResultPanelProps {
   result: ApiResult | null
   loading: boolean
-  toggleConfig: () => void
-  showConfig: boolean
   handleRun?: (params?: Record<string, string>) => void
   functionParams?: Record<string, FunctionParam[]>
   projectId?: string
@@ -23,8 +21,6 @@ interface ResultPanelProps {
 const ResultPanel: React.FC<ResultPanelProps> = ({
   result,
   loading,
-  toggleConfig,
-  showConfig,
   handleRun,
   functionParams = {},
   projectId = '',
@@ -271,14 +267,6 @@ fetchData();`;
             disabled={!result}
           >
             <Code size={18} />
-          </button>
-
-          <button
-            className={`nav-button settings-button ${showConfig ? 'active' : ''}`}
-            onClick={toggleConfig}
-            title="Toggle Settings"
-          >
-            <Settings size={18} />
           </button>
         </div>
       </div>

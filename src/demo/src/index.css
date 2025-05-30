@@ -178,12 +178,6 @@ body {
   min-width: 150px;
 }
 
-.config-buttons {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-  width: 100%;
-}
 
 .form-group small {
   color: #666;
@@ -259,26 +253,6 @@ select {
   width: 100%;
 }
 
-.button-container {
-  margin: 15px 0;
-}
-
-.sample-project-button {
-  background-color: #4c6e9f;
-  width: 100%;
-  margin-top: 5px;
-  border: 1px solid #3c5d8e;
-  border-radius: 5px;
-  padding: 8px 16px;
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.sample-project-button:hover {
-  background-color: #3c5d8e;
-}
 
 button {
   background-color: #4c86f9;

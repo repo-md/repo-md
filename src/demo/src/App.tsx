@@ -659,12 +659,7 @@ function App() {
     handleRun(fnName, params || {})
   }, [handleRun])
 
-  const [showConfig, setShowConfig] = useState(false);
   const [configCollapsed, setConfigCollapsed] = useState(true);
-
-  const toggleConfig = () => {
-    setShowConfig(!showConfig);
-  };
 
   const toggleConfigCollapsed = () => {
     setConfigCollapsed(!configCollapsed);
@@ -740,8 +735,6 @@ function App() {
           <ResultPanel
             result={result}
             loading={loading}
-            toggleConfig={toggleConfig}
-            showConfig={showConfig}
             handleRun={result ?
               (params) => handleRun(result.operation, params || result.params || {}) :
               undefined
