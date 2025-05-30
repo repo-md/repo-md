@@ -49,20 +49,6 @@ export const schemas = {
     count: z.number().nonnegative().optional().default(3),
   }),
 
-  augmentPostsByProperty: z.object({
-    keys: z.array(z.string()).min(1, "Keys array cannot be empty"),
-    property: z.string().refine((val) => ["hash", "slug", "id"].includes(val), {
-      message: "Property must be one of: hash, slug, id",
-    }),
-    options: z
-      .object({
-        loadIndividually: z.number().nonnegative().optional().default(3),
-        count: z.number().nonnegative().optional(),
-        useCache: z.boolean().optional().default(true),
-      })
-      .optional()
-      .default({}),
-  }),
 
   // Similarity Methods
   getPostsSimilarityByHashes: z.object({

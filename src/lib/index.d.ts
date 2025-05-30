@@ -48,6 +48,7 @@ export class RepoMD {
   // API methods
   fetchPublicApi(path?: string): Promise<any>;
   fetchProjectDetails(): Promise<any>;
+  fetchProjectActiveRev(): Promise<string>;
   getActiveProjectRev(): Promise<string>;
   ensureLatestRev(): Promise<void>;
   fetchJson(url: string, opts?: any): Promise<any>;
@@ -55,7 +56,13 @@ export class RepoMD {
   _fetchMapData(mapPath: string, defaultValue?: any): Promise<any>;
 
   // SQLite methods
-  getSqliteURL(): Promise<string>;
+  getSqliteUrl(): Promise<string>;
+
+  // Client stats
+  getClientStats(): any;
+
+  // Shared folder URL
+  getR2SharedFolderUrl(path?: string): string;
 
   // Media methods
   getR2MediaUrl(path: string): Promise<string>;
@@ -64,12 +71,20 @@ export class RepoMD {
   getMediaItems(useCache?: boolean): Promise<any>;
   handleCloudflareRequest(request: Request): Promise<Response | null>;
 
+  // Media similarity methods
+  getMediaEmbeddings(): Promise<any>;
+  getMediaSimilarity(): Promise<any>;
+  getMediaSimilarityByHashes(hash1: string, hash2: string): Promise<number>;
+  getTopSimilarMediaHashes(): Promise<any>;
+  getSimilarMediaHashByHash(hash: string, limit?: number): Promise<string[]>;
+  getSimilarMediaByHash(hash: string, count?: number): Promise<any[]>;
+
   // Post retrieval methods
   getAllPosts(useCache?: boolean, forceRefresh?: boolean): Promise<any[]>;
   getPostBySlug(slug: string): Promise<any | null>;
   getPostByHash(hash: string): Promise<any | null>;
   getPostByPath(path: string): Promise<any | null>;
-  augmentPostsByProperty(keys: string[], property: string, options?: any): Promise<any[]>;
+  _augmentPostsByProperty(keys: string[], property: string, options?: any): Promise<any[]>;
   sortPostsByDate(posts: any[]): any[];
   getRecentPosts(count?: number): Promise<any[]>;
   _findPostByProperty(posts: any[], property: string, value: any): any | null;

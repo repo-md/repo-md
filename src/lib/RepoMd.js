@@ -185,7 +185,7 @@ class RepoMD {
       const { version, buildDate } = getVersionInfo();
       envizion({
         title: "Repo.md client",
-        subtitle: `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
+        subtitle: `Build apps and websites using markdown`, // `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
         version,
         buildDate,
       });
@@ -316,7 +316,7 @@ class RepoMD {
       _fetchMapData: this._fetchMapData.bind(this),
       getRecentPosts: this.getRecentPosts.bind(this),
       getPostBySlug: this.getPostBySlug.bind(this),
-      augmentPostsByProperty: this.augmentPostsByProperty.bind(this),
+      augmentPostsByProperty: this._augmentPostsByProperty.bind(this),
       debug: this.debug,
     });
 
@@ -393,6 +393,10 @@ class RepoMD {
     return await this.api.fetchProjectDetails();
   }
 
+  async fetchProjectActiveRev() {
+    return await this.api.fetchProjectActiveRev();
+  }
+
   async getActiveProjectRev() {
     return await this.api.getActiveProjectRev();
   }
@@ -454,7 +458,7 @@ class RepoMD {
     return await this.posts.getPostByPath(path);
   }
 
-  async augmentPostsByProperty(keys, property, options = {}) {
+  async _augmentPostsByProperty(keys, property, options = {}) {
     return await this.posts.augmentPostsByProperty(keys, property, options);
   }
 
