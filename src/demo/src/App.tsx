@@ -92,12 +92,23 @@ const extractParamsFromSchemas = () => {
 
         // Try to extract type and optional status
         if (zodParam && typeof zodParam === 'object' && '_def' in zodParam) {
-          // Check if parameter is optional
+          // Check if parameter is optional or has default value
           const isOptional = zodParam instanceof z.ZodOptional;
-          required = !isOptional;
+          const hasDefault = zodParam._def && typeof zodParam._def === 'object' && zodParam._def !== null && 'defaultValue' in zodParam._def;
+          
+          // A parameter is optional if it's either explicitly optional OR has a default value
+          required = !isOptional && !hasDefault;
 
-          // Extract the actual type (might be nested in ZodOptional)
-          const typeObj = isOptional ? zodParam._def.innerType : zodParam;
+          // Extract the actual type (might be nested in ZodOptional or ZodDefault)
+          let typeObj = zodParam;
+          if (isOptional) {
+            typeObj = zodParam._def.innerType;
+          }
+          
+          // Handle ZodDefault wrapper by checking the typeName
+          if (typeObj._def && (typeObj._def as any).typeName === 'ZodDefault') {
+            typeObj = (typeObj._def as any).innerType;
+          }
 
           // Determine parameter type
           if (typeObj instanceof z.ZodString) {
@@ -114,26 +125,28 @@ const extractParamsFromSchemas = () => {
             paramType = `enum (${typeObj._def.values.join(', ')})`;
           }
 
-          // Try to extract default value
-          if (isOptional && typeObj._def && 'defaultValue' in typeObj._def) {
-            defaultValue = typeObj._def.defaultValue;
+          // Extract default value - check both the original param and the inner type
+          if (zodParam._def && 'defaultValue' in zodParam._def) {
+            defaultValue = (zodParam._def as any).defaultValue;
+          } else if (isOptional && typeObj._def && 'defaultValue' in typeObj._def) {
+            defaultValue = (typeObj._def as any).defaultValue;
           }
+        }
 
-          // Special cases for common parameters with known defaults
-          if (paramName === 'forceRefresh' && paramType === 'boolean') {
-            defaultValue = false;
-          }
-          if (paramName === 'count' && fnName === 'getRecentPosts') {
-            defaultValue = 3;
-          }
-          if (paramName === 'count' &&
-            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
-            defaultValue = 5;
-          }
-          if (paramName === 'options' &&
-            (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
-            defaultValue = {};
-          }
+        // Special cases for common parameters with known defaults
+        if (paramName === 'forceRefresh' && paramType === 'boolean') {
+          defaultValue = false;
+        }
+        if (paramName === 'count' && fnName === 'getRecentPosts') {
+          defaultValue = 3;
+        }
+        if (paramName === 'count' &&
+          (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
+          defaultValue = 5;
+        }
+        if (paramName === 'options' &&
+          (fnName === 'getSimilarPostsBySlug' || fnName === 'getSimilarPostsByHash')) {
+          defaultValue = {};
         }
 
         // Create the parameter entry
