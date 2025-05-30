@@ -120,7 +120,7 @@ const extractParamsFromSchemas = () => {
             console.log(`[DEBUG] Type detection for ${paramName}:`, {
               original: zodParam,
               unwrapped: typeObj,
-              typeName: typeObj._def?.typeName,
+              typeName: typeObj._def && typeof typeObj._def === 'object' && typeObj._def !== null && 'typeName' in typeObj._def ? (typeObj._def as any).typeName : undefined,
               isZodNumber: typeObj instanceof z.ZodNumber,
               isOptional,
               hasDefault
@@ -142,7 +142,7 @@ const extractParamsFromSchemas = () => {
             paramType = `enum (${typeObj._def.values.join(', ')})`;
           } else {
             // Additional type checking by typeName
-            const typeName = typeObj._def?.typeName;
+            const typeName = typeObj._def && typeof typeObj._def === 'object' && typeObj._def !== null && 'typeName' in typeObj._def ? (typeObj._def as any).typeName : undefined;
             if (typeName === 'ZodNumber') {
               paramType = 'number';
             } else if (typeName === 'ZodString') {
@@ -158,9 +158,9 @@ const extractParamsFromSchemas = () => {
           }
 
           // Extract default value - check both the original param and the inner type
-          if (zodParam._def && 'defaultValue' in zodParam._def) {
+          if (zodParam._def && typeof zodParam._def === 'object' && zodParam._def !== null && 'defaultValue' in zodParam._def) {
             defaultValue = (zodParam._def as any).defaultValue;
-          } else if (isOptional && typeObj._def && 'defaultValue' in typeObj._def) {
+          } else if (isOptional && typeObj._def && typeof typeObj._def === 'object' && typeObj._def !== null && 'defaultValue' in typeObj._def) {
             defaultValue = (typeObj._def as any).defaultValue;
           }
         }
