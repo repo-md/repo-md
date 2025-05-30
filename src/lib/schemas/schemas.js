@@ -49,7 +49,6 @@ export const schemas = {
     count: z.number().nonnegative().optional().default(3),
   }),
 
-
   // Similarity Methods
   getPostsSimilarityByHashes: z.object({
     hash1: stringSchema.refine((val) => val.length > 0, {
@@ -254,9 +253,7 @@ export const schemas = {
   }),
 
   // Utility Methods
-  getClientStats: z.object({
-    useCache: booleanSchema,
-  }),
+  getClientStats: z.object({}),
 
   sortPostsByDate: z.object({
     posts: z.array(z.any()).min(1, "Posts array cannot be empty"),
@@ -268,6 +265,22 @@ export const schemas = {
   }),
 
   getProjectMetadata: z.object({
+    useCache: booleanSchema,
+  }),
+
+  ensureLatestRev: z.object({}),
+
+  // Instance Management Methods
+  destroy: z.object({}),
+
+  // Method Aliases
+  getPostsBySlug: z.object({
+    slug: stringSchema.refine((val) => val.length > 0, {
+      message: "Slug is required for getPostsBySlug operation",
+    }),
+  }),
+
+  getSourceFiles: z.object({
     useCache: booleanSchema,
   }),
 };
