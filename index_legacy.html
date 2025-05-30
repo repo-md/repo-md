@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repo.md API Demo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .error {
+      color: #dc2626;
+      background: #fee2e2;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Repo.md API Demo legacy</h1>
+  
+  <div id="content">
+    <h2>Available Content</h2>
+    <select id="contentSelect"></select>
+    <div id="contentDisplay"></div>
+    
+  </div>
+
+  <div id="search">
+    <h2>Search</h2>
+    <input type="text" id="searchInput" placeholder="Search content...">
+    <div id="searchResults"></div>
+  </div>
+
+  <script type="module">
+    import { createRepo, createSearchPlugin } from '/src/lib/index.ts';
+
+    const baseUrl = '/mock';
+    const repo = createRepo({ baseUrl });
+    let search;
+
+    // Initialize search plugin
+    createSearchPlugin({ baseUrl }).then(s => {
+      search = s;
+    });
+
+    // Load available content
+    const select = document.getElementById('contentSelect');
+    const display = document.getElementById('contentDisplay');
+
+    async function loadContent(slug) {
+      try {
+        const content = await repo.load(slug);
+        display.innerHTML = `
+          <h3>${content.title}</h3>
+          <p>${content.content}</p>
+          <pre>${JSON.stringify(content, null, 2)}</pre>
+        `;
+      } catch (err) {
+        display.innerHTML = `<div class="error">Error loading content: ${err.message}</div>`;
+      }
+    }
+
+    // Load available slugs
+    repo.listSlugs().then(slugs => {
+      select.innerHTML = slugs.map(slug => 
+        `<option value="${slug}">${slug}</option>`
+      ).join('');
+      
+      if (slugs.length > 0) {
+        loadContent(slugs[0]);
+      }
+    });
+
+    select.addEventListener('change', (e) => {
+      loadContent(e.target.value);
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', async (e) => {
+      if (!search) return;
+      
+      const query = e.target.value;
+      if (!query) {
+        searchResults.innerHTML = '';
+        return;
+      }
+
+      const results = await search.search(query);
+      searchResults.innerHTML = results.map(result => `
+        <div>
+          <h4>${result.title}</h4>
+          <p>${result.snippet || ''}</p>
+          <small>Score: ${result.score?.toFixed(2)}</small>
+        </div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>
