@@ -547,12 +547,24 @@ function App() {
           }
         }
 
-        // Also check for special cases by parameter name
-        const booleanParamNames = ['useCache', 'forceRefresh', 'debug', 'loadIndividually'];
-        for (const name of booleanParamNames) {
-          if (params[name] !== undefined && processedParams[name] === undefined) {
-            processedParams[name] = params[name] === 'true';
-            console.log(`Special case: converted ${name} to boolean: ${processedParams[name]}`);
+        // Check for any remaining parameters using schema information
+        for (const [name, value] of Object.entries(params)) {
+          if (value !== undefined && processedParams[name] === undefined) {
+            // Find this parameter in the function's schema to determine its type
+            const paramDef = functionParams[operation]?.find(p => p.name === name);
+            if (paramDef?.type === 'boolean' || (paramDef?.default !== undefined && typeof paramDef.default === 'boolean')) {
+              processedParams[name] = value === 'true';
+              console.log(`Schema-based: converted ${name} to boolean: ${processedParams[name]}`);
+            } else if (paramDef?.type === 'number' || (paramDef?.default !== undefined && typeof paramDef.default === 'number')) {
+              const numberValue = Number(value);
+              if (!isNaN(numberValue)) {
+                processedParams[name] = numberValue;
+                console.log(`Schema-based: converted ${name} to number: ${processedParams[name]}`);
+              } else {
+                processedParams[name] = value;
+                console.log(`Schema-based: kept ${name} as string (NaN): ${processedParams[name]}`);
+              }
+            }
           }
         }
       }
