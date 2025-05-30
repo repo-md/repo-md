@@ -107,34 +107,31 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
             <Info size={16} />
             <div className="tooltip">
               <p>This demo uses the RepoMD JavaScript client to fetch content from the repo.md API.</p>
-              <p>Enter your project ID and organization slug to get started, or use templates/sample project.</p>
+              <p>Enter your project ID and organization slug to get started, or use an example project.</p>
             </div>
           </span>
         </h3>
+        {!isCollapsed && (
+          <div className="template-selector">
+            <select
+              id="template"
+              value={selectedTemplate}
+              onChange={(e) => handleTemplateChange(e.target.value as ProjectTemplate | '')}
+              className="template-select-subtle"
+            >
+              <option value="">Use an example project...</option>
+              {Object.entries(exampleProjects).map(([key, template]) => (
+                <option key={key} value={key}>
+                  {template.name} - {template.description}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {!isCollapsed && (
         <>
-          <div className="templates-section">
-            <div className="form-group">
-              <label htmlFor="template">Template</label>
-              <select
-                id="template"
-                value={selectedTemplate}
-                onChange={(e) => handleTemplateChange(e.target.value as ProjectTemplate | '')}
-                className="template-select"
-              >
-                <option value="">Select a template...</option>
-                {Object.entries(exampleProjects).map(([key, template]) => (
-                  <option key={key} value={key}>
-                    {template.name} - {template.description}
-                  </option>
-                ))}
-              </select>
-              <small>Choose a template to populate the configuration</small>
-            </div>
-          </div>
-
           <div className="config-form">
             <div className="form-group">
               <label htmlFor="orgSlug">Org Slug (required)</label>

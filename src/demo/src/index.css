@@ -126,6 +126,10 @@ body {
 
 .config-header {
   margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .config-header h3 {
@@ -140,6 +144,7 @@ body {
   align-items: center;
   gap: 8px;
   user-select: none;
+  flex: 1;
 }
 
 .chevron-icon {
@@ -149,16 +154,31 @@ body {
   transition: transform 0.2s ease;
 }
 
-.templates-section {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #ddd;
+.template-selector {
+  flex: 0 0 auto;
 }
 
-.template-select {
-  width: 100%;
+.template-select-subtle {
   background-color: white;
   cursor: pointer;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: #666;
+  min-width: 180px;
+  transition: all 0.2s;
+}
+
+.template-select-subtle:hover {
+  border-color: #4c86f9;
+  color: #333;
+}
+
+.template-select-subtle:focus {
+  outline: none;
+  border-color: #4c86f9;
+  color: #333;
 }
 
 .config-form {
