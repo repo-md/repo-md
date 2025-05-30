@@ -63,6 +63,11 @@ const extractParamsFromSchemas = () => {
         continue;
       }
 
+      // Debug logging for getRecentPosts
+      if (fnName === 'getRecentPosts') {
+        console.log(`[DEBUG] Processing schema for ${fnName}:`, schema);
+      }
+
       // Extract shape (parameter definitions) from the schema
       const shape = schema._def.shape();
       const fnParams: FunctionParam[] = [];
@@ -73,6 +78,11 @@ const extractParamsFromSchemas = () => {
         let paramType = 'unknown';
         let required = true;
         let defaultValue: any = undefined;
+
+        // Debug logging for count parameter
+        if (paramName === 'count' && fnName === 'getRecentPosts') {
+          console.log(`[DEBUG] Processing ${paramName} in ${fnName}:`, zodParam);
+        }
 
         // Process special case: booleanSchema (z.boolean().optional().default(true))
         if (paramName === 'useCache' && fnName !== 'fetchJson') {
@@ -101,13 +111,35 @@ const extractParamsFromSchemas = () => {
 
           // Extract the actual type (might be nested in ZodOptional or ZodDefault)
           let typeObj = zodParam;
-          if (isOptional) {
-            typeObj = zodParam._def.innerType;
-          }
           
-          // Handle ZodDefault wrapper by checking the typeName
-          if (typeObj._def && (typeObj._def as any).typeName === 'ZodDefault') {
-            typeObj = (typeObj._def as any).innerType;
+          // Unwrap ZodDefault and ZodOptional in any order (can be nested)
+          let changed = true;
+          while (changed) {
+            changed = false;
+            
+            // Unwrap ZodDefault
+            if (typeObj._def && (typeObj._def as any).typeName === 'ZodDefault') {
+              typeObj = (typeObj._def as any).innerType;
+              changed = true;
+            }
+            
+            // Unwrap ZodOptional
+            if (typeObj._def && (typeObj._def as any).typeName === 'ZodOptional') {
+              typeObj = (typeObj._def as any).innerType;
+              changed = true;
+            }
+          }
+
+          // Debug logging for type detection
+          if (paramName === 'count' && fnName === 'getRecentPosts') {
+            console.log(`[DEBUG] Type detection for ${paramName}:`, {
+              original: zodParam,
+              unwrapped: typeObj,
+              typeName: typeObj._def?.typeName,
+              isZodNumber: typeObj instanceof z.ZodNumber,
+              isOptional,
+              hasDefault
+            });
           }
 
           // Determine parameter type
@@ -123,6 +155,21 @@ const extractParamsFromSchemas = () => {
             paramType = 'object';
           } else if (typeObj instanceof z.ZodEnum) {
             paramType = `enum (${typeObj._def.values.join(', ')})`;
+          } else {
+            // Additional type checking by typeName
+            const typeName = typeObj._def?.typeName;
+            if (typeName === 'ZodNumber') {
+              paramType = 'number';
+            } else if (typeName === 'ZodString') {
+              paramType = 'string';
+            } else if (typeName === 'ZodBoolean') {
+              paramType = 'boolean';
+            }
+          }
+
+          // Debug logging after type detection
+          if (paramName === 'count' && fnName === 'getRecentPosts') {
+            console.log(`[DEBUG] Final type for ${paramName}: '${paramType}'`);
           }
 
           // Extract default value - check both the original param and the inner type
