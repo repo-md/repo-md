@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react'
-import { Info } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Info, ChevronDown, ChevronRight } from 'lucide-react'
+import exampleProjects from '../exampleProjects.json'
 
 interface ConfigPanelProps {
   projectId: string
@@ -12,7 +13,11 @@ interface ConfigPanelProps {
   setStrategy: (value: 'auto' | 'server' | 'browser') => void
   revision: string
   setRevision: (value: string) => void
+  isCollapsed?: boolean
+  onToggle?: () => void
 }
+
+type ProjectTemplate = keyof typeof exampleProjects
 
 // Storage keys
 const STORAGE_KEY_PROJECT_ID = 'repomd_demo_projectId';
@@ -36,8 +41,11 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   strategy,
   setStrategy,
   revision,
-  setRevision
+  setRevision,
+  isCollapsed = false,
+  onToggle
 }) => {
+  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | ''>('')
   // Load values from localStorage on component mount
   useEffect(() => {
     const storedProjectId = localStorage.getItem(STORAGE_KEY_PROJECT_ID);
@@ -85,23 +93,62 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
     handleOrgSlugChange(SAMPLE_PROJECT.orgSlug);
   };
 
+  const handleTemplateChange = (template: ProjectTemplate | '') => {
+    setSelectedTemplate(template);
+    if (template && exampleProjects[template]) {
+      const project = exampleProjects[template];
+      handleProjectIdChange(project.projectId);
+      handleOrgSlugChange(project.orgSlug);
+      setStrategy(project.strategy as 'auto' | 'server' | 'browser');
+      handleRevisionChange(project.revision);
+    }
+  };
+
   return (
     <div className="config-panel">
       <div className="config-header">
-        <h3>API Configuration
+        <h3 className="config-title" onClick={onToggle} style={{ cursor: onToggle ? 'pointer' : 'default' }}>
+          {onToggle && (
+            <span className="chevron-icon">
+              {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+            </span>
+          )}
+          Project Configuration
           <span className="info-icon">
             <Info size={16} />
             <div className="tooltip">
               <p>This demo uses the RepoMD JavaScript client to fetch content from the repo.md API.</p>
-              <p>Enter your project ID and organization slug to get started, or use the sample project button.</p>
+              <p>Enter your project ID and organization slug to get started, or use templates/sample project.</p>
             </div>
           </span>
         </h3>
       </div>
 
-      <div className="config-form">
-        <div className="form-group">
-          <label htmlFor="orgSlug">Org Slug (required)</label>
+      {!isCollapsed && (
+        <>
+          <div className="templates-section">
+            <div className="form-group">
+              <label htmlFor="template">Template</label>
+              <select
+                id="template"
+                value={selectedTemplate}
+                onChange={(e) => handleTemplateChange(e.target.value as ProjectTemplate | '')}
+                className="template-select"
+              >
+                <option value="">Select a template...</option>
+                {Object.entries(exampleProjects).map(([key, template]) => (
+                  <option key={key} value={key}>
+                    {template.name} - {template.description}
+                  </option>
+                ))}
+              </select>
+              <small>Choose a template to populate the configuration</small>
+            </div>
+          </div>
+
+          <div className="config-form">
+            <div className="form-group">
+              <label htmlFor="orgSlug">Org Slug (required)</label>
           <input
             id="orgSlug"
             type="text"
@@ -161,17 +208,19 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
             placeholder="Enter secret key"
           />
           <small>For protected content</small>
-        </div>
-      </div>
+            </div>
+          </div>
 
-      <div className="config-buttons">
-        <button
-          className="sample-project-button"
-          onClick={handleUseSampleProject}
-        >
-          Use Sample Project
-        </button>
-      </div>
+          <div className="config-buttons">
+            <button
+              className="sample-project-button"
+              onClick={handleUseSampleProject}
+            >
+              Use Sample Project
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }

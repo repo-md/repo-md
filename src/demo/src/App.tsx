@@ -660,9 +660,14 @@ function App() {
   }, [handleRun])
 
   const [showConfig, setShowConfig] = useState(false);
+  const [configCollapsed, setConfigCollapsed] = useState(true);
 
   const toggleConfig = () => {
     setShowConfig(!showConfig);
+  };
+
+  const toggleConfigCollapsed = () => {
+    setConfigCollapsed(!configCollapsed);
   };
 
   return (
@@ -706,20 +711,20 @@ function App() {
         </div>
       </div>
 
-      {showConfig && (
-        <ConfigPanel
-          projectId={projectId}
-          setProjectId={setProjectId}
-          orgSlug={orgSlug}
-          setOrgSlug={setOrgSlug}
-          apiSecret={apiSecret}
-          setApiSecret={setApiSecret}
-          strategy={strategy}
-          setStrategy={setStrategy}
-          revision={revision}
-          setRevision={setRevision}
-        />
-      )}
+      <ConfigPanel
+        projectId={projectId}
+        setProjectId={setProjectId}
+        orgSlug={orgSlug}
+        setOrgSlug={setOrgSlug}
+        apiSecret={apiSecret}
+        setApiSecret={setApiSecret}
+        strategy={strategy}
+        setStrategy={setStrategy}
+        revision={revision}
+        setRevision={setRevision}
+        isCollapsed={configCollapsed}
+        onToggle={toggleConfigCollapsed}
+      />
 
       <div className="main-content">
         <div className="column-left">

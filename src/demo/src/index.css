@@ -91,7 +91,7 @@ body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: calc(100vh - 60px); /* Full height minus header */
+  height: calc(100vh - 60px - 80px); /* Full height minus header and config panel */
   overflow: hidden;
 }
 
@@ -133,6 +133,32 @@ body {
   font-size: 16px;
   display: flex;
   align-items: center;
+}
+
+.config-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.chevron-icon {
+  display: flex;
+  align-items: center;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.templates-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.template-select {
+  width: 100%;
+  background-color: white;
+  cursor: pointer;
 }
 
 .config-form {

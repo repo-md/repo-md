@@ -184,7 +184,7 @@ class RepoMD {
     if (typeof window !== "undefined") {
       const { version, buildDate } = getVersionInfo();
       envizion({
-        title: "RepoMD SDK",
+        title: "Repo.md client",
         subtitle: `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
         version,
         buildDate,

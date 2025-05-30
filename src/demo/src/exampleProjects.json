@@ -1,0 +1,26 @@
+{
+  "portfolio": {
+    "name": "Portfolio",
+    "description": "A photography portfolio website",
+    "projectId": "680e97604a0559a192640d2c",
+    "orgSlug": "iplanwebsites",
+    "strategy": "auto",
+    "revision": ""
+  },
+  "docs": {
+    "name": "Documentation",
+    "description": "Technical documentation site",
+    "projectId": "example-docs-project-id",
+    "orgSlug": "example-docs-org",
+    "strategy": "server",
+    "revision": ""
+  },
+  "blog": {
+    "name": "Blog",
+    "description": "Personal or company blog",
+    "projectId": "example-blog-project-id",
+    "orgSlug": "example-blog-org",
+    "strategy": "auto",
+    "revision": ""
+  }
+}
