@@ -3,9 +3,6 @@
  */
 
 export interface RepoMDOptions {
-  org?: string;
-  orgSlug?: string;
-  orgId?: string | null;
   projectId?: string;
   projectSlug?: string;
   rev?: string;
@@ -19,11 +16,8 @@ export type AliasesDefinition = Record<string, string>;
 export class RepoMD {
   constructor(options?: RepoMDOptions);
 
-  org: string;
   projectId: string;
   projectSlug: string;
-  orgSlug: string;
-  orgId: string | null;
   rev: string;
   debug: boolean;
   secret: string | null;

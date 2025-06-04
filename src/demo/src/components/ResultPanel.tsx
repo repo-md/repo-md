@@ -21,7 +21,6 @@ interface ResultPanelProps {
   functionParams?: Record<string, FunctionParam[]>
   methodDescriptions?: Record<string, MethodDescription>
   projectId?: string
-  orgSlug?: string
   strategy?: 'auto' | 'server' | 'browser'
   revision?: string
 }
@@ -33,7 +32,6 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
   functionParams = {},
   methodDescriptions = {},
   projectId = '',
-  orgSlug = '',
   strategy = 'auto',
   revision = ''
 }) => {
@@ -179,10 +177,9 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
 
     // Use the actual values from the playground
     const actualProjectId = projectId || '680e97604a0559a192640d2c';
-    const actualOrgSlug = orgSlug || 'iplanwebsites';
 
     // Create configuration string with conditional options
-    let configOptions = `  projectId: '${actualProjectId}',\n  orgSlug: '${actualOrgSlug}'`;
+    let configOptions = `  projectId: '${actualProjectId}'`;
 
     // Add strategy if not auto
     if (strategy !== 'auto') {
@@ -434,7 +431,6 @@ fetchData();`;
         <div className="result-content initial-content">
           Repo instance created! Use the methods on the left to interact with your <a href="http://repo.md">Repo.md project</a>.
           {projectId && <div>Project ID: {projectId}</div>}
-          {orgSlug && <div>Organization: {orgSlug}</div>}
           {strategy && <div>Strategy: {strategy}</div>}
           {revision && revision !== 'latest' && <div>Revision: {revision}</div>}
         </div>

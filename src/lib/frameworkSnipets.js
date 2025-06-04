@@ -148,7 +148,7 @@ export const reactPackageJsonProxy = {
 // Vite Dynamic Configuration
 // ----------------------------------------
 
-export function createViteProxy(org, projectId, folder = "_repo") {
+export function createViteProxy(projectId, folder = "_repo") {
   const proxyPath = `/${folder}/medias`;
 
   return {
@@ -156,8 +156,8 @@ export function createViteProxy(org, projectId, folder = "_repo") {
       target: R2_URL,
       changeOrigin: true,
       rewrite: (path) => {
-        // Transform /_repo_docs/medias/file.jpeg to /org/projectId/_shared/medias/file.jpeg
-        return path.replace(proxyPath, `/${org}/${projectId}/_shared/medias`);
+        // Transform /_repo_docs/medias/file.jpeg to /projects/projectId/_shared/medias/file.jpeg
+        return path.replace(proxyPath, `/projects/${projectId}/_shared/medias`);
       },
       configure: (proxy, options) => {
         // Keep the logging for debugging

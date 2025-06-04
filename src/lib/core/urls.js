@@ -14,7 +14,6 @@ const R2_DOMAIN = "https://static.repo.md"; //
 /**
  * Create a URL generator for a specific project
  * @param {Object} config - Configuration object
- * @param {string} config.orgSlug - Organization slug
  * @param {string} config.projectId - Project ID
  * @param {string} config.activeRev - Active revision ID
  * @param {string} config.rev - Requested revision ID
@@ -24,7 +23,6 @@ const R2_DOMAIN = "https://static.repo.md"; //
  */
 export function createUrlGenerator(config) {
   const {
-    orgSlug,
     projectId,
     activeRev: initialActiveRev, // Rename to make it clear this is initial value
     rev,
@@ -41,7 +39,7 @@ export function createUrlGenerator(config) {
    * @returns {string} - Full URL
    */
   function getProjectUrl(path = "") {
-    const url = `${R2_DOMAIN}/${orgSlug}/${projectId}${path}`;
+    const url = `${R2_DOMAIN}/projects/${projectId}${path}`;
     if (debug) {
       console.log(`${prefix} 🔗 Generated project URL: ${url}`);
     }
@@ -120,7 +118,7 @@ export function createUrlGenerator(config) {
    * @returns {string} - Full URL
    */
   function getMediaUrl(path) {
-    // https://static.repo.md/iplanwebsites/680e97604a0559a192640d2c/_shared/medias/9ad367214fab7207e61dbea46f32e9943d55b7e8cefb55e02f57e06f0db6dd0f-sm.jpeg
+    // https://static.repo.md/projects/680e97604a0559a192640d2c/_shared/medias/9ad367214fab7207e61dbea46f32e9943d55b7e8cefb55e02f57e06f0db6dd0f-sm.jpeg
     const url = getProjectUrl(`/_shared/medias/${path}`);
 
     if (debug) {
@@ -139,13 +137,12 @@ export function createUrlGenerator(config) {
 
   /**
    * Create a Vite proxy configuration for the project
-   * @param {string} orgSlug - Organization slug
    * @param {string} projectId - Project ID
    * @param {string} folder - Folder name for proxy path
    * @returns {Object} - Vite proxy configuration
    */
-  function createViteProxy(orgSlug, projectId, folder = "_repo") {
-    return frameworkCreateViteProxy(orgSlug, projectId, folder);
+  function createViteProxy(projectId, folder = "_repo") {
+    return frameworkCreateViteProxy(projectId, folder);
   }
 
   /**

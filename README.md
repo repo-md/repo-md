@@ -68,8 +68,6 @@ When loaded via CDN, the library is available as a global variable `RepoMD`:
 ```html
 <script>
   const repo = new RepoMD.RepoMD({
-    orgSlug: "iplanwebsites",
-    projectSlug: "port1g",
     projectId: "680e97604a0559a192640d2c",
   });
 

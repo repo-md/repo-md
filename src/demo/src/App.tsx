@@ -234,10 +234,6 @@ function App() {
   };
 
   const [projectId, setProjectId] = useState(getInitialProjectId)
-  const [orgSlug, setOrgSlug] = useState(() => {
-    const stored = localStorage.getItem('repomd_demo_orgSlug');
-    return stored || 'iplanwebsites'; // Default value
-  })
   const [apiSecret, setApiSecret] = useState('')
   const [strategy, setStrategy] = useState<'auto' | 'server' | 'browser'>(() => {
     const stored = localStorage.getItem('repomd_demo_strategy');
@@ -299,7 +295,6 @@ function App() {
 
     // Use default values if fields are missing
     const currentProjectId = projectId || '680e97604a0559a192640d2c';
-    const currentOrgSlug = orgSlug || 'iplanwebsites';
 
     // Destroy the previous instance if it exists
     if (repoRef.current) {
@@ -317,7 +312,6 @@ function App() {
       // Validate options with Zod
       const options = repoMdOptionsSchema.parse({
         projectId: currentProjectId,
-        orgSlug: currentOrgSlug,
         strategy,
         secret: apiSecret || null,
         rev: revision || 'latest',
@@ -346,7 +340,6 @@ function App() {
       // Create with default options if validation fails
       const instance = new RepoMD({
         projectId: currentProjectId,
-        orgSlug: currentOrgSlug,
         debug: true
       });
 
@@ -367,12 +360,11 @@ function App() {
       repoRef.current = instance;
     }
 
-  }, [projectId, orgSlug, apiSecret, strategy, revision])
+  }, [projectId, apiSecret, strategy, revision])
 
   const handleRun = useCallback(async (operation: string, params: Record<string, string> = {}) => {
-    // Always ensure we have a project ID and org slug
+    // Always ensure we have a project ID
     const currentProjectId = projectId || '680e97604a0559a192640d2c';
-    const currentOrgSlug = orgSlug || 'iplanwebsites';
 
     setLoading(true)
     const startTime = performance.now()
@@ -385,7 +377,6 @@ function App() {
         // Validate options with Zod
         const options = repoMdOptionsSchema.parse({
           projectId: currentProjectId,
-          orgSlug: currentOrgSlug,
           strategy,
           secret: apiSecret || null,
           rev: revision || 'latest',
@@ -608,7 +599,7 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }, [projectId, orgSlug, apiSecret, strategy, revision])
+  }, [projectId, apiSecret, strategy, revision])
 
   // Add URL parameter handling for method
   const getInitialMethod = () => {
@@ -692,8 +683,6 @@ function App() {
       <ConfigPanel
         projectId={projectId}
         setProjectId={setProjectId}
-        orgSlug={orgSlug}
-        setOrgSlug={setOrgSlug}
         apiSecret={apiSecret}
         setApiSecret={setApiSecret}
         strategy={strategy}
@@ -726,7 +715,6 @@ function App() {
             functionParams={functionParams}
             methodDescriptions={methodDescriptions}
             projectId={projectId}
-            orgSlug={orgSlug}
             strategy={strategy}
             revision={revision}
           />

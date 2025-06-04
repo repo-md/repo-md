@@ -14,14 +14,13 @@ const REV_EXPIRY_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 /**
  * Create an API client for the repo.md API
  * @param {Object} config - Configuration object
- * @param {string} config.orgSlug - Organization slug
  * @param {string} config.projectId - Project ID
  * @param {string} config.projectSlug - Project slug
  * @param {boolean} config.debug - Whether to log debug info
  * @returns {Object} - API client functions
  */
 export function createApiClient(config) {
-  const { orgSlug, projectId, projectSlug, debug = false } = config;
+  const { projectId, projectSlug, debug = false } = config;
 
   // Simple in-memory storage for active revision with expiry tracking
   let revisionState = {
@@ -37,27 +36,19 @@ export function createApiClient(config) {
    * Generate the base project path used for API calls
    * @param {string} [suffix=''] - Optional suffix to append to the path
    * @returns {string} - The project path for API calls
-   * @throws {Error} - If no valid projectId or projectSlug is provided
+   * @throws {Error} - If no valid projectId is provided
    */
   function getProjectBasePath(suffix = "") {
-    // Check if we have a valid projectId and use it preferentially
+    // Check if we have a valid projectId
     if (projectId && projectId !== "undefined-project-id") {
       const path = `/project-id/${projectId}${suffix}`;
       if (debug) {
         console.log(`${prefix} 🔍 Using project ID path: ${path}`);
       }
       return path;
-    } else if (projectSlug && projectSlug !== "undefined-project-slug") {
-      const path = `/orgs/${orgSlug}/projects/slug/${projectSlug}${suffix}`;
-      if (debug) {
-        console.log(`${prefix} 🔍 Using project slug path: ${path}`);
-      }
-      return path;
     } else {
-      // If neither valid projectId nor projectSlug is available, throw an error
-      throw new Error(
-        "No valid projectId or projectSlug provided for API request"
-      );
+      // If no valid projectId is available, throw an error
+      throw new Error("No valid projectId provided for API request");
     }
   }
 
@@ -121,8 +112,7 @@ export function createApiClient(config) {
     // Get the base path for this project
     const path = getProjectBasePath();
 
-    // EX: https://api.repo.md/v1/orgs/iplanwebsites/projects/680e97604a0559a192640d2c
-    // or: https://api.repo.md/v1/orgs/iplanwebsites/projects/slug/port1g
+    // EX: https://api.repo.md/v1/projects-id/680e97604a0559a192640d2c
     const project = await fetchPublicApi(path);
     return project;
   }

@@ -8,9 +8,6 @@ const optionsSchema = z.record(z.any()).optional().default({});
 
 // RepoMD Constructor Options Schema
 export const repoMdOptionsSchema = z.object({
-  org: z.string().optional().default("iplanwebsites"),
-  orgSlug: z.string().optional().default("iplanwebsites"),
-  orgId: z.string().nullable().optional().default(null),
   projectId: z.string().optional().default("680e97604a0559a192640d2c"),
   projectSlug: z.string().optional().default("undefined-project-slug"),
   rev: z.string().optional().default("latest"),

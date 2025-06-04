@@ -42,9 +42,6 @@ const prefix = LOG_PREFIXES.REPO_MD;
 
 class RepoMD {
   constructor({
-    org = "iplanwebsites",
-    orgSlug = "iplanwebsites",
-    orgId = null,
     projectId = "680e97604a0559a192640d2c",
     projectSlug = "undefined-project-slug",
     rev = "latest", // Default to "latest"
@@ -53,11 +50,8 @@ class RepoMD {
     strategy = "auto", // auto, browser, server
   } = {}) {
     // Store configuration
-    this.org = org;
     this.projectId = projectId;
     this.projectSlug = projectSlug;
-    this.orgSlug = orgSlug;
-    this.orgId = orgId;
     this.rev = rev;
     this.debug = debug;
     this.secret = secret;
@@ -115,7 +109,6 @@ class RepoMD {
 
     // Initialize URL generator with the resolver function
     this.urls = createUrlGenerator({
-      orgSlug,
       projectId,
       activeRev: this.activeRev,
       rev,
@@ -125,7 +118,6 @@ class RepoMD {
 
     // Initialize API client
     this.api = createApiClient({
-      orgSlug,
       projectId,
       projectSlug,
       debug,
@@ -141,7 +133,6 @@ class RepoMD {
 
           // Update URL generator with the resolved activeRev
           this.urls = createUrlGenerator({
-            orgSlug: this.orgSlug,
             projectId: this.projectId,
             activeRev: this.activeRev,
             rev: this.rev,
@@ -178,7 +169,6 @@ class RepoMD {
 
     if (this.debug) {
       console.log(`${prefix} 🚀 Initialized RepoMD instance with:
-        - org: ${org}
         - projectId: ${projectId}
         - rev: ${rev}
         - strategy: ${strategy}
@@ -254,7 +244,6 @@ class RepoMD {
 
         // Update URL generator with the resolved activeRev
         this.urls = createUrlGenerator({
-          orgSlug: this.orgSlug,
           projectId: this.projectId,
           activeRev: this.activeRev,
           rev: this.rev,
@@ -387,7 +376,7 @@ class RepoMD {
   }
 
   createViteProxy(folder = "_repo") {
-    return this.urls.createViteProxy(this.orgSlug, this.projectId, folder);
+    return this.urls.createViteProxy(this.projectId, folder);
   }
 
   // API methods (proxy to API module)

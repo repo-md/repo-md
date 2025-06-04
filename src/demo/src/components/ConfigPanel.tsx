@@ -5,8 +5,6 @@ import exampleProjects from '../exampleProjects.json'
 interface ConfigPanelProps {
   projectId: string
   setProjectId: (value: string) => void
-  orgSlug: string
-  setOrgSlug: (value: string) => void
   apiSecret: string
   setApiSecret: (value: string) => void
   strategy:  'auto' | 'server' | 'browser'
@@ -21,7 +19,6 @@ type ProjectTemplate = keyof typeof exampleProjects
 
 // Storage keys
 const STORAGE_KEY_PROJECT_ID = 'repomd_demo_projectId';
-const STORAGE_KEY_ORG_SLUG = 'repomd_demo_orgSlug';
 const STORAGE_KEY_STRATEGY = 'repomd_demo_strategy';
 const STORAGE_KEY_REVISION = 'repomd_demo_revision';
 
@@ -29,8 +26,6 @@ const STORAGE_KEY_REVISION = 'repomd_demo_revision';
 const ConfigPanel: React.FC<ConfigPanelProps> = ({
   projectId,
   setProjectId,
-  orgSlug,
-  setOrgSlug,
   apiSecret,
   setApiSecret,
   strategy,
@@ -44,17 +39,15 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
   // Load values from localStorage on component mount
   useEffect(() => {
     const storedProjectId = localStorage.getItem(STORAGE_KEY_PROJECT_ID);
-    const storedOrgSlug = localStorage.getItem(STORAGE_KEY_ORG_SLUG);
     const storedStrategy = localStorage.getItem(STORAGE_KEY_STRATEGY);
 
     if (storedProjectId) setProjectId(storedProjectId);
-    if (storedOrgSlug) setOrgSlug(storedOrgSlug);
     if (storedStrategy && (storedStrategy === 'auto' || storedStrategy === 'server' || storedStrategy === 'browser')) {
       setStrategy(storedStrategy);
     }
     const storedRevision = localStorage.getItem(STORAGE_KEY_REVISION);
     if (storedRevision) setRevision(storedRevision);
-  }, [setProjectId, setOrgSlug, setStrategy, setRevision]);
+  }, [setProjectId, setStrategy, setRevision]);
 
   // Handler for project ID changes
   const handleProjectIdChange = (value: string) => {
@@ -62,11 +55,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
     localStorage.setItem(STORAGE_KEY_PROJECT_ID, value);
   };
 
-  // Handler for org slug changes
-  const handleOrgSlugChange = (value: string) => {
-    setOrgSlug(value);
-    localStorage.setItem(STORAGE_KEY_ORG_SLUG, value);
-  };
 
   // Handler for strategy changes
   const handleStrategyChange = (value: string) => {
@@ -87,7 +75,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
     if (template && exampleProjects[template]) {
       const project = exampleProjects[template];
       handleProjectIdChange(project.projectId);
-      handleOrgSlugChange(project.orgSlug);
       setStrategy(project.strategy as 'auto' | 'server' | 'browser');
       handleRevisionChange(project.revision);
     }
@@ -133,18 +120,6 @@ const ConfigPanel: React.FC<ConfigPanelProps> = ({
       {!isCollapsed && (
         <>
           <div className="config-form">
-            <div className="form-group">
-              <label htmlFor="orgSlug">Org Slug (required)</label>
-          <input
-            id="orgSlug"
-            type="text"
-            value={orgSlug}
-            onChange={(e) => handleOrgSlugChange(e.target.value)}
-            placeholder="Enter org slug"
-          />
-          <small>Example: my-company</small>
-        </div>
-
         <div className="form-group">
           <label htmlFor="projectId">Project ID (required)</label>
           <input
