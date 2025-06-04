@@ -128,6 +128,8 @@ export const logo: string;
 // OpenAI tools
 export const OpenAiToolSpec: Record<string, any>;
 export function createOpenAiSpecs(): Record<string, any>;
+export function createOpenAiToolHandler(repoMD: RepoMD): (toolCall: any) => Promise<any>;
+export function handleOpenAiRequest(request: any, repoMD: RepoMD): Promise<any>;
 
 // Alias mechanism
 export const aliases: AliasesDefinition;

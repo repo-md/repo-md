@@ -4,6 +4,7 @@
 
 // Core exports
 import { RepoMD, logo, OpenAiToolSpec, createOpenAiSpecs } from './RepoMd.js';
+import { createOpenAiToolHandler, handleOpenAiRequest } from './openai/index.js';
 
 // Module exports for direct access if needed
 import * as coreModule from './core/index.js';
@@ -35,6 +36,8 @@ export {
   logo,
   OpenAiToolSpec,
   createOpenAiSpecs,
+  createOpenAiToolHandler,
+  handleOpenAiRequest,
 
   // Modules for direct access
   coreModule,
