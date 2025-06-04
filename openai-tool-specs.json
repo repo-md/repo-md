@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2025-06-04T19:36:21.534Z",
-    "totalFunctions": 50,
-    "totalSchemas": 50,
+    "generatedAt": "2025-06-04T19:56:54.087Z",
+    "totalFunctions": 51,
+    "totalSchemas": 51,
     "generator": "OpenAI Tool Spec Generator",
     "version": "1.0.0"
   },
@@ -842,6 +842,24 @@
           },
           "required": []
         }
+      },
+      {
+        "name": "getOpenAiToolSpec",
+        "description": "Get OpenAI tool specification with optional filtering for project-specific configurations",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "blacklistedTools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Array of function names to exclude from the tool specification"
+            }
+          },
+          "required": []
+        }
       }
     ]
   },
@@ -868,6 +886,7 @@
       "getMediaItems",
       "getMediaSimilarity",
       "getMediaSimilarityByHashes",
+      "getOpenAiToolSpec",
       "getPostByHash",
       "getPostByPath",
       "getPostBySlug",
@@ -903,7 +922,7 @@
       "string": 24,
       "number": 7,
       "object": 8,
-      "array": 1
+      "array": 2
     },
     "functionsWithDefaults": [
       "getAllPosts",
@@ -943,7 +962,8 @@
       "createOpenAiToolHandler",
       "getReleaseInfo",
       "getProjectMetadata",
-      "getSourceFiles"
+      "getSourceFiles",
+      "getOpenAiToolSpec"
     ],
     "functionsWithRequired": [
       {

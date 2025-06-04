@@ -133,7 +133,7 @@ export const logo: string;
 
 // OpenAI tools
 export const OpenAiToolSpec: Record<string, any>;
-export const toolSpecs: Record<string, any>;
+export function createOpenAiSpecs(): Record<string, any>;
 
 // Alias mechanism
 export const aliases: AliasesDefinition;

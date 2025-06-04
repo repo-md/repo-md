@@ -25,7 +25,7 @@ import {
 } from "./openai/OpenAiToolHandler.js";
 
 // Import exported logo and tool specs
-import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
+import { OpenAiToolSpec, createOpenAiSpecs } from "./openai/OpenAiToolSpec.js";
 
 // Import alias mechanism, validation and logging
 import { applyAliases } from "./aliases.js";
@@ -548,6 +548,33 @@ class RepoMD {
     return handleOpenAiRequest(request, this);
   }
 
+  getOpenAiToolSpec(options = {}) {
+    const { blacklistedTools = [], ...otherOptions } = options;
+    
+    // Generate the base spec
+    const baseSpec = createOpenAiSpecs();
+    
+    // Apply project-specific configurations
+    if (blacklistedTools.length > 0) {
+      const filteredFunctions = baseSpec.functions.filter(func => 
+        !blacklistedTools.includes(func.name)
+      );
+      
+      if (this.debug && filteredFunctions.length !== baseSpec.functions.length) {
+        console.log(
+          `${prefix} 🚫 Filtered out ${baseSpec.functions.length - filteredFunctions.length} blacklisted tools: ${blacklistedTools.join(', ')}`
+        );
+      }
+      
+      return {
+        ...baseSpec,
+        functions: filteredFunctions,
+      };
+    }
+    
+    return baseSpec;
+  }
+
   // Media similarity methods (proxy to MediaSimilarity module)
   async getMediaEmbeddings() {
     return await this.mediaSimilarity.getMediaEmbeddings();
@@ -639,4 +666,4 @@ export const logo = `
     ▌          `;
 
 // Export RepoMD class and OpenAI related tools
-export { RepoMD, OpenAiToolSpec, toolSpecs };
+export { RepoMD, OpenAiToolSpec, createOpenAiSpecs };

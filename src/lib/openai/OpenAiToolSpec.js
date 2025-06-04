@@ -190,12 +190,3 @@ export function createOpenAiSpecs() {
 
 // Generate the OpenAI Tool Specifications
 export const OpenAiToolSpec = createOpenAiSpecs();
-
-// Export individual tool specs for potential separate usage
-export const toolSpecs = OpenAiToolSpec.functions.reduce((acc, tool) => {
-  acc[tool.name] = {
-    type: "function",
-    function: tool,
-  };
-  return acc;
-}, {});

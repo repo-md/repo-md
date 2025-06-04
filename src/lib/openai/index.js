@@ -6,11 +6,10 @@ import {
   createOpenAiToolHandler, 
   handleOpenAiRequest 
 } from './OpenAiToolHandler.js';
-import { OpenAiToolSpec, toolSpecs } from './OpenAiToolSpec.js';
+import { OpenAiToolSpec } from './OpenAiToolSpec.js';
 
 export {
   createOpenAiToolHandler,
   handleOpenAiRequest,
   OpenAiToolSpec,
-  toolSpecs,
 };

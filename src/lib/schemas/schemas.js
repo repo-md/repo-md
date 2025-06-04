@@ -283,6 +283,10 @@ export const schemas = {
   getSourceFiles: z.object({
     useCache: booleanSchema.describe("Use cached file list if available for better performance"),
   }).describe("Get list of source files in the repository (alias for getSourceFilesList)"),
+
+  getOpenAiToolSpec: z.object({
+    blacklistedTools: z.array(z.string()).optional().default([]).describe("Array of function names to exclude from the tool specification"),
+  }).describe("Get OpenAI tool specification with optional filtering for project-specific configurations"),
 };
 
 // Helper function to get the schema for a given function name
