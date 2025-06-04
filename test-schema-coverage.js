@@ -7,6 +7,7 @@
 
 // Import schemas directly to avoid CommonJS import issues
 import { schemas } from './src/lib/schemas/schemas.js';
+import { getAllMethodDescriptions } from './src/lib/schemas/types.js';
 
 // Import the RepoMD class definition to get method names
 // We'll read the index.d.ts file to get method signatures instead of importing the class
@@ -180,6 +181,81 @@ function analyzeSchemaProfile() {
 }
 
 /**
+ * Validate that all schemas have descriptions
+ */
+function validateMethodDescriptions() {
+  console.log(`${colors.bold}${colors.blue}=== Method Description Validation ===${colors.reset}\n`);
+  
+  const methodDescriptions = getAllMethodDescriptions();
+  const schemaNames = getSchemaNames();
+  const methodsWithoutDescriptions = [];
+  const parametersWithoutDescriptions = [];
+  let totalParameters = 0;
+  let parametersWithDescriptions = 0;
+  
+  // Check method descriptions
+  for (const schemaName of schemaNames) {
+    const methodDesc = methodDescriptions[schemaName];
+    
+    if (!methodDesc || !methodDesc.description || methodDesc.description.trim().length === 0) {
+      methodsWithoutDescriptions.push(schemaName);
+    }
+    
+    // Check parameter descriptions
+    if (methodDesc && methodDesc.parameters) {
+      for (const param of methodDesc.parameters) {
+        totalParameters++;
+        if (param.description && param.description.trim().length > 0) {
+          parametersWithDescriptions++;
+        } else {
+          parametersWithoutDescriptions.push(`${schemaName}.${param.name}`);
+        }
+      }
+    }
+  }
+  
+  const methodCoverage = Math.round(((schemaNames.length - methodsWithoutDescriptions.length) / schemaNames.length) * 100);
+  const parameterCoverage = totalParameters > 0 ? Math.round((parametersWithDescriptions / totalParameters) * 100) : 100;
+  
+  console.log(`${colors.bold}Description Coverage Summary:${colors.reset}`);
+  console.log(`  Methods with descriptions: ${schemaNames.length - methodsWithoutDescriptions.length}/${schemaNames.length} (${methodCoverage}%)`);
+  console.log(`  Parameters with descriptions: ${parametersWithDescriptions}/${totalParameters} (${parameterCoverage}%)\n`);
+  
+  if (methodsWithoutDescriptions.length > 0) {
+    console.log(`${colors.red}${colors.bold}❌ Methods without descriptions (${methodsWithoutDescriptions.length}):${colors.reset}`);
+    for (const method of methodsWithoutDescriptions) {
+      console.log(`  ${colors.red}• ${method}${colors.reset}`);
+    }
+    console.log();
+  } else {
+    console.log(`${colors.green}${colors.bold}✅ All methods have descriptions!${colors.reset}\n`);
+  }
+  
+  if (parametersWithoutDescriptions.length > 0) {
+    console.log(`${colors.yellow}${colors.bold}⚠️  Parameters without descriptions (${parametersWithoutDescriptions.length}):${colors.reset}`);
+    for (const param of parametersWithoutDescriptions.slice(0, 10)) { // Show first 10 to avoid clutter
+      console.log(`  ${colors.yellow}• ${param}${colors.reset}`);
+    }
+    if (parametersWithoutDescriptions.length > 10) {
+      console.log(`  ${colors.yellow}... and ${parametersWithoutDescriptions.length - 10} more${colors.reset}`);
+    }
+    console.log();
+  } else {
+    console.log(`${colors.green}${colors.bold}✅ All parameters have descriptions!${colors.reset}\n`);
+  }
+  
+  return {
+    passed: methodsWithoutDescriptions.length === 0 && parametersWithoutDescriptions.length === 0,
+    methodCoverage,
+    parameterCoverage,
+    methodsWithoutDescriptions,
+    parametersWithoutDescriptions,
+    totalMethods: schemaNames.length,
+    totalParameters
+  };
+}
+
+/**
  * Validate that all schemas are properly formed
  */
 function validateSchemaStructure() {
@@ -260,13 +336,19 @@ function main() {
     // Run coverage analysis
     const coverageResults = analyzeSchemaProfile();
     
+    // Run description validation
+    const descriptionResults = validateMethodDescriptions();
+    
     // Print final results
     console.log(`${colors.bold}${colors.blue}=== Test Results ===${colors.reset}`);
     
-    if (structureResults.passed && coverageResults.passed) {
+    const allTestsPassed = structureResults.passed && coverageResults.passed && descriptionResults.passed;
+    
+    if (allTestsPassed) {
       console.log(`${colors.green}${colors.bold}🎉 ALL TESTS PASSED!${colors.reset}`);
       console.log(`${colors.green}✅ Schema structure: Valid${colors.reset}`);
       console.log(`${colors.green}✅ Schema coverage: 100% (${coverageResults.totalMethods}/${coverageResults.totalMethods} methods)${colors.reset}`);
+      console.log(`${colors.green}✅ Method descriptions: ${descriptionResults.methodCoverage}% methods, ${descriptionResults.parameterCoverage}% parameters${colors.reset}`);
       process.exit(0);
     } else {
       console.log(`${colors.red}${colors.bold}❌ TESTS FAILED!${colors.reset}`);
@@ -281,6 +363,12 @@ function main() {
         console.log(`${colors.red}❌ Schema coverage: ${coverageResults.coverage}% (${coverageResults.methodsWithoutSchemas.length} methods missing schemas)${colors.reset}`);
       } else {
         console.log(`${colors.green}✅ Schema coverage: 100%${colors.reset}`);
+      }
+      
+      if (!descriptionResults.passed) {
+        console.log(`${colors.red}❌ Method descriptions: ${descriptionResults.methodCoverage}% methods, ${descriptionResults.parameterCoverage}% parameters${colors.reset}`);
+      } else {
+        console.log(`${colors.green}✅ Method descriptions: 100% methods, 100% parameters${colors.reset}`);
       }
       
       process.exit(1);
@@ -299,4 +387,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export { analyzeSchemaProfile, validateSchemaStructure };
+export { analyzeSchemaProfile, validateSchemaStructure, validateMethodDescriptions };
