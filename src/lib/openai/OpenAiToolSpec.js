@@ -1,21 +1,24 @@
-import { schemas } from '../schemas/schemas.js';
+import { schemas } from "../schemas/schemas.js";
 
 /**
  * Check if a Zod schema is optional (has a default value or is explicitly optional)
  */
 function isOptionalSchema(schema) {
   if (!schema || !schema._def) return false;
-  
+
   // Check if it's explicitly optional
-  if (schema._def.typeName === 'ZodOptional') return true;
-  
+  if (schema._def.typeName === "ZodOptional") return true;
+
   // Check if it has a default value
-  if (schema._def.typeName === 'ZodDefault') return true;
-  
+  if (schema._def.typeName === "ZodDefault") return true;
+
   // Check for wrapped optional schemas
   let current = schema;
   while (current?._def) {
-    if (current._def.typeName === 'ZodOptional' || current._def.typeName === 'ZodDefault') {
+    if (
+      current._def.typeName === "ZodOptional" ||
+      current._def.typeName === "ZodDefault"
+    ) {
       return true;
     }
     // Handle nested schemas
@@ -27,7 +30,7 @@ function isOptionalSchema(schema) {
       break;
     }
   }
-  
+
   return false;
 }
 
@@ -37,17 +40,18 @@ function isOptionalSchema(schema) {
 function zodToOpenAiSpec(zodSchema, functionName) {
   try {
     const shapeRaw = zodSchema._def.shape;
-    const shape = typeof shapeRaw === 'function' ? shapeRaw() : shapeRaw;
-    const description = zodSchema.description || `Execute ${functionName} operation`;
-    
+    const shape = typeof shapeRaw === "function" ? shapeRaw() : shapeRaw;
+    const description =
+      zodSchema.description || `Execute ${functionName} operation`;
+
     const properties = {};
     const required = [];
 
-    if (shape && typeof shape === 'object') {
+    if (shape && typeof shape === "object") {
       for (const [key, schema] of Object.entries(shape)) {
         const property = convertZodProperty(schema);
         properties[key] = property;
-        
+
         if (!isOptionalSchema(schema)) {
           required.push(key);
         }
@@ -82,10 +86,10 @@ function zodToOpenAiSpec(zodSchema, functionName) {
  */
 function convertZodProperty(schema) {
   const property = {};
-  
+
   // Extract description from various schema wrapper types
   let description = schema.description || schema._def?.description;
-  
+
   // For wrapped schemas, check inner types for description
   let current = schema;
   while (current && !description) {
@@ -101,41 +105,41 @@ function convertZodProperty(schema) {
       break;
     }
   }
-  
+
   if (description) {
     property.description = description;
   }
 
   const typeName = schema._def.typeName;
-  
+
   switch (typeName) {
-    case 'ZodString':
+    case "ZodString":
       property.type = "string";
       break;
-    case 'ZodNumber':
+    case "ZodNumber":
       property.type = "number";
-      if (schema._def.checks?.some(check => check.kind === 'int')) {
+      if (schema._def.checks?.some((check) => check.kind === "int")) {
         property.type = "integer";
       }
       break;
-    case 'ZodBoolean':
+    case "ZodBoolean":
       property.type = "boolean";
       break;
-    case 'ZodArray':
+    case "ZodArray":
       property.type = "array";
       if (schema._def.type) {
         property.items = convertZodProperty(schema._def.type);
       }
       break;
-    case 'ZodRecord':
-    case 'ZodObject':
+    case "ZodRecord":
+    case "ZodObject":
       property.type = "object";
       break;
-    case 'ZodEnum':
+    case "ZodEnum":
       property.type = "string";
       property.enum = schema._def.values;
       break;
-    case 'ZodOptional': {
+    case "ZodOptional": {
       const innerProperty = convertZodProperty(schema._def.innerType);
       // Preserve the description from the ZodOptional if the inner type doesn't have one
       if (description && !innerProperty.description) {
@@ -143,7 +147,7 @@ function convertZodProperty(schema) {
       }
       return innerProperty;
     }
-    case 'ZodDefault': {
+    case "ZodDefault": {
       const innerProperty = convertZodProperty(schema._def.innerType);
       innerProperty.default = schema._def.defaultValue();
       // Preserve the description from the ZodDefault if the inner type doesn't have one
@@ -152,7 +156,7 @@ function convertZodProperty(schema) {
       }
       return innerProperty;
     }
-    case 'ZodEffects': {
+    case "ZodEffects": {
       const innerProperty = convertZodProperty(schema._def.schema);
       // Preserve the description from the ZodEffects if the inner type doesn't have one
       if (description && !innerProperty.description) {
@@ -170,14 +174,14 @@ function convertZodProperty(schema) {
 /**
  * Generate OpenAI Tool Specifications from Zod schemas
  */
-function createOpenAiSpecs() {
+export function createOpenAiSpecs() {
   const functions = [];
-  
+
   for (const [functionName, schema] of Object.entries(schemas)) {
     const spec = zodToOpenAiSpec(schema, functionName);
     functions.push(spec);
   }
-  
+
   return {
     type: "function",
     functions,
