@@ -1,19 +1,22 @@
-{
-  "name": "get_weather",
-  "description": "Determine weather in my location",
-  "strict": false,
-  "parameters": {
-    "type": "object",
-    "properties": {
+[
+  {
+    "name": "get_weather",
+    "description": "Get the weather for a given location",
+    "parameters": {
       "location": {
         "type": "string",
-        "description": "The city and state e.g. San Francisco, CA"
+        "description": "Location to get weather for"
       },
       "unit": {
         "type": "string",
-        "enum": ["c", "f"]
+        "description": "Unit to get weather in",
+        "enum": ["celsius", "fahrenheit"]
       }
-    },
-    "required": ["location"]
+    }
+  },
+  {
+    "name": "get_joke",
+    "description": "Get a programming joke",
+    "parameters": {}
   }
-}
+]
