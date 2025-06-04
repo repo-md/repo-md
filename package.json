@@ -25,6 +25,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "typecheck2": "tsc  ",
+    "generate-openai-specs": "node generate-openai-specs.js",
     "prepare-npm": "npm run build && echo 'The dist folder is now ready for publishing'",
     "prepublish-checks": "npm run lint && npm run typecheck",
     "build-npm": "bash npm/build-npm.sh",
