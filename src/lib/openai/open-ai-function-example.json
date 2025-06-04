@@ -3,20 +3,28 @@
     "name": "get_weather",
     "description": "Get the weather for a given location",
     "parameters": {
-      "location": {
-        "type": "string",
-        "description": "Location to get weather for"
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "Location to get weather for"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit to get weather in",
+          "enum": ["celsius", "fahrenheit"]
+        }
       },
-      "unit": {
-        "type": "string",
-        "description": "Unit to get weather in",
-        "enum": ["celsius", "fahrenheit"]
-      }
+      "required": ["location"]
     }
   },
   {
     "name": "get_joke",
     "description": "Get a programming joke",
-    "parameters": {}
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
   }
 ]

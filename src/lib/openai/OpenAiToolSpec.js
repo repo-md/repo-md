@@ -45,25 +45,38 @@ function zodToOpenAiSpec(zodSchema, functionName) {
       zodSchema.description || `Execute ${functionName} operation`;
 
     const properties = {};
+    const required = [];
 
     if (shape && typeof shape === "object") {
       for (const [key, schema] of Object.entries(shape)) {
         const property = convertZodProperty(schema);
         properties[key] = property;
+
+        if (!isOptionalSchema(schema)) {
+          required.push(key);
+        }
       }
     }
 
     return {
       name: functionName,
       description,
-      parameters: properties,
+      parameters: {
+        type: "object",
+        properties,
+        required,
+      },
     };
   } catch (error) {
     console.warn(`Failed to convert schema for ${functionName}:`, error);
     return {
       name: functionName,
       description: `Execute ${functionName} operation`,
-      parameters: {},
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
     };
   }
 }

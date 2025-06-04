@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2025-06-04T22:18:00.641Z",
+    "generatedAt": "2025-06-04T22:45:11.909Z",
     "totalFunctions": 51,
     "totalSchemas": 51,
     "generator": "OpenAI Tool Spec Generator",
@@ -13,608 +13,852 @@
         "name": "getAllPosts",
         "description": "Retrieve all blog posts from the repository with metadata and content",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached data if available to improve performance"
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached data if available to improve performance"
+            },
+            "forceRefresh": {
+              "type": "boolean",
+              "default": false,
+              "description": "Force refresh from R2 storage even if cached data exists"
+            }
           },
-          "forceRefresh": {
-            "type": "boolean",
-            "default": false,
-            "description": "Force refresh from R2 storage even if cached data exists"
-          }
+          "required": []
         }
       },
       {
         "name": "getPostBySlug",
         "description": "Get a specific blog post by its URL slug identifier",
         "parameters": {
-          "slug": {
-            "type": "string",
-            "description": "URL-friendly identifier for the specific post to retrieve"
-          }
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "description": "URL-friendly identifier for the specific post to retrieve"
+            }
+          },
+          "required": [
+            "slug"
+          ]
         }
       },
       {
         "name": "getPostByHash",
         "description": "Get a specific blog post by its unique hash identifier",
         "parameters": {
-          "hash": {
-            "type": "string",
-            "description": "Unique hash identifier for the specific post to retrieve"
-          }
+          "type": "object",
+          "properties": {
+            "hash": {
+              "type": "string",
+              "description": "Unique hash identifier for the specific post to retrieve"
+            }
+          },
+          "required": [
+            "hash"
+          ]
         }
       },
       {
         "name": "getPostByPath",
         "description": "Get a specific blog post by its file path in the repository",
         "parameters": {
-          "path": {
-            "type": "string",
-            "description": "File path within the repository to retrieve"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "File path within the repository to retrieve"
+            }
+          },
+          "required": [
+            "path"
+          ]
         }
       },
       {
         "name": "getRecentPosts",
         "description": "Get the most recent blog posts sorted by date",
         "parameters": {
-          "count": {
-            "type": "number",
-            "default": 3,
-            "description": "Number of recent posts to return (default: 3)"
-          }
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number",
+              "default": 3,
+              "description": "Number of recent posts to return (default: 3)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getPostsSimilarityByHashes",
         "description": "Calculate similarity score between two specific posts using their hash identifiers",
         "parameters": {
-          "hash1": {
-            "type": "string",
-            "description": "Hash of the first post to compare"
+          "type": "object",
+          "properties": {
+            "hash1": {
+              "type": "string",
+              "description": "Hash of the first post to compare"
+            },
+            "hash2": {
+              "type": "string",
+              "description": "Hash of the second post to compare"
+            }
           },
-          "hash2": {
-            "type": "string",
-            "description": "Hash of the second post to compare"
-          }
+          "required": [
+            "hash1",
+            "hash2"
+          ]
         }
       },
       {
         "name": "getSimilarPostsHashByHash",
         "description": "Get list of similar post hashes for a given post using AI similarity matching",
         "parameters": {
-          "hash": {
-            "type": "string",
-            "description": "Hash of the reference post to find similar content for"
+          "type": "object",
+          "properties": {
+            "hash": {
+              "type": "string",
+              "description": "Hash of the reference post to find similar content for"
+            },
+            "limit": {
+              "type": "number",
+              "default": 10,
+              "description": "Maximum number of similar post hashes to return"
+            }
           },
-          "limit": {
-            "type": "number",
-            "default": 10,
-            "description": "Maximum number of similar post hashes to return"
-          }
+          "required": [
+            "hash"
+          ]
         }
       },
       {
         "name": "getSimilarPostsByHash",
         "description": "Find posts similar to the given post using AI embeddings, returns full post objects",
         "parameters": {
-          "hash": {
-            "type": "string",
-            "description": "Hash of the reference post to find similar content for"
+          "type": "object",
+          "properties": {
+            "hash": {
+              "type": "string",
+              "description": "Hash of the reference post to find similar content for"
+            },
+            "count": {
+              "type": "number",
+              "default": 5,
+              "description": "Number of similar posts to return with full metadata"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Additional options for similarity calculation and filtering"
+            }
           },
-          "count": {
-            "type": "number",
-            "default": 5,
-            "description": "Number of similar posts to return with full metadata"
-          },
-          "options": {
-            "type": "object",
-            "default": {},
-            "description": "Additional options for similarity calculation and filtering"
-          }
+          "required": [
+            "hash"
+          ]
         }
       },
       {
         "name": "getSimilarPostsBySlug",
         "description": "Find posts similar to the given post using AI embeddings and semantic analysis",
         "parameters": {
-          "slug": {
-            "type": "string",
-            "description": "Slug of the reference post to find similar content for"
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "description": "Slug of the reference post to find similar content for"
+            },
+            "count": {
+              "type": "number",
+              "default": 5,
+              "description": "Number of similar posts to return"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Additional options for similarity calculation"
+            }
           },
-          "count": {
-            "type": "number",
-            "default": 5,
-            "description": "Number of similar posts to return"
-          },
-          "options": {
-            "type": "object",
-            "default": {},
-            "description": "Additional options for similarity calculation"
-          }
+          "required": [
+            "slug"
+          ]
         }
       },
       {
         "name": "getPostsEmbeddings",
         "description": "Get AI vector embeddings for all posts used in similarity calculations",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached embedding data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached embedding data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getPostsSimilarity",
         "description": "Get the complete similarity matrix showing relationships between all posts",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached similarity data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached similarity data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getTopSimilarPostsHashes",
         "description": "Get the most similar post pairs from the entire collection",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached similarity data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached similarity data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getSimilarPostsSlugBySlug",
         "description": "Get list of similar post slugs for a given post using AI similarity matching",
         "parameters": {
-          "slug": {
-            "type": "string",
-            "description": "Slug of the reference post to find similar content for"
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "description": "Slug of the reference post to find similar content for"
+            },
+            "limit": {
+              "type": "number",
+              "default": 10,
+              "description": "Maximum number of similar post slugs to return"
+            }
           },
-          "limit": {
-            "type": "number",
-            "default": 10,
-            "description": "Maximum number of similar post slugs to return"
-          }
+          "required": [
+            "slug"
+          ]
         }
       },
       {
         "name": "getR2MediaUrl",
         "description": "Generate optimized URL for media files with automatic format conversion",
         "parameters": {
-          "path": {
-            "type": "string",
-            "description": "Media file path to generate optimized URL for"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Media file path to generate optimized URL for"
+            }
+          },
+          "required": [
+            "path"
+          ]
         }
       },
       {
         "name": "getAllMedia",
         "description": "Retrieve all media files with metadata and optimized URLs",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached media data if available"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached media data if available"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getAllMedias",
         "description": "Retrieve all media files with metadata (deprecated alias for getAllMedia)",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached media data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached media data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getMediaItems",
         "description": "Get media items with formatted URLs and metadata for display",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached media data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached media data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getMediaEmbeddings",
         "description": "Get AI vector embeddings for all media files used in similarity calculations",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached embedding data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached embedding data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getMediaSimilarity",
         "description": "Get the complete similarity matrix showing relationships between all media files",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached similarity data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached similarity data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getMediaSimilarityByHashes",
         "description": "Calculate similarity score between two specific media files using their hash identifiers",
         "parameters": {
-          "hash1": {
-            "type": "string",
-            "description": "Hash of the first media file to compare"
+          "type": "object",
+          "properties": {
+            "hash1": {
+              "type": "string",
+              "description": "Hash of the first media file to compare"
+            },
+            "hash2": {
+              "type": "string",
+              "description": "Hash of the second media file to compare"
+            }
           },
-          "hash2": {
-            "type": "string",
-            "description": "Hash of the second media file to compare"
-          }
+          "required": [
+            "hash1",
+            "hash2"
+          ]
         }
       },
       {
         "name": "getTopSimilarMediaHashes",
         "description": "Get the most similar media file pairs from the entire collection",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached similarity data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached similarity data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getSimilarMediaHashByHash",
         "description": "Get list of similar media file hashes for a given media file using AI similarity matching",
         "parameters": {
-          "hash": {
-            "type": "string",
-            "description": "Hash of the reference media file to find similar content for"
+          "type": "object",
+          "properties": {
+            "hash": {
+              "type": "string",
+              "description": "Hash of the reference media file to find similar content for"
+            },
+            "limit": {
+              "type": "number",
+              "default": 10,
+              "description": "Maximum number of similar media hashes to return"
+            }
           },
-          "limit": {
-            "type": "number",
-            "default": 10,
-            "description": "Maximum number of similar media hashes to return"
-          }
+          "required": [
+            "hash"
+          ]
         }
       },
       {
         "name": "getSimilarMediaByHash",
         "description": "Find media files similar to the given media file using AI embeddings, returns full media objects",
         "parameters": {
-          "hash": {
-            "type": "string",
-            "description": "Hash of the reference media file to find similar content for"
+          "type": "object",
+          "properties": {
+            "hash": {
+              "type": "string",
+              "description": "Hash of the reference media file to find similar content for"
+            },
+            "count": {
+              "type": "number",
+              "default": 5,
+              "description": "Number of similar media files to return with full metadata"
+            }
           },
-          "count": {
-            "type": "number",
-            "default": 5,
-            "description": "Number of similar media files to return with full metadata"
-          }
+          "required": [
+            "hash"
+          ]
         }
       },
       {
         "name": "handleCloudflareRequest",
         "description": "Handle Cloudflare media transformation requests for optimized image delivery",
         "parameters": {
-          "request": {
-            "type": "object",
-            "description": "Cloudflare request object containing transformation parameters"
-          }
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "description": "Cloudflare request object containing transformation parameters"
+            }
+          },
+          "required": [
+            "request"
+          ]
         }
       },
       {
         "name": "getSourceFilesList",
         "description": "Get list of all source files in the repository before build processing",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached file list if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached file list if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getDistFilesList",
         "description": "Get list of all built/distribution files after processing",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached file list if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached file list if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getFileContent",
         "description": "Read the content of a specific file from the repository",
         "parameters": {
-          "path": {
-            "type": "string",
-            "description": "File path within the repository to read content from"
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "File path within the repository to read content from"
+            },
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached file content if available for better performance"
+            }
           },
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached file content if available for better performance"
-          }
+          "required": [
+            "path"
+          ]
         }
       },
       {
         "name": "getGraph",
         "description": "Get the project dependency graph showing relationships between files and components",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached graph data if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached graph data if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getR2Url",
         "description": "Generate R2 storage URL for accessing repository files with automatic revision resolution",
         "parameters": {
-          "path": {
-            "type": "string",
-            "default": "",
-            "description": "File path within the repository (optional, defaults to root)"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "File path within the repository (optional, defaults to root)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getR2ProjectUrl",
         "description": "Generate project-specific R2 URL for accessing project-level resources",
         "parameters": {
-          "path": {
-            "type": "string",
-            "default": "",
-            "description": "File path within the project folder (optional, defaults to root)"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "File path within the project folder (optional, defaults to root)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getR2SharedFolderUrl",
         "description": "Generate R2 URL for shared folder resources accessible across projects",
         "parameters": {
-          "path": {
-            "type": "string",
-            "default": "",
-            "description": "File path within the shared folder (optional, defaults to root)"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "File path within the shared folder (optional, defaults to root)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getR2RevUrl",
         "description": "Generate revision-specific R2 URL for accessing repository files (alias for getR2Url)",
         "parameters": {
-          "path": {
-            "type": "string",
-            "default": "",
-            "description": "File path within the repository (optional, defaults to root)"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": "",
+              "description": "File path within the repository (optional, defaults to root)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "createViteProxy",
         "description": "Create Vite development server proxy configuration for local development",
         "parameters": {
-          "folder": {
-            "type": "string",
-            "default": "_repo",
-            "description": "Repository folder name for Vite proxy configuration"
-          }
+          "type": "object",
+          "properties": {
+            "folder": {
+              "type": "string",
+              "default": "_repo",
+              "description": "Repository folder name for Vite proxy configuration"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getSqliteUrl",
         "description": "Get URL for the SQLite database containing repository metadata and search indices",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached URL if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached URL if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "fetchPublicApi",
         "description": "Fetch data from public API endpoints with automatic error handling and retries",
         "parameters": {
-          "path": {
-            "type": "string",
-            "default": "/",
-            "description": "API endpoint path to fetch from (defaults to root)"
-          }
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": "/",
+              "description": "API endpoint path to fetch from (defaults to root)"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "fetchProjectDetails",
         "description": "Get detailed project information including metadata, configuration, and settings",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached project details if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached project details if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "fetchR2Json",
         "description": "Fetch JSON data from R2 storage with automatic revision resolution and error handling",
         "parameters": {
-          "path": {
-            "type": "string",
-            "description": "File path in R2 storage to fetch JSON data from"
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "File path in R2 storage to fetch JSON data from"
+            },
+            "opts": {
+              "type": "object",
+              "default": {},
+              "description": "Additional fetch options like caching, headers, and timeouts"
+            }
           },
-          "opts": {
-            "type": "object",
-            "default": {},
-            "description": "Additional fetch options like caching, headers, and timeouts"
-          }
+          "required": [
+            "path"
+          ]
         }
       },
       {
         "name": "fetchJson",
         "description": "Fetch JSON data from any URL with error handling and optional caching",
         "parameters": {
-          "url": {
-            "type": "string",
-            "description": "Complete URL to fetch JSON data from"
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Complete URL to fetch JSON data from"
+            },
+            "opts": {
+              "type": "object",
+              "default": {},
+              "description": "Additional fetch options like headers, timeout, and caching"
+            }
           },
-          "opts": {
-            "type": "object",
-            "default": {},
-            "description": "Additional fetch options like headers, timeout, and caching"
-          }
+          "required": [
+            "url"
+          ]
         }
       },
       {
         "name": "getActiveProjectRev",
         "description": "Get the active revision ID for the project with optional caching and detail control",
         "parameters": {
-          "forceRefresh": {
-            "type": "boolean",
-            "default": false,
-            "description": "Force refresh from API even if cached revision exists"
+          "type": "object",
+          "properties": {
+            "forceRefresh": {
+              "type": "boolean",
+              "default": false,
+              "description": "Force refresh from API even if cached revision exists"
+            },
+            "skipDetails": {
+              "type": "boolean",
+              "default": false,
+              "description": "Skip fetching detailed project information for faster response"
+            }
           },
-          "skipDetails": {
-            "type": "boolean",
-            "default": false,
-            "description": "Skip fetching detailed project information for faster response"
-          }
+          "required": []
         }
       },
       {
         "name": "fetchProjectActiveRev",
         "description": "Fetch the current active revision ID for the project from the API",
         "parameters": {
-          "forceRefresh": {
-            "type": "boolean",
-            "default": false,
-            "description": "Force refresh from API even if cached revision exists"
-          }
+          "type": "object",
+          "properties": {
+            "forceRefresh": {
+              "type": "boolean",
+              "default": false,
+              "description": "Force refresh from API even if cached revision exists"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "handleOpenAiRequest",
         "description": "Process OpenAI function calling requests with RepoMD context and tools",
         "parameters": {
-          "request": {
-            "type": "object",
-            "description": "OpenAI API request object containing function calls and context"
+          "type": "object",
+          "properties": {
+            "request": {
+              "type": "object",
+              "description": "OpenAI API request object containing function calls and context"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Additional options for OpenAI request processing"
+            }
           },
-          "options": {
-            "type": "object",
-            "default": {},
-            "description": "Additional options for OpenAI request processing"
-          }
+          "required": [
+            "request"
+          ]
         }
       },
       {
         "name": "createOpenAiToolHandler",
         "description": "Create a handler for OpenAI function calling that provides access to RepoMD methods",
         "parameters": {
-          "options": {
-            "type": "object",
-            "default": {},
-            "description": "Configuration options for the OpenAI tool handler"
-          }
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Configuration options for the OpenAI tool handler"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getClientStats",
         "description": "Get performance statistics and usage metrics for the RepoMD client instance",
-        "parameters": {}
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
       },
       {
         "name": "sortPostsByDate",
         "description": "Sort an array of posts by their publication date (newest first)",
         "parameters": {
-          "posts": {
-            "description": "Array of post objects to sort by date",
-            "type": "array",
-            "items": {
-              "type": "string"
+          "type": "object",
+          "properties": {
+            "posts": {
+              "description": "Array of post objects to sort by date",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
-          }
+          },
+          "required": [
+            "posts"
+          ]
         }
       },
       {
         "name": "getReleaseInfo",
         "description": "Get release information and version details for the current project",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached release information if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached release information if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getProjectMetadata",
         "description": "Get comprehensive project metadata including configuration, settings, and build information",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached project metadata if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached project metadata if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "ensureLatestRev",
         "description": "Ensure the latest revision is resolved and cached for subsequent operations",
-        "parameters": {}
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
       },
       {
         "name": "destroy",
         "description": "Clean up RepoMD instance resources, clear caches, and abort pending operations",
-        "parameters": {}
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
       },
       {
         "name": "getPostsBySlug",
         "description": "Get a blog post by its slug (alias for getPostBySlug for backward compatibility)",
         "parameters": {
-          "slug": {
-            "type": "string",
-            "description": "URL-friendly slug identifier for the post to retrieve"
-          }
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "description": "URL-friendly slug identifier for the post to retrieve"
+            }
+          },
+          "required": [
+            "slug"
+          ]
         }
       },
       {
         "name": "getSourceFiles",
         "description": "Get list of source files in the repository (alias for getSourceFilesList)",
         "parameters": {
-          "useCache": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use cached file list if available for better performance"
-          }
+          "type": "object",
+          "properties": {
+            "useCache": {
+              "type": "boolean",
+              "default": true,
+              "description": "Use cached file list if available for better performance"
+            }
+          },
+          "required": []
         }
       },
       {
         "name": "getOpenAiToolSpec",
         "description": "Get OpenAI tool specification with optional filtering for project-specific configurations",
         "parameters": {
-          "blacklistedTools": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "default": [],
-            "description": "Array of function names to exclude from the tool specification"
-          }
+          "type": "object",
+          "properties": {
+            "blacklistedTools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [],
+              "description": "Array of function names to exclude from the tool specification"
+            }
+          },
+          "required": []
         }
       }
     ]
@@ -673,9 +917,172 @@
       "handleOpenAiRequest",
       "sortPostsByDate"
     ],
-    "propertyTypes": {},
-    "functionsWithDefaults": [],
-    "functionsWithRequired": [],
+    "propertyTypes": {
+      "boolean": 23,
+      "string": 24,
+      "number": 7,
+      "object": 8,
+      "array": 2
+    },
+    "functionsWithDefaults": [
+      "getAllPosts",
+      "getRecentPosts",
+      "getSimilarPostsHashByHash",
+      "getSimilarPostsByHash",
+      "getSimilarPostsBySlug",
+      "getPostsEmbeddings",
+      "getPostsSimilarity",
+      "getTopSimilarPostsHashes",
+      "getSimilarPostsSlugBySlug",
+      "getAllMedia",
+      "getAllMedias",
+      "getMediaItems",
+      "getMediaEmbeddings",
+      "getMediaSimilarity",
+      "getTopSimilarMediaHashes",
+      "getSimilarMediaHashByHash",
+      "getSimilarMediaByHash",
+      "getSourceFilesList",
+      "getDistFilesList",
+      "getFileContent",
+      "getGraph",
+      "getR2Url",
+      "getR2ProjectUrl",
+      "getR2SharedFolderUrl",
+      "getR2RevUrl",
+      "createViteProxy",
+      "getSqliteUrl",
+      "fetchPublicApi",
+      "fetchProjectDetails",
+      "fetchR2Json",
+      "fetchJson",
+      "getActiveProjectRev",
+      "fetchProjectActiveRev",
+      "handleOpenAiRequest",
+      "createOpenAiToolHandler",
+      "getReleaseInfo",
+      "getProjectMetadata",
+      "getSourceFiles",
+      "getOpenAiToolSpec"
+    ],
+    "functionsWithRequired": [
+      {
+        "name": "getPostBySlug",
+        "required": [
+          "slug"
+        ]
+      },
+      {
+        "name": "getPostByHash",
+        "required": [
+          "hash"
+        ]
+      },
+      {
+        "name": "getPostByPath",
+        "required": [
+          "path"
+        ]
+      },
+      {
+        "name": "getPostsSimilarityByHashes",
+        "required": [
+          "hash1",
+          "hash2"
+        ]
+      },
+      {
+        "name": "getSimilarPostsHashByHash",
+        "required": [
+          "hash"
+        ]
+      },
+      {
+        "name": "getSimilarPostsByHash",
+        "required": [
+          "hash"
+        ]
+      },
+      {
+        "name": "getSimilarPostsBySlug",
+        "required": [
+          "slug"
+        ]
+      },
+      {
+        "name": "getSimilarPostsSlugBySlug",
+        "required": [
+          "slug"
+        ]
+      },
+      {
+        "name": "getR2MediaUrl",
+        "required": [
+          "path"
+        ]
+      },
+      {
+        "name": "getMediaSimilarityByHashes",
+        "required": [
+          "hash1",
+          "hash2"
+        ]
+      },
+      {
+        "name": "getSimilarMediaHashByHash",
+        "required": [
+          "hash"
+        ]
+      },
+      {
+        "name": "getSimilarMediaByHash",
+        "required": [
+          "hash"
+        ]
+      },
+      {
+        "name": "handleCloudflareRequest",
+        "required": [
+          "request"
+        ]
+      },
+      {
+        "name": "getFileContent",
+        "required": [
+          "path"
+        ]
+      },
+      {
+        "name": "fetchR2Json",
+        "required": [
+          "path"
+        ]
+      },
+      {
+        "name": "fetchJson",
+        "required": [
+          "url"
+        ]
+      },
+      {
+        "name": "handleOpenAiRequest",
+        "required": [
+          "request"
+        ]
+      },
+      {
+        "name": "sortPostsByDate",
+        "required": [
+          "posts"
+        ]
+      },
+      {
+        "name": "getPostsBySlug",
+        "required": [
+          "slug"
+        ]
+      }
+    ],
     "coverage": {
       "allSchemasCovered": true,
       "missingSchemasInSpecs": [],
