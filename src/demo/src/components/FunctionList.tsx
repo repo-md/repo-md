@@ -21,18 +21,27 @@ interface FunctionParam {
   description?: string;
 }
 
+interface MethodDescription {
+  name: string;
+  description: string;
+  parameters: FunctionParam[];
+  category: string;
+}
+
 interface FunctionListProps {
   functions: string[];
   handleExecute: (fnName: string, params?: Record<string, string>) => void;
   disabled?: boolean;
   functionParams?: Record<string, FunctionParam[]>;
+  methodDescriptions?: Record<string, MethodDescription>;
 }
 
 const FunctionList: React.FC<FunctionListProps> = ({
   functions,
   handleExecute,
   disabled = false,
-  functionParams = {}
+  functionParams = {},
+  methodDescriptions = {}
 }) => {
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
@@ -145,12 +154,17 @@ const FunctionList: React.FC<FunctionListProps> = ({
                 const allParams = hasParams ? functionParams[fnName] : [];
                 const requiredParams = allParams.filter(p => p.required);
                 const optionalParams = allParams.filter(p => !p.required);
+                const methodDesc = methodDescriptions[fnName];
 
-                // Format tooltip to show parameters grouped by required/optional
-                const paramTooltip = hasParams ? [
-                  requiredParams.length > 0 ? `Required:\n${requiredParams.map(p => `• ${p.name}: ${p.type}`).join('\n')}` : '',
-                  optionalParams.length > 0 ? `Optional:\n${optionalParams.map(p => `• ${p.name}: ${p.type}${p.default !== undefined ? ` (default: ${p.default})` : ''}`).join('\n')}` : ''
-                ].filter(Boolean).join('\n\n') : '';
+                // Format tooltip to show description and parameters
+                const descriptionText = methodDesc?.description || '';
+                const paramTooltip = [
+                  descriptionText ? `${descriptionText}` : '',
+                  hasParams ? [
+                    requiredParams.length > 0 ? `Required:\n${requiredParams.map(p => `• ${p.name}: ${p.type}`).join('\n')}` : '',
+                    optionalParams.length > 0 ? `Optional:\n${optionalParams.map(p => `• ${p.name}: ${p.type}${p.default !== undefined ? ` (default: ${p.default})` : ''}`).join('\n')}` : ''
+                  ].filter(Boolean).join('\n\n') : ''
+                ].filter(Boolean).join('\n\n');
 
                 return (
                   <div key={fnName} className="function-item">
@@ -160,24 +174,33 @@ const FunctionList: React.FC<FunctionListProps> = ({
                       onClick={() => handleFunctionSelect(fnName)}
                       title={paramTooltip}
                     >
-                      <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }} />
-                      <span className="function-label">{fnName}</span>
-                      {requiredParams.length > 0 && (
-                        <div className="param-tags">
-                          {requiredParams.map(param => (
-                            <span key={param.name} className="param-tag required-param" title={`${param.name}: ${param.type}`}>
-                              {param.name}*
-                            </span>
-                          ))}
+                      <div className="function-content">
+                        <div className="function-header">
+                          <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }} />
+                          <span className="function-label">{fnName}</span>
                         </div>
-                      )}
-                      {optionalParams.length > 0 && requiredParams.length === 0 && (
-                        <div className="param-tags">
-                          <span className="param-tag optional-param">
-                            {optionalParams.length} optional
-                          </span>
+                        {methodDesc?.description && (
+                          <div className="function-description">{methodDesc.description}</div>
+                        )}
+                        <div className="function-params">
+                          {requiredParams.length > 0 && (
+                            <div className="param-tags">
+                              {requiredParams.map(param => (
+                                <span key={param.name} className="param-tag required-param" title={`${param.name}: ${param.type}`}>
+                                  {param.name}*
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {optionalParams.length > 0 && requiredParams.length === 0 && (
+                            <div className="param-tags">
+                              <span className="param-tag optional-param">
+                                {optionalParams.length} optional
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </button>
                   </div>
                 );

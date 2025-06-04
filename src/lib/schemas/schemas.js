@@ -42,12 +42,12 @@ export const schemas = {
   getPostByPath: z.object({
     path: stringSchema.refine((val) => val.length > 0, {
       message: "Path is required for getPostByPath operation",
-    }),
-  }),
+    }).describe("File path within the repository to retrieve"),
+  }).describe("Get a specific blog post by its file path in the repository"),
 
   getRecentPosts: z.object({
-    count: z.number().nonnegative().optional().default(3),
-  }),
+    count: z.number().nonnegative().optional().default(3).describe("Number of recent posts to return (default: 3)"),
+  }).describe("Get the most recent blog posts sorted by date"),
 
   // Similarity Methods
   getPostsSimilarityByHashes: z.object({
@@ -77,10 +77,10 @@ export const schemas = {
   getSimilarPostsBySlug: z.object({
     slug: stringSchema.refine((val) => val.length > 0, {
       message: "Slug is required for getSimilarPostsBySlug operation",
-    }),
-    count: z.number().nonnegative().optional().default(5),
-    options: optionsSchema,
-  }),
+    }).describe("Slug of the reference post to find similar content for"),
+    count: z.number().nonnegative().optional().default(5).describe("Number of similar posts to return"),
+    options: optionsSchema.describe("Additional options for similarity calculation"),
+  }).describe("Find posts similar to the given post using AI embeddings and semantic analysis"),
 
   // Additional Similarity Methods
   getPostsEmbeddings: z.object({
@@ -106,12 +106,12 @@ export const schemas = {
   getR2MediaUrl: z.object({
     path: stringSchema.refine((val) => val.length > 0, {
       message: "Path is required for getR2MediaUrl operation",
-    }),
-  }),
+    }).describe("Media file path to generate optimized URL for"),
+  }).describe("Generate optimized URL for media files with automatic format conversion"),
 
   getAllMedia: z.object({
-    useCache: booleanSchema,
-  }),
+    useCache: booleanSchema.describe("Use cached media data if available"),
+  }).describe("Retrieve all media files with metadata and optimized URLs"),
 
   getAllMedias: z.object({
     useCache: booleanSchema,

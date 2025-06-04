@@ -7,11 +7,19 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import { ParameterInput, FunctionParam } from './params'
 
+interface MethodDescription {
+  name: string;
+  description: string;
+  parameters: FunctionParam[];
+  category: string;
+}
+
 interface ResultPanelProps {
   result: ApiResult | null
   loading: boolean
   handleRun?: (params?: Record<string, string>) => void
   functionParams?: Record<string, FunctionParam[]>
+  methodDescriptions?: Record<string, MethodDescription>
   projectId?: string
   orgSlug?: string
   strategy?: 'auto' | 'server' | 'browser'
@@ -23,6 +31,7 @@ const ResultPanel: React.FC<ResultPanelProps> = ({
   loading,
   handleRun,
   functionParams = {},
+  methodDescriptions = {},
   projectId = '',
   orgSlug = '',
   strategy = 'auto',
@@ -240,8 +249,15 @@ fetchData();`;
             <div className="loading-indicator">Loading...</div>
           ) : (
             result && (
-              <div className="method-name">
-                {result.operation}
+              <div className="method-info">
+                <div className="method-name">
+                  {result.operation}
+                </div>
+                {methodDescriptions[result.operation]?.description && (
+                  <div className="method-description">
+                    {methodDescriptions[result.operation].description}
+                  </div>
+                )}
               </div>
             )
           )}

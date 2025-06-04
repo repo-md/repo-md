@@ -22,7 +22,10 @@ import {
   schemas, 
   validateFunctionParams, 
   functionParamMetadata,
-  applyValidation
+  applyValidation,
+  getMethodDescription,
+  getAllMethodDescriptions,
+  getMethodsByCategory
 } from './schemas/index.js';
 
 // Re-export all public APIs
@@ -51,7 +54,10 @@ export {
   schemas,
   validateFunctionParams,
   functionParamMetadata,
-  applyValidation
+  applyValidation,
+  getMethodDescription,
+  getAllMethodDescriptions,
+  getMethodsByCategory
 };
 
 // Default export

@@ -4,7 +4,8 @@ import {
   repoMdOptionsSchema,
   schemas,
   validateFunctionParams,
-  functionParamMetadata
+  functionParamMetadata,
+  getAllMethodDescriptions
 } from '../../lib/index.js'
 import ConfigPanel from './components/ConfigPanel'
 import ResultPanel from './components/ResultPanel'
@@ -207,6 +208,9 @@ console.log('Extracted params from schemas:', extractedParams);
 // Use only schema-extracted parameters
 const functionParams: Record<string, FunctionParam[]> = extractedParams;
 
+// Get method descriptions from the schema system
+const methodDescriptions = getAllMethodDescriptions();
+console.log('Method descriptions loaded:', Object.keys(methodDescriptions).length);
 
 // Debug the final parameter configuration
 console.log('Final function params:', functionParams);
@@ -707,6 +711,7 @@ function App() {
             handleExecute={handleExecuteFunction}
             disabled={loading}
             functionParams={functionParams}
+            methodDescriptions={methodDescriptions}
           />
         </div>
 
@@ -719,6 +724,7 @@ function App() {
               undefined
             }
             functionParams={functionParams}
+            methodDescriptions={methodDescriptions}
             projectId={projectId}
             orgSlug={orgSlug}
             strategy={strategy}

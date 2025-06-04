@@ -165,3 +165,6 @@ export function validateFunctionParams(functionName: string, params: any): {
   error?: string;
 };
 export function applyValidation(instance: any, methodNames?: string[]): void;
+export function getMethodDescription(functionName: string): any;
+export function getAllMethodDescriptions(): Record<string, any>;
+export function getMethodsByCategory(category: string): Record<string, any>;
