@@ -29,7 +29,13 @@ import { OpenAiToolSpec, toolSpecs } from "./openai/OpenAiToolSpec.js";
 
 // Import alias mechanism, validation and logging
 import { applyAliases } from "./aliases.js";
-import { applyValidation, repoMdOptionsSchema } from "./schemas/index.js";
+import {
+  applyValidation,
+  repoMdOptionsSchema,
+  getMethodDescription,
+  getAllMethodDescriptions,
+  getMethodsByCategory,
+} from "./schemas/index.js";
 import { applyLogging } from "./core/logger-wrapper.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
@@ -565,6 +571,28 @@ class RepoMD {
 
   async getSimilarMediaByHash(hash, count = 5) {
     return await this.mediaSimilarity.getSimilarMediaByHash(hash, count);
+  }
+
+  // Method documentation methods
+  static getMethodDescription(methodName) {
+    return getMethodDescription(methodName);
+  }
+
+  static getAllMethodDescriptions() {
+    return getAllMethodDescriptions();
+  }
+
+  static getMethodsByCategory(category) {
+    return getMethodsByCategory(category);
+  }
+
+  static getAllMethodCategories() {
+    const allMethods = getAllMethodDescriptions();
+    return [...new Set(Object.values(allMethods).map((m) => m.category))];
+  }
+
+  getMethodDescription(methodName) {
+    return this.constructor.getMethodDescription(methodName);
   }
 
   destroy() {

@@ -11,7 +11,7 @@ export function extractParamMetadata(schema) {
     let type = 'unknown';
     let required = true;
     let defaultValue = undefined;
-    let description = '';
+    let description = zodType.description || '';
 
     // Determine parameter type and if it's required
     if (zodType instanceof z.ZodString) {
@@ -30,34 +30,29 @@ export function extractParamMetadata(schema) {
       type = `${getZodTypeName(zodType._def.innerType)} | null`;
     }
 
-    // Check if optional
-    if (zodType instanceof z.ZodOptional) {
+    // Check if optional or has default
+    if (zodType instanceof z.ZodOptional || zodType instanceof z.ZodDefault) {
       required = false;
       
-      // Get inner type for optional fields
-      const innerType = zodType._def.innerType;
+      // Get inner type for optional/default fields
+      let innerType = zodType._def.innerType || zodType;
+      
+      // Extract description from inner type if available
+      if (innerType.description) {
+        description = innerType.description;
+      }
       
       // Get default value if available
-      if ('_def' in innerType && innerType._def.defaultValue !== undefined) {
-        defaultValue = innerType._def.defaultValue;
+      if (zodType instanceof z.ZodDefault && zodType._def.defaultValue !== undefined) {
+        defaultValue = zodType._def.defaultValue();
+      } else if ('_def' in innerType && innerType._def.defaultValue !== undefined) {
+        defaultValue = typeof innerType._def.defaultValue === 'function' 
+          ? innerType._def.defaultValue() 
+          : innerType._def.defaultValue;
       }
       
       // Update type information for optional fields
-      if (innerType instanceof z.ZodString) {
-        type = 'string';
-      } else if (innerType instanceof z.ZodNumber) {
-        type = 'number';
-      } else if (innerType instanceof z.ZodBoolean) {
-        type = 'boolean';
-      } else if (innerType instanceof z.ZodArray) {
-        type = 'array';
-      } else if (innerType instanceof z.ZodObject) {
-        type = 'object';
-      } else if (innerType instanceof z.ZodEnum) {
-        type = `enum (${innerType._def.values.join(', ')})`;
-      } else if (innerType instanceof z.ZodNullable) {
-        type = `${getZodTypeName(innerType._def.innerType)} | null`;
-      }
+      type = getZodTypeName(innerType);
     }
 
     // Add parameter metadata
@@ -81,6 +76,10 @@ function getZodTypeName(zodType) {
   if (zodType instanceof z.ZodArray) return 'array';
   if (zodType instanceof z.ZodObject) return 'object';
   if (zodType instanceof z.ZodEnum) return `enum (${zodType._def.values.join(', ')})`;
+  if (zodType instanceof z.ZodOptional) return getZodTypeName(zodType._def.innerType);
+  if (zodType instanceof z.ZodDefault) return getZodTypeName(zodType._def.innerType);
+  if (zodType instanceof z.ZodNullable) return `${getZodTypeName(zodType._def.innerType)} | null`;
+  if (zodType instanceof z.ZodEffects) return getZodTypeName(zodType._def.schema);
   return 'unknown';
 }
 
@@ -90,6 +89,49 @@ export const functionParamMetadata = {};
 // Extract metadata for each function schema
 for (const [funcName, schema] of Object.entries(schemas)) {
   functionParamMetadata[funcName] = extractParamMetadata(schema);
+}
+
+// Function to get method description from schema
+export function getMethodDescription(functionName) {
+  const schema = schemas[functionName];
+  if (!schema) return null;
+  
+  return {
+    name: functionName,
+    description: schema.description || '',
+    parameters: extractParamMetadata(schema),
+    category: inferCategoryFromName(functionName)
+  };
+}
+
+// Function to get all method descriptions
+export function getAllMethodDescriptions() {
+  const descriptions = {};
+  for (const functionName of Object.keys(schemas)) {
+    descriptions[functionName] = getMethodDescription(functionName);
+  }
+  return descriptions;
+}
+
+// Function to get methods by category
+export function getMethodsByCategory(category) {
+  const allMethods = getAllMethodDescriptions();
+  return Object.entries(allMethods)
+    .filter(([_, meta]) => meta.category === category)
+    .reduce((acc, [name, meta]) => ({ ...acc, [name]: meta }), {});
+}
+
+// Helper function to infer category from function name
+function inferCategoryFromName(functionName) {
+  if (functionName.includes('Post') || functionName.includes('posts')) return 'Posts';
+  if (functionName.includes('Media') || functionName.includes('media')) return 'Media';
+  if (functionName.includes('Similar') || functionName.includes('Embedding')) return 'Similarity';
+  if (functionName.includes('File') || functionName.includes('Graph')) return 'Files';
+  if (functionName.includes('Project') || functionName.includes('Release')) return 'Project';
+  if (functionName.includes('R2') || functionName.includes('Url') || functionName.includes('Sqlite')) return 'URLs';
+  if (functionName.includes('Api') || functionName.includes('fetch')) return 'API';
+  if (functionName.includes('OpenAi')) return 'OpenAI';
+  return 'Utility';
 }
 
 // Validate function parameters against their schema

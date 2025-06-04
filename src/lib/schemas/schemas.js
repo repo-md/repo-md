@@ -19,25 +19,25 @@ export const repoMdOptionsSchema = z.object({
   strategy: z.enum(["auto", "browser", "server"]).optional().default("auto"),
 });
 
-// API Methods
+// API Methods with descriptions
 export const schemas = {
   // Posts Methods
   getAllPosts: z.object({
-    useCache: booleanSchema,
-    forceRefresh: z.boolean().optional().default(false),
-  }),
+    useCache: booleanSchema.describe("Use cached data if available to improve performance"),
+    forceRefresh: z.boolean().optional().default(false).describe("Force refresh from R2 storage even if cached data exists"),
+  }).describe("Retrieve all blog posts from the repository with metadata and content"),
 
   getPostBySlug: z.object({
     slug: stringSchema.refine((val) => val.length > 0, {
       message: "Slug is required for getPostBySlug operation",
-    }),
-  }),
+    }).describe("URL-friendly identifier for the specific post to retrieve"),
+  }).describe("Get a specific blog post by its URL slug identifier"),
 
   getPostByHash: z.object({
     hash: stringSchema.refine((val) => val.length > 0, {
       message: "Hash is required for getPostByHash operation",
-    }),
-  }),
+    }).describe("Unique hash identifier for the specific post to retrieve"),
+  }).describe("Get a specific blog post by its unique hash identifier"),
 
   getPostByPath: z.object({
     path: stringSchema.refine((val) => val.length > 0, {
