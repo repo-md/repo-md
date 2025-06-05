@@ -568,6 +568,19 @@ function App() {
           break;
         }
 
+        case 'searchPosts': {
+          const text = params.text || params.query || 'test';
+          const props = {
+            limit: params.limit ? Number.parseInt(params.limit) : 10,
+            fuzzy: params.fuzzy ? Number.parseFloat(params.fuzzy) : 0.2,
+            prefix: params.prefix !== 'false',
+            boost: params.boost ? JSON.parse(params.boost) : { title: 3, excerpt: 2 }
+          };
+          const mode = params.mode || 'memory';
+          data = await repo.searchPosts(text, props, mode);
+          break;
+        }
+
         default:
           // For any other methods, try to call it directly
           if (typeof repo[operation] === 'function') {
