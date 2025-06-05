@@ -13,6 +13,7 @@ import { createApiClient } from "./core/api.js";
 import cache from "./core/cache.js";
 import { createPostRetrieval } from "./posts/retrieval.js";
 import { createPostSimilarity } from "./posts/similarity.js";
+import { createPostSearch } from "./posts/search.js";
 import { createMediaHandler } from "./media/handler.js";
 import { createProjectConfig } from "./project/config.js";
 import { createFileHandler } from "./files/index.js";
@@ -315,6 +316,12 @@ class RepoMD {
       debug: this.debug,
     });
 
+    // Initialize post search service
+    this.search = createPostSearch({
+      getAllPosts: this.getAllPosts.bind(this),
+      debug: this.debug,
+    });
+
     // Initialize media handling service
     this.media = createMediaHandler({
       fetchR2Json: this.fetchR2Json,
@@ -502,6 +509,15 @@ class RepoMD {
     return await this.similarity.getSimilarPostsBySlug(slug, count, options);
   }
 
+  // Post search methods (proxy to Search module)
+  async searchPosts(text, props = {}, mode = 'memory') {
+    return await this.search.searchPosts({ text, props, mode });
+  }
+
+  async refreshSearchIndex() {
+    return await this.search.refreshIndex();
+  }
+
   // Project configuration methods (proxy to Project module)
   async getReleaseInfo() {
     return await this.project.getReleaseInfo(this.projectId);
@@ -628,6 +644,7 @@ class RepoMD {
     // Clear any references to services
     this.posts = null;
     this.similarity = null;
+    this.search = null;
     this.media = null;
     this.project = null;
     this.files = null;

@@ -79,6 +79,27 @@ export const schemas = {
     options: optionsSchema.describe("Additional options for similarity calculation"),
   }).describe("Find posts similar to the given post using AI embeddings and semantic analysis"),
 
+  // Search Methods
+  searchPosts: z.object({
+    text: stringSchema.refine((val) => val.length > 0, {
+      message: "Search text is required and cannot be empty",
+    }).describe("Search query text to find matching posts"),
+    props: z.object({
+      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of search results to return"),
+      fuzzy: z.number().min(0).max(1).optional().default(0.2).describe("Fuzzy matching tolerance (0 = exact, 1 = very fuzzy)"),
+      prefix: z.boolean().optional().default(true).describe("Enable prefix matching for partial words"),
+      boost: z.object({
+        title: z.number().positive().optional().default(3).describe("Weight multiplier for title matches"),
+        excerpt: z.number().positive().optional().default(2).describe("Weight multiplier for excerpt matches"),
+        content: z.number().positive().optional().default(1).describe("Weight multiplier for content matches"),
+        tags: z.number().positive().optional().default(1).describe("Weight multiplier for tag matches"),
+      }).optional().describe("Field-specific weight boosts for search relevance"),
+    }).optional().default({}).describe("Additional search configuration options"),
+    mode: z.enum(["memory"]).optional().default("memory").describe("Search mode - currently supports 'memory' with future support for 'vector' and 'database'"),
+  }).describe("Full-text search across posts with configurable relevance weighting and fuzzy matching"),
+
+  refreshSearchIndex: z.object({}).describe("Refresh the search index with latest post data for updated search results"),
+
   // Additional Similarity Methods
   getPostsEmbeddings: z.object({
     useCache: booleanSchema.describe("Use cached embedding data if available for better performance"),
