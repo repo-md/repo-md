@@ -9,8 +9,7 @@
 import { RepoMD } from '../src/lib/index.js';
 
 // Create a RepoMD instance with debug enabled
-const repoMd = new RepoMD({
-  org: "iplanwebsites",
+const repoMd = new RepoMD({ 
   projectId: "680e97604a0559a192640d2c",
   debug: true,
 });

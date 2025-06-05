@@ -4,12 +4,13 @@
  * Test script to verify OpenAI spec generation from Zod schemas
  */
 
-import { OpenAiToolSpec } from './src/lib/openai/OpenAiToolSpec.js';
+import { createOpenAiSpecs } from './src/lib/openai/OpenAiToolSpec.js';
 import { schemas } from './src/lib/schemas/schemas.js';
 
 console.log('🔍 Testing OpenAI Spec Generation');
 console.log('='.repeat(50));
 
+const OpenAiToolSpec = createOpenAiSpecs();
 const { functions } = OpenAiToolSpec;
 
 console.log(`📊 Generated ${functions.length} function specifications`);

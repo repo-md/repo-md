@@ -188,5 +188,3 @@ export function createOpenAiSpecs() {
   };
 }
 
-// Generate the OpenAI Tool Specifications
-export const OpenAiToolSpec = createOpenAiSpecs();

@@ -3,8 +3,7 @@
 import { RepoMD } from '../dist/repo-md.js';
 
 // Test with a specific revision 
-const repomd = new RepoMD({
-  org: 'iplanwebsites',
+const repomd = new RepoMD({ 
   projectId: '680e97604a0559a192640d2c',
   rev: 'abc123', // Specific revision instead of 'latest'
   debug: true

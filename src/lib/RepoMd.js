@@ -25,7 +25,7 @@ import {
 } from "./openai/OpenAiToolHandler.js";
 
 // Import exported logo and tool specs
-import { OpenAiToolSpec, createOpenAiSpecs } from "./openai/OpenAiToolSpec.js";
+import { createOpenAiSpecs } from "./openai/OpenAiToolSpec.js";
 
 // Import alias mechanism, validation and logging
 import { applyAliases } from "./aliases.js";
@@ -655,4 +655,4 @@ export const logo = `
     ▌          `;
 
 // Export RepoMD class and OpenAI related tools
-export { RepoMD, OpenAiToolSpec, createOpenAiSpecs };
+export { RepoMD, createOpenAiSpecs };

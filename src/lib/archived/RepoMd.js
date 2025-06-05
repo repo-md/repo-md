@@ -56,8 +56,7 @@ class RepoMD {
     //  }
 
     if (this.debug) {
-      console.log(`${prefix} 🚀 Initialized with:
-        - org: ${org}
+      console.log(`${prefix} 🚀 Initialized with: 
         - project: ${project}
         - rev: ${rev}
         `);

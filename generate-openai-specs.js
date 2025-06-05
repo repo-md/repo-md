@@ -5,13 +5,14 @@
  */
 
 import { writeFileSync } from "fs";
-import { OpenAiToolSpec } from "./src/lib/openai/OpenAiToolSpec.js";
+import { createOpenAiSpecs } from "./src/lib/openai/OpenAiToolSpec.js";
 import { schemas } from "./src/lib/schemas/schemas.js";
 
 console.log("🔧 Generating OpenAI Tool Specifications");
 console.log("=".repeat(50));
 
 const timestamp = new Date().toISOString();
+const OpenAiToolSpec = createOpenAiSpecs();
 const { functions } = OpenAiToolSpec;
 
 // Create a comprehensive output with metadata
