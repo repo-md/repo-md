@@ -2,7 +2,7 @@
  * Post search functionality using MiniSearch for full-text search
  */
 
-import MiniSearch from 'minisearch';
+import MiniSearch from "minisearch";
 
 export function createPostSearch({ getAllPosts, debug = false }) {
   let miniSearchInstance = null;
@@ -11,30 +11,38 @@ export function createPostSearch({ getAllPosts, debug = false }) {
   const initializeIndex = async (posts) => {
     if (!posts || posts.length === 0) {
       if (debug) {
-        console.log('🔍 No posts available for search indexing');
+        console.log("🔍 No posts available for search indexing");
       }
       return null;
     }
 
-    const searchableFields = ['title', 'content', 'excerpt', 'tags'];
-    const storableFields = ['slug', 'title', 'excerpt', 'date', 'hash', 'path'];
+    const searchableFields = [
+      "title",
+      "content",
+      "excerpt",
+      "tags",
+      "plain",
+      //    "hash",
+    ];
+    const storableFields = ["slug", "title", "excerpt", "date", "hash", "path"];
 
     miniSearchInstance = new MiniSearch({
       fields: searchableFields,
       storeFields: storableFields,
       searchOptions: {
-        boost: { title: 3, excerpt: 2 }, // Weight title more heavily
+        boost: { slug: 3, title: 3, excerpt: 2, plain: 2 }, // Weight title more heavily, plain text highly
         fuzzy: 0.2,
         prefix: true,
       },
     });
 
-    const documentsToIndex = posts.map(post => ({
+    const documentsToIndex = posts.map((post) => ({
       id: post.hash || post.slug,
-      title: post.title || '',
-      content: post.content || '',
-      excerpt: post.excerpt || '',
-      tags: Array.isArray(post.tags) ? post.tags.join(' ') : (post.tags || ''),
+      title: post.title || "",
+      content: post.content || "",
+      excerpt: post.excerpt || "",
+      tags: Array.isArray(post.tags) ? post.tags.join(" ") : post.tags || "",
+      plain: post.plain || "",
       slug: post.slug,
       date: post.date,
       hash: post.hash,
@@ -51,21 +59,25 @@ export function createPostSearch({ getAllPosts, debug = false }) {
     return miniSearchInstance;
   };
 
-  const searchPosts = async ({ text, props = {}, mode = 'memory' }) => {
+  const searchPosts = async ({ text, props = {}, mode = "memory" }) => {
     if (text === undefined || text === null) {
-      throw new Error('Search text is required and cannot be undefined or null');
-    }
-    
-    if (typeof text !== 'string') {
-      throw new Error(`Search text must be a string, received: ${typeof text}`);
-    }
-    
-    if (text.trim().length === 0) {
-      throw new Error('Search text cannot be empty or contain only whitespace');
+      throw new Error(
+        "Search text is required and cannot be undefined or null"
+      );
     }
 
-    if (mode !== 'memory') {
-      throw new Error(`Search mode '${mode}' is not yet supported. Currently only 'memory' mode is available.`);
+    if (typeof text !== "string") {
+      throw new Error(`Search text must be a string, received: ${typeof text}`);
+    }
+
+    if (text.trim().length === 0) {
+      throw new Error("Search text cannot be empty or contain only whitespace");
+    }
+
+    if (mode !== "memory") {
+      throw new Error(
+        `Search mode '${mode}' is not yet supported. Currently only 'memory' mode is available.`
+      );
     }
 
     try {
@@ -77,7 +89,7 @@ export function createPostSearch({ getAllPosts, debug = false }) {
 
       if (!miniSearchInstance) {
         if (debug) {
-          console.warn('🔍 Search index could not be initialized');
+          console.warn("🔍 Search index could not be initialized");
         }
         return [];
       }
@@ -98,17 +110,17 @@ export function createPostSearch({ getAllPosts, debug = false }) {
       }
 
       // Return enhanced results with original post data
-      return results.map(result => ({
+      return results.map((result) => ({
         ...result,
-        post: indexedData.find(post => 
-          (post.hash && post.hash === result.id) || 
-          (post.slug && post.slug === result.id)
+        post: indexedData.find(
+          (post) =>
+            (post.hash && post.hash === result.id) ||
+            (post.slug && post.slug === result.id)
         ),
       }));
-
     } catch (error) {
       if (debug) {
-        console.error('🔍 Search error:', error);
+        console.error("🔍 Search error:", error);
       }
       throw new Error(`Search failed: ${error.message}`);
     }

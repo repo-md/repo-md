@@ -93,6 +93,7 @@ export const schemas = {
         excerpt: z.number().positive().optional().default(2).describe("Weight multiplier for excerpt matches"),
         content: z.number().positive().optional().default(1).describe("Weight multiplier for content matches"),
         tags: z.number().positive().optional().default(1).describe("Weight multiplier for tag matches"),
+        plain: z.number().positive().optional().default(2).describe("Weight multiplier for plain text content matches"),
       }).optional().describe("Field-specific weight boosts for search relevance"),
     }).optional().default({}).describe("Additional search configuration options"),
     mode: z.enum(["memory"]).optional().default("memory").describe("Search mode - currently supports 'memory' with future support for 'vector' and 'database'"),
