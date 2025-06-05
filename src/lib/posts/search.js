@@ -126,6 +126,74 @@ export function createPostSearch({ getAllPosts, debug = false }) {
     }
   };
 
+  const searchAutocomplete = async (term, limit = 10) => {
+    if (!term || typeof term !== 'string') {
+      return [];
+    }
+
+    if (term.trim().length === 0) {
+      return [];
+    }
+
+    try {
+      // Get all posts if we haven't indexed them yet
+      if (!miniSearchInstance || !indexedData) {
+        const posts = await getAllPosts(true);
+        await initializeIndex(posts);
+      }
+
+      if (!miniSearchInstance) {
+        return [];
+      }
+
+      // Perform a search to get terms
+      const searchOptions = {
+        limit: Math.min(limit, 20), // Limit results to reduce processing
+        fuzzy: 0.1, // Less fuzzy for autocomplete
+        prefix: true,
+        boost: { slug: 3, title: 3, excerpt: 2, plain: 2 },
+      };
+
+      const results = miniSearchInstance.search(term, searchOptions);
+
+      // Extract all unique terms that start with the input term
+      const allTerms = new Set();
+      
+      for (const result of results) {
+        if (result.terms && Array.isArray(result.terms)) {
+          for (const resultTerm of result.terms) {
+            // Only include terms that start with the input term (case insensitive)
+            if (resultTerm.toLowerCase().startsWith(term.toLowerCase())) {
+              allTerms.add(resultTerm);
+            }
+          }
+        }
+      }
+
+      // Convert to array, sort by length (shorter first), and limit results
+      const termsList = Array.from(allTerms)
+        .sort((a, b) => {
+          // Prioritize exact matches and shorter terms
+          if (a.toLowerCase() === term.toLowerCase()) return -1;
+          if (b.toLowerCase() === term.toLowerCase()) return 1;
+          return a.length - b.length;
+        })
+        .slice(0, limit);
+
+      if (debug) {
+        console.log(`🔍 Found ${termsList.length} autocomplete suggestions for "${term}"`);
+      }
+
+      return termsList;
+
+    } catch (error) {
+      if (debug) {
+        console.error('🔍 Autocomplete error:', error);
+      }
+      return [];
+    }
+  };
+
   const refreshIndex = async () => {
     const posts = await getAllPosts(true, true); // Force refresh
     return await initializeIndex(posts);
@@ -133,6 +201,7 @@ export function createPostSearch({ getAllPosts, debug = false }) {
 
   return {
     searchPosts,
+    searchAutocomplete,
     refreshIndex,
   };
 }

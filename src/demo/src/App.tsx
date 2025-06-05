@@ -576,8 +576,15 @@ function App() {
             prefix: params.prefix !== 'false',
             boost: params.boost ? JSON.parse(params.boost) : { title: 3, excerpt: 2, plain: 2 }
           };
-          const mode = params.mode || 'memory';
+          const mode = (params.mode || 'memory') as 'memory';
           data = await repo.searchPosts(text, props, mode);
+          break;
+        }
+
+        case 'searchAutocomplete': {
+          const term = params.term || params.text || params.query || 'c';
+          const limit = params.limit ? Number.parseInt(params.limit) : 10;
+          data = await repo.searchAutocomplete(term, limit);
           break;
         }
 

@@ -29,6 +29,7 @@ export class RepoMD {
   api: any;
   posts: any;
   similarity: any;
+  search: any;
   media: any;
   project: any;
   files: any;
@@ -92,6 +93,11 @@ export class RepoMD {
   getSimilarPostsByHash(hash: string, count?: number, options?: any): Promise<any[]>;
   getSimilarPostsSlugBySlug(slug: string, limit?: number): Promise<string[]>;
   getSimilarPostsBySlug(slug: string, count?: number, options?: any): Promise<any[]>;
+
+  // Post search methods
+  searchPosts(text: string, props?: any, mode?: 'memory'): Promise<any[]>;
+  searchAutocomplete(term: string, limit?: number): Promise<string[]>;
+  refreshSearchIndex(): Promise<any>;
 
   // Project configuration methods
   getReleaseInfo(): Promise<any>;

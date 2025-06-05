@@ -99,6 +99,13 @@ export const schemas = {
     mode: z.enum(["memory"]).optional().default("memory").describe("Search mode - currently supports 'memory' with future support for 'vector' and 'database'"),
   }).describe("Full-text search across posts with configurable relevance weighting and fuzzy matching"),
 
+  searchAutocomplete: z.object({
+    term: stringSchema.refine((val) => val.length > 0, {
+      message: "Search term is required and cannot be empty",
+    }).describe("Partial search term to generate autocomplete suggestions for"),
+    limit: z.number().nonnegative().optional().default(10).describe("Maximum number of autocomplete suggestions to return"),
+  }).describe("Get autocomplete suggestions based on indexed search terms from posts"),
+
   refreshSearchIndex: z.object({}).describe("Refresh the search index with latest post data for updated search results"),
 
   // Additional Similarity Methods

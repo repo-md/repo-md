@@ -514,6 +514,10 @@ class RepoMD {
     return await this.search.searchPosts({ text, props, mode });
   }
 
+  async searchAutocomplete(term, limit = 10) {
+    return await this.search.searchAutocomplete(term, limit);
+  }
+
   async refreshSearchIndex() {
     return await this.search.refreshIndex();
   }
