@@ -47,18 +47,40 @@ export async function fetchJson(url, opts = {}, debug = false) {
     errorMessage = "Error fetching data",
     defaultValue = null,
     useCache = true,
+    method = "GET",
+    headers = {},
+    body = null,
   } = opts;
+
+  // Create fetch options
+  const fetchOptions = {
+    method,
+    headers: {
+      ...headers,
+    },
+  };
+
+  // Add body for POST requests
+  if (body && method !== "GET") {
+    fetchOptions.body = body;
+  }
+
+  // For POST requests, don't use cache by default
+  const shouldUseCache = useCache && method === "GET";
 
   // Track start time for duration calculation
   const startTime = performance.now();
   
   try {
     if (debug) {
-      console.log(`${prefix} 🌐 Fetching JSON from: ${url}`);
+      console.log(`${prefix} 🌐 Fetching JSON from: ${url} (${method})`);
+      if (method !== "GET" && body) {
+        console.log(`${prefix} 📤 Request body:`, body.substring(0, 200) + (body.length > 200 ? '...' : ''));
+      }
     }
 
-    // Check cache first if provided
-    if (useCache && lru && lru.has(url)) {
+    // Check cache first if provided (only for GET requests)
+    if (shouldUseCache && lru && lru.has(url)) {
       const cachedData = lru.get(url);
       const duration = (performance.now() - startTime).toFixed(2);
       if (debug) {
@@ -67,8 +89,8 @@ export async function fetchJson(url, opts = {}, debug = false) {
       return cachedData;
     }
 
-    // Check if there's already an in-flight request for this URL
-    if (useCache && promiseCache.has(url)) {
+    // Check if there's already an in-flight request for this URL (only for GET requests)
+    if (shouldUseCache && promiseCache.has(url)) {
       if (debug) {
         console.log(`${prefix} 🔄 Reusing in-flight request for: ${url}`);
       }
@@ -78,7 +100,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
     // Create and store the promise for this request
     const fetchPromise = (async () => {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, fetchOptions);
         
         // Log the full response for debugging
         if (debug) {
@@ -164,8 +186,8 @@ export async function fetchJson(url, opts = {}, debug = false) {
           console.log(`${prefix} ⏱️ Fetched data in ${duration}ms: ${url}`);
         }
 
-        // Store in cache if provided
-        if (useCache && lru) {
+        // Store in cache if provided (only for GET requests)
+        if (shouldUseCache && lru) {
           lru.set(url, data);
           if (debug) {
             console.log(
@@ -177,7 +199,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
         return data;
       } finally {
         // Remove this URL from the promise cache when done
-        if (useCache) {
+        if (shouldUseCache) {
           promiseCache.delete(url);
           if (debug) {
             console.log(`${prefix} 🧹 Removed promise from cache: ${url}`);
@@ -187,7 +209,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
     })();
     
     // Store the promise in the cache
-    if (useCache) {
+    if (shouldUseCache) {
       promiseCache.set(url, fetchPromise);
       if (debug) {
         console.log(`${prefix} 📥 Cached promise for: ${url}`);
@@ -203,7 +225,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
     }
     
     // Clean up the promise cache if there was an error outside of the fetch operation
-    if (useCache && promiseCache.has(url)) {
+    if (shouldUseCache && promiseCache.has(url)) {
       promiseCache.delete(url);
       if (debug) {
         console.log(`${prefix} 🧹 Removed failed promise from cache: ${url}`);

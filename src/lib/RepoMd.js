@@ -609,6 +609,19 @@ class RepoMD {
     return await this.mediaSimilarity.getSimilarMediaByHash(hash, count);
   }
 
+  // AI Inference methods (proxy to API module)
+  async computeTextEmbedding(text, instruction = null) {
+    return await this.api.computeTextEmbedding(text, instruction);
+  }
+
+  async computeClipTextEmbedding(text) {
+    return await this.api.computeClipTextEmbedding(text);
+  }
+
+  async computeClipImageEmbedding(imageUrl = null, imageData = null) {
+    return await this.api.computeClipImageEmbedding(imageUrl, imageData);
+  }
+
   // Method documentation methods
   static getMethodDescription(methodName) {
     return getMethodDescription(methodName);

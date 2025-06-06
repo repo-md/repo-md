@@ -313,6 +313,31 @@ export const schemas = {
   getOpenAiToolSpec: z.object({
     blacklistedTools: z.array(z.string()).optional().default([]).describe("Array of function names to exclude from the tool specification"),
   }).describe("Get OpenAI tool specification with optional filtering for project-specific configurations"),
+
+  // AI Inference Methods
+  computeTextEmbedding: z.object({
+    text: stringSchema.refine((val) => val.length > 0, {
+      message: "Text is required and cannot be empty for text embedding computation",
+    }).describe("Text content to compute semantic embeddings for"),
+    instruction: z.string().nullable().optional().default(null).describe("Optional instruction to guide the embedding computation (e.g., 'Represent the document for retrieval:')"),
+  }).describe("Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks"),
+
+  computeClipTextEmbedding: z.object({
+    text: stringSchema.refine((val) => val.length > 0, {
+      message: "Text is required and cannot be empty for CLIP text embedding computation",
+    }).describe("Text content to compute CLIP embeddings for, optimized for text-image matching"),
+  }).describe("Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"),
+
+  computeClipImageEmbedding: z.object({
+    imageUrl: z.string().url().nullable().optional().default(null).describe("URL of the image to compute CLIP embeddings for"),
+    imageData: z.string().nullable().optional().default(null).describe("Base64-encoded image data to compute CLIP embeddings for"),
+  }).refine(
+    (data) => (data.imageUrl && !data.imageData) || (!data.imageUrl && data.imageData),
+    {
+      message: "Either imageUrl or imageData must be provided, but not both",
+      path: ["imageUrl", "imageData"],
+    }
+  ).describe("Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"),
 };
 
 // Helper function to get the schema for a given function name

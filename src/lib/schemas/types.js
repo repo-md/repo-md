@@ -4,7 +4,19 @@ import { schemas, repoMdOptionsSchema } from './schemas.js';
 // Type for parameter metadata
 // Flatten schema objects into parameter metadata
 export function extractParamMetadata(schema) {
-  const shape = schema._def.shape();
+  // Handle ZodEffects (schemas with refine, transform, etc.)
+  let actualSchema = schema;
+  if (schema instanceof z.ZodEffects) {
+    actualSchema = schema._def.schema;
+  }
+  
+  // Make sure we have a shape function
+  if (!actualSchema._def.shape || typeof actualSchema._def.shape !== 'function') {
+    console.warn('Schema does not have a valid shape function:', actualSchema);
+    return [];
+  }
+  
+  const shape = actualSchema._def.shape();
   const metadata = [];
 
   for (const [name, zodType] of Object.entries(shape)) {
@@ -123,6 +135,8 @@ export function getMethodsByCategory(category) {
 
 // Helper function to infer category from function name
 function inferCategoryFromName(functionName) {
+  // Check AI Inference first before general Embedding check
+  if (functionName.includes('computeTextEmbedding') || functionName.includes('computeClipTextEmbedding') || functionName.includes('computeClipImageEmbedding')) return 'AI Inference';
   if (functionName.includes('Post') || functionName.includes('posts')) return 'Posts';
   if (functionName.includes('Media') || functionName.includes('media')) return 'Media';
   if (functionName.includes('Similar') || functionName.includes('Embedding')) return 'Similarity';

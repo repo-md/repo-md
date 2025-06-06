@@ -74,6 +74,35 @@ export class RepoMD {
   getSimilarMediaHashByHash(hash: string, limit?: number): Promise<string[]>;
   getSimilarMediaByHash(hash: string, count?: number): Promise<any[]>;
 
+  // AI Inference methods
+  computeTextEmbedding(text: string, instruction?: string | null): Promise<{
+    status: string;
+    embedding: number[];
+    metadata: {
+      model: string;
+      dimension: number;
+      duration: number;
+    };
+  }>;
+  computeClipTextEmbedding(text: string): Promise<{
+    status: string;
+    embedding: number[];
+    metadata: {
+      model: string;
+      dimension: number;
+      duration: number;
+    };
+  }>;
+  computeClipImageEmbedding(imageUrl?: string | null, imageData?: string | null): Promise<{
+    status: string;
+    embedding: number[];
+    metadata: {
+      model: string;
+      dimension: number;
+      duration: number;
+    };
+  }>;
+
   // Post retrieval methods
   getAllPosts(useCache?: boolean, forceRefresh?: boolean): Promise<any[]>;
   getPostBySlug(slug: string): Promise<any | null>;
