@@ -319,6 +319,9 @@ class RepoMD {
     // Initialize post search service
     this.search = createPostSearch({
       getAllPosts: this.getAllPosts.bind(this),
+      getPostsEmbeddings: this.getPostsEmbeddings.bind(this),
+      getAllMedia: this.getAllMedia.bind(this),
+      getMediaEmbeddings: this.getMediaEmbeddings.bind(this),
       debug: this.debug,
     });
 
@@ -519,7 +522,90 @@ class RepoMD {
   }
 
   async refreshSearchIndex() {
-    return await this.search.refreshIndex();
+    return await this.search.refreshMemoryIndex();
+  }
+
+  // Vector search methods - new public API
+  async findPostsByText(text, options = {}) {
+    const { limit = 20, threshold = 0.1, useClip = false } = options;
+    const mode = useClip ? 'vector-clip-text' : 'vector-text';
+    
+    const results = await this.search.searchPosts({ 
+      text, 
+      props: { limit, threshold }, 
+      mode 
+    });
+    
+    // Return only posts, filter out media results
+    return results.filter(result => result.type === 'post' || result.post).map(result => ({
+      ...result,
+      content: result.post || result.content
+    }));
+  }
+
+  async findImagesByText(text, options = {}) {
+    const { limit = 20, threshold = 0.1 } = options;
+    
+    const results = await this.search.searchPosts({ 
+      text, 
+      props: { limit, threshold }, 
+      mode: 'vector-clip-text' 
+    });
+    
+    // Return only media results
+    return results.filter(result => result.type === 'media' || result.media).map(result => ({
+      ...result,
+      content: result.media || result.content
+    }));
+  }
+
+  async findImagesByImage(image, options = {}) {
+    const { limit = 20, threshold = 0.1 } = options;
+    
+    const results = await this.search.searchPosts({ 
+      image, 
+      props: { limit, threshold }, 
+      mode: 'vector-clip-image' 
+    });
+    
+    // Return only media results
+    return results.filter(result => result.type === 'media' || result.media).map(result => ({
+      ...result,
+      content: result.media || result.content
+    }));
+  }
+
+  async findSimilarContent(query, options = {}) {
+    const { limit = 20, threshold = 0.1, type = 'auto' } = options;
+    
+    // Determine search mode and params based on query type and options
+    let mode;
+    const searchParams = { props: { limit, threshold } };
+    
+    if (typeof query === 'string') {
+      if (query.startsWith('http') || query.startsWith('data:')) {
+        // Looks like an image URL or data URI
+        mode = 'vector-clip-image';
+        searchParams.image = query;
+      } else {
+        // Text query
+        mode = type === 'clip' ? 'vector-clip-text' : 'vector-text';
+        searchParams.text = query;
+      }
+    } else {
+      throw new Error('Query must be a string (text or image URL/data)');
+    }
+    
+    searchParams.mode = mode;
+    
+    const results = await this.search.searchPosts(searchParams);
+    
+    // Return all results with enhanced metadata
+    return results.map(result => ({
+      ...result,
+      content: result.post || result.media || result.content,
+      contentType: result.type || (result.post ? 'post' : 'media')
+    }));
   }
 
   // Project configuration methods (proxy to Project module)
@@ -609,17 +695,20 @@ class RepoMD {
     return await this.mediaSimilarity.getSimilarMediaByHash(hash, count);
   }
 
-  // AI Inference methods (proxy to API module)
+  // AI Inference methods (using inference module)
   async computeTextEmbedding(text, instruction = null) {
-    return await this.api.computeTextEmbedding(text, instruction);
+    const { computeTextEmbedding } = await import("./inference.js");
+    return await computeTextEmbedding(text, instruction, this.debug);
   }
 
   async computeClipTextEmbedding(text) {
-    return await this.api.computeClipTextEmbedding(text);
+    const { computeClipTextEmbedding } = await import("./inference.js");
+    return await computeClipTextEmbedding(text, this.debug);
   }
 
   async computeClipImageEmbedding(image) {
-    return await this.api.computeClipImageEmbedding(image);
+    const { computeClipImageEmbedding } = await import("./inference.js");
+    return await computeClipImageEmbedding(image, this.debug);
   }
 
   // Method documentation methods

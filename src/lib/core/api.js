@@ -366,80 +366,6 @@ export function createApiClient(config) {
     }
   }
 
-  /**
-   * Compute text embedding from the inference API
-   * @param {string} text - Text to compute embedding for
-   * @param {string|null} instruction - Optional instruction for the embedding
-   * @returns {Promise<Object>} - Embedding response with metadata
-   */
-  async function computeTextEmbedding(text, instruction = null) {
-    const payload = { text };
-    if (instruction) {
-      payload.instruction = instruction;
-    }
-
-    const response = await fetchPublicApi('/inference/text-embedding', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      useCache: false,
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to compute text embedding');
-    }
-
-    return response.data;
-  }
-
-  /**
-   * Compute CLIP text embedding from the inference API
-   * @param {string} text - Text to compute CLIP embedding for
-   * @returns {Promise<Object>} - CLIP embedding response with metadata
-   */
-  async function computeClipTextEmbedding(text) {
-    const response = await fetchPublicApi('/inference/clip-by-text', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-      useCache: false,
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to compute CLIP text embedding');
-    }
-
-    return response.data;
-  }
-
-  /**
-   * Compute CLIP image embedding from the inference API
-   * @param {string} image - Image input as either a URL or base64-encoded data string
-   * @returns {Promise<Object>} - CLIP image embedding response with metadata
-   */
-  async function computeClipImageEmbedding(image) {
-    if (!image || typeof image !== 'string' || image.trim().length === 0) {
-      throw new Error('Image parameter is required and must be a non-empty string');
-    }
-
-    // Detect if the input is a URL or base64 data
-    const isUrl = image.startsWith('http://') || image.startsWith('https://') || image.startsWith('data:');
-    
-    const payload = isUrl ? { imageUrl: image } : { imageData: image };
-
-    const response = await fetchPublicApi('/inference/clip-by-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      useCache: false,
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to compute CLIP image embedding');
-    }
-
-    return response.data;
-  }
 
   return {
     fetchPublicApi,
@@ -447,8 +373,5 @@ export function createApiClient(config) {
     fetchProjectActiveRev,
     getActiveProjectRev,
     ensureLatestRev,
-    computeTextEmbedding,
-    computeClipTextEmbedding,
-    computeClipImageEmbedding,
   };
 }

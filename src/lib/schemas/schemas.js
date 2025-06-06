@@ -81,9 +81,8 @@ export const schemas = {
 
   // Search Methods
   searchPosts: z.object({
-    text: stringSchema.refine((val) => val.length > 0, {
-      message: "Search text is required and cannot be empty",
-    }).describe("Search query text to find matching posts"),
+    text: stringSchema.optional().describe("Search query text to find matching posts (required for text-based search modes)"),
+    image: stringSchema.optional().describe("Image URL or base64 data for image-based search (required for vector-clip-image mode)"),
     props: z.object({
       limit: z.number().nonnegative().optional().default(20).describe("Maximum number of search results to return"),
       fuzzy: z.number().min(0).max(1).optional().default(0.2).describe("Fuzzy matching tolerance (0 = exact, 1 = very fuzzy)"),
@@ -96,7 +95,7 @@ export const schemas = {
         plain: z.number().positive().optional().default(2).describe("Weight multiplier for plain text content matches"),
       }).optional().describe("Field-specific weight boosts for search relevance"),
     }).optional().default({}).describe("Additional search configuration options"),
-    mode: z.enum(["memory"]).optional().default("memory").describe("Search mode - currently supports 'memory' with future support for 'vector' and 'database'"),
+    mode: z.enum(["memory", "vector", "vector-text", "vector-clip-text", "vector-clip-image"]).optional().default("memory").describe("Search mode - 'memory' for keyword search, 'vector'/'vector-text' for semantic text search, 'vector-clip-text' for CLIP text search, 'vector-clip-image' for CLIP image search"),
   }).describe("Full-text search across posts with configurable relevance weighting and fuzzy matching"),
 
   searchAutocomplete: z.object({
@@ -107,6 +106,49 @@ export const schemas = {
   }).describe("Get autocomplete suggestions based on indexed search terms from posts"),
 
   refreshSearchIndex: z.object({}).describe("Refresh the search index with latest post data for updated search results"),
+
+  // Vector Search Methods
+  findPostsByText: z.object({
+    text: stringSchema.refine((val) => val.length > 0, {
+      message: "Text query is required for findPostsByText operation",
+    }).describe("Text query to find semantically similar posts"),
+    options: z.object({
+      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of posts to return"),
+      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
+      useClip: z.boolean().optional().default(false).describe("Use CLIP embeddings for multimodal search capabilities"),
+    }).optional().default({}).describe("Search configuration options"),
+  }).describe("Find posts using semantic similarity with AI text embeddings"),
+
+  findImagesByText: z.object({
+    text: stringSchema.refine((val) => val.length > 0, {
+      message: "Text query is required for findImagesByText operation",
+    }).describe("Text description to find matching images"),
+    options: z.object({
+      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of images to return"),
+      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
+    }).optional().default({}).describe("Search configuration options"),
+  }).describe("Find images using text descriptions with CLIP multimodal AI embeddings"),
+
+  findImagesByImage: z.object({
+    image: stringSchema.refine((val) => val.length > 0, {
+      message: "Image URL or data is required for findImagesByImage operation",
+    }).describe("Image URL or base64 data to find visually similar images"),
+    options: z.object({
+      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of images to return"),
+      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
+    }).optional().default({}).describe("Search configuration options"),
+  }).describe("Find visually similar images using CLIP image embeddings"),
+
+  findSimilarContent: z.object({
+    query: stringSchema.refine((val) => val.length > 0, {
+      message: "Query is required for findSimilarContent operation",
+    }).describe("Text query or image URL/data to find similar content"),
+    options: z.object({
+      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of results to return"),
+      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
+      type: z.enum(["auto", "clip"]).optional().default("auto").describe("Search type - 'auto' detects query type, 'clip' forces CLIP embeddings"),
+    }).optional().default({}).describe("Search configuration options"),
+  }).describe("Universal similarity search that automatically detects query type (text or image) and searches both posts and media"),
 
   // Additional Similarity Methods
   getPostsEmbeddings: z.object({
