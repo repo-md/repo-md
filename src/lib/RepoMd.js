@@ -618,8 +618,8 @@ class RepoMD {
     return await this.api.computeClipTextEmbedding(text);
   }
 
-  async computeClipImageEmbedding(imageUrl = null, imageData = null) {
-    return await this.api.computeClipImageEmbedding(imageUrl, imageData);
+  async computeClipImageEmbedding(image) {
+    return await this.api.computeClipImageEmbedding(image);
   }
 
   // Method documentation methods

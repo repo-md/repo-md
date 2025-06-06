@@ -93,7 +93,7 @@ export class RepoMD {
       duration: number;
     };
   }>;
-  computeClipImageEmbedding(imageUrl?: string | null, imageData?: string | null): Promise<{
+  computeClipImageEmbedding(image: string): Promise<{
     status: string;
     embedding: number[];
     metadata: {

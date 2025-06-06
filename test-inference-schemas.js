@@ -34,26 +34,26 @@ console.log('✓ Invalid CLIP text embedding params (empty text):', !invalidClip
 // Test computeClipImageEmbedding schema
 console.log('\n=== Testing computeClipImageEmbedding Schema ===');
 
-// Valid case - with imageUrl
-const validImageUrlParams = { imageUrl: "https://example.com/image.jpg" };
+// Valid case - with URL
+const validImageUrlParams = { image: "https://example.com/image.jpg" };
 const imageUrlResult = validateFunctionParams('computeClipImageEmbedding', validImageUrlParams);
 console.log('✓ Valid CLIP image embedding params (URL):', imageUrlResult.success);
 
-// Valid case - with imageData
-const validImageDataParams = { imageData: "base64encodeddata" };
+// Valid case - with base64 data
+const validImageDataParams = { image: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" };
 const imageDataResult = validateFunctionParams('computeClipImageEmbedding', validImageDataParams);
 console.log('✓ Valid CLIP image embedding params (base64):', imageDataResult.success);
 
-// Invalid case - both provided
-const invalidBothParams = { imageUrl: "https://example.com/image.jpg", imageData: "base64data" };
-const invalidBothResult = validateFunctionParams('computeClipImageEmbedding', invalidBothParams);
-console.log('✓ Invalid CLIP image embedding params (both provided):', !invalidBothResult.success);
-console.log('  Error:', invalidBothResult.error);
+// Invalid case - empty string
+const invalidEmptyParams = { image: "" };
+const invalidEmptyResult = validateFunctionParams('computeClipImageEmbedding', invalidEmptyParams);
+console.log('✓ Invalid CLIP image embedding params (empty string):', !invalidEmptyResult.success);
+console.log('  Error:', invalidEmptyResult.error);
 
-// Invalid case - neither provided
-const invalidNeitherParams = {};
-const invalidNeitherResult = validateFunctionParams('computeClipImageEmbedding', invalidNeitherParams);
-console.log('✓ Invalid CLIP image embedding params (neither provided):', !invalidNeitherResult.success);
+// Invalid case - missing parameter
+const invalidMissingParams = {};
+const invalidMissingResult = validateFunctionParams('computeClipImageEmbedding', invalidMissingParams);
+console.log('✓ Invalid CLIP image embedding params (missing parameter):', !invalidMissingResult.success);
 
 // Test method descriptions
 console.log('\n=== Testing Method Descriptions ===');

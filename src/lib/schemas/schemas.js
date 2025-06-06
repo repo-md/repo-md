@@ -329,15 +329,10 @@ export const schemas = {
   }).describe("Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"),
 
   computeClipImageEmbedding: z.object({
-    imageUrl: z.string().url().nullable().optional().default(null).describe("URL of the image to compute CLIP embeddings for"),
-    imageData: z.string().nullable().optional().default(null).describe("Base64-encoded image data to compute CLIP embeddings for"),
-  }).refine(
-    (data) => (data.imageUrl && !data.imageData) || (!data.imageUrl && data.imageData),
-    {
-      message: "Either imageUrl or imageData must be provided, but not both",
-      path: ["imageUrl", "imageData"],
-    }
-  ).describe("Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"),
+    image: stringSchema.refine((val) => val.trim().length > 0, {
+      message: "Image is required and cannot be empty for CLIP image embedding computation",
+    }).describe("Image input as either a URL (https://...) or base64-encoded data string"),
+  }).describe("Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"),
 };
 
 // Helper function to get the schema for a given function name

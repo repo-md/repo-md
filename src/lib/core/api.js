@@ -414,20 +414,18 @@ export function createApiClient(config) {
 
   /**
    * Compute CLIP image embedding from the inference API
-   * @param {string|null} imageUrl - Image URL to compute CLIP embedding for
-   * @param {string|null} imageData - Base64 image data to compute CLIP embedding for
+   * @param {string} image - Image input as either a URL or base64-encoded data string
    * @returns {Promise<Object>} - CLIP image embedding response with metadata
    */
-  async function computeClipImageEmbedding(imageUrl = null, imageData = null) {
-    if (!imageUrl && !imageData) {
-      throw new Error('Either imageUrl or imageData must be provided');
+  async function computeClipImageEmbedding(image) {
+    if (!image || typeof image !== 'string' || image.trim().length === 0) {
+      throw new Error('Image parameter is required and must be a non-empty string');
     }
 
-    if (imageUrl && imageData) {
-      throw new Error('Provide either imageUrl or imageData, not both');
-    }
-
-    const payload = imageUrl ? { imageUrl } : { imageData };
+    // Detect if the input is a URL or base64 data
+    const isUrl = image.startsWith('http://') || image.startsWith('https://') || image.startsWith('data:');
+    
+    const payload = isUrl ? { imageUrl: image } : { imageData: image };
 
     const response = await fetchPublicApi('/inference/clip-by-image', {
       method: 'POST',
