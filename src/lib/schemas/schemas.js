@@ -944,7 +944,27 @@ export function getMethodsByContext(context) {
       return getReadonlyMethods();
     default:
       return schemas;
-  } 
+  }
+}
+
+// Get metadata for a specific method
+export function getMethodMeta(methodName) {
+  const schema = schemas[methodName];
+  if (!schema) {
+    return null;
+  }
+  return schema._def?.meta || {};
+}
+
+// Get all method metadata as a dictionary
+export function getAllMeta() {
+  const allMeta = {};
+  
+  for (const [name, schema] of Object.entries(schemas)) {
+    allMeta[name] = schema._def?.meta || {};
+  }
+  
+  return allMeta;
 }
 
 // Utility to get method categories
