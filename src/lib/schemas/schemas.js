@@ -3,6 +3,8 @@ import { z } from "zod";
 // Base schemas for common parameter types
 const stringSchema = z.string();
 const booleanSchema = z.boolean().optional().default(true);
+const booleanSchemaTrue = booleanSchema;
+const booleanSchemaFalse = z.boolean().optional().default(false);
 const numberSchema = z.number().nonnegative().optional();
 const optionsSchema = z.record(z.any()).optional().default({});
 
@@ -19,362 +21,973 @@ export const repoMdOptionsSchema = z.object({
 // API Methods with descriptions
 export const schemas = {
   // Posts Methods
-  getAllPosts: z.object({
-    useCache: booleanSchema.describe("Use cached data if available to improve performance"),
-    forceRefresh: z.boolean().optional().default(false).describe("Force refresh from R2 storage even if cached data exists"),
-  }).describe("Retrieve all blog posts from the repository with metadata and content"),
+  getAllPosts: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached data if available to improve performance"
+      ),
+      forceRefresh: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Force refresh from R2 storage even if cached data exists"),
+    })
+    .describe(
+      "Retrieve all blog posts from the repository with metadata and content"
+    ),
 
-  getPostBySlug: z.object({
-    slug: stringSchema.refine((val) => val.length > 0, {
-      message: "Slug is required for getPostBySlug operation",
-    }).describe("URL-friendly identifier for the specific post to retrieve"),
-  }).describe("Get a specific blog post by its URL slug identifier"),
+  getPostBySlug: z
+    .object({
+      slug: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Slug is required for getPostBySlug operation",
+        })
+        .describe("URL-friendly identifier for the specific post to retrieve"),
+    })
+    .describe("Get a specific blog post by its URL slug identifier"),
 
-  getPostByHash: z.object({
-    hash: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash is required for getPostByHash operation",
-    }).describe("Unique hash identifier for the specific post to retrieve"),
-  }).describe("Get a specific blog post by its unique hash identifier"),
+  getPostByHash: z
+    .object({
+      hash: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash is required for getPostByHash operation",
+        })
+        .describe("Unique hash identifier for the specific post to retrieve"),
+    })
+    .describe("Get a specific blog post by its unique hash identifier"),
 
-  getPostByPath: z.object({
-    path: stringSchema.refine((val) => val.length > 0, {
-      message: "Path is required for getPostByPath operation",
-    }).describe("File path within the repository to retrieve"),
-  }).describe("Get a specific blog post by its file path in the repository"),
+  getPostByPath: z
+    .object({
+      path: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Path is required for getPostByPath operation",
+        })
+        .describe("File path within the repository to retrieve"),
+    })
+    .describe("Get a specific blog post by its file path in the repository"),
 
-  getRecentPosts: z.object({
-    count: z.number().nonnegative().optional().default(3).describe("Number of recent posts to return (default: 3)"),
-  }).describe("Get the most recent blog posts sorted by date"),
+  getRecentPosts: z
+    .object({
+      count: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(3)
+        .describe("Number of recent posts to return (default: 3)"),
+    })
+    .describe("Get the most recent blog posts sorted by date"),
 
   // Similarity Methods
-  getPostsSimilarityByHashes: z.object({
-    hash1: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash1 is required for getPostsSimilarityByHashes operation",
-    }).describe("Hash of the first post to compare"),
-    hash2: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash2 is required for getPostsSimilarityByHashes operation",
-    }).describe("Hash of the second post to compare"),
-  }).describe("Calculate similarity score between two specific posts using their hash identifiers"),
+  getPostsSimilarityByHashes: z
+    .object({
+      hash1: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash1 is required for getPostsSimilarityByHashes operation",
+        })
+        .describe("Hash of the first post to compare"),
+      hash2: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash2 is required for getPostsSimilarityByHashes operation",
+        })
+        .describe("Hash of the second post to compare"),
+    })
+    .describe(
+      "Calculate similarity score between two specific posts using their hash identifiers"
+    ),
 
-  getSimilarPostsHashByHash: z.object({
-    hash: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash is required for getSimilarPostsHashByHash operation",
-    }).describe("Hash of the reference post to find similar content for"),
-    limit: z.number().nonnegative().optional().default(10).describe("Maximum number of similar post hashes to return"),
-  }).describe("Get list of similar post hashes for a given post using AI similarity matching"),
+  getSimilarPostsHashByHash: z
+    .object({
+      hash: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash is required for getSimilarPostsHashByHash operation",
+        })
+        .describe("Hash of the reference post to find similar content for"),
+      limit: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(10)
+        .describe("Maximum number of similar post hashes to return"),
+    })
+    .describe(
+      "Get list of similar post hashes for a given post using AI similarity matching"
+    ),
 
-  getSimilarPostsByHash: z.object({
-    hash: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash is required for getSimilarPostsByHash operation",
-    }).describe("Hash of the reference post to find similar content for"),
-    count: z.number().nonnegative().optional().default(5).describe("Number of similar posts to return with full metadata"),
-    options: optionsSchema.describe("Additional options for similarity calculation and filtering"),
-  }).describe("Find posts similar to the given post using AI embeddings, returns full post objects"),
+  getSimilarPostsByHash: z
+    .object({
+      hash: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash is required for getSimilarPostsByHash operation",
+        })
+        .describe("Hash of the reference post to find similar content for"),
+      count: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(5)
+        .describe("Number of similar posts to return with full metadata"),
+      options: optionsSchema.describe(
+        "Additional options for similarity calculation and filtering"
+      ),
+    })
+    .describe(
+      "Find posts similar to the given post using AI embeddings, returns full post objects"
+    ),
 
-  getSimilarPostsBySlug: z.object({
-    slug: stringSchema.refine((val) => val.length > 0, {
-      message: "Slug is required for getSimilarPostsBySlug operation",
-    }).describe("Slug of the reference post to find similar content for"),
-    count: z.number().nonnegative().optional().default(5).describe("Number of similar posts to return"),
-    options: optionsSchema.describe("Additional options for similarity calculation"),
-  }).describe("Find posts similar to the given post using AI embeddings and semantic analysis"),
+  getSimilarPostsBySlug: z
+    .object({
+      slug: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Slug is required for getSimilarPostsBySlug operation",
+        })
+        .describe("Slug of the reference post to find similar content for"),
+      count: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(5)
+        .describe("Number of similar posts to return"),
+      options: optionsSchema.describe(
+        "Additional options for similarity calculation"
+      ),
+    })
+    .describe(
+      "Find posts similar to the given post using AI embeddings and semantic analysis"
+    ),
 
   // Search Methods
-  searchPosts: z.object({
-    text: stringSchema.optional().describe("Search query text to find matching posts (required for text-based search modes)"),
-    image: stringSchema.optional().describe("Image URL or base64 data for image-based search (required for vector-clip-image mode)"),
-    props: z.object({
-      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of search results to return"),
-      fuzzy: z.number().min(0).max(1).optional().default(0.2).describe("Fuzzy matching tolerance (0 = exact, 1 = very fuzzy)"),
-      prefix: z.boolean().optional().default(true).describe("Enable prefix matching for partial words"),
-      boost: z.object({
-        title: z.number().positive().optional().default(3).describe("Weight multiplier for title matches"),
-        excerpt: z.number().positive().optional().default(2).describe("Weight multiplier for excerpt matches"),
-        content: z.number().positive().optional().default(1).describe("Weight multiplier for content matches"),
-        tags: z.number().positive().optional().default(1).describe("Weight multiplier for tag matches"),
-        plain: z.number().positive().optional().default(2).describe("Weight multiplier for plain text content matches"),
-      }).optional().describe("Field-specific weight boosts for search relevance"),
-    }).optional().default({}).describe("Additional search configuration options"),
-    mode: z.enum(["memory", "vector", "vector-text", "vector-clip-text", "vector-clip-image"]).optional().default("memory").describe("Search mode - 'memory' for keyword search, 'vector'/'vector-text' for semantic text search, 'vector-clip-text' for CLIP text search, 'vector-clip-image' for CLIP image search"),
-  }).describe("Full-text search across posts with configurable relevance weighting and fuzzy matching"),
+  searchPosts: z
+    .object({
+      text: stringSchema
+        .optional()
+        .describe(
+          "Search query text (required for memory, vector, vector-text, vector-clip-text modes)"
+        ),
+      image: stringSchema
+        .optional()
+        .describe(
+          "Image URL or base64 data (required for vector-clip-image mode)"
+        ),
+      props: z
+        .object({
+          limit: z
+            .number()
+            .nonnegative()
+            .optional()
+            .default(20)
+            .describe("Maximum number of search results to return"),
+          fuzzy: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .default(0.2)
+            .describe("Fuzzy matching tolerance (0 = exact, 1 = very fuzzy)"),
+          prefix: z
+            .boolean()
+            .optional()
+            .default(true)
+            .describe("Enable prefix matching for partial words"),
+          boost: z
+            .object({
+              title: z
+                .number()
+                .positive()
+                .optional()
+                .default(3)
+                .describe("Weight multiplier for title matches"),
+              excerpt: z
+                .number()
+                .positive()
+                .optional()
+                .default(2)
+                .describe("Weight multiplier for excerpt matches"),
+              content: z
+                .number()
+                .positive()
+                .optional()
+                .default(1)
+                .describe("Weight multiplier for content matches"),
+              tags: z
+                .number()
+                .positive()
+                .optional()
+                .default(1)
+                .describe("Weight multiplier for tag matches"),
+              plain: z
+                .number()
+                .positive()
+                .optional()
+                .default(2)
+                .describe("Weight multiplier for plain text content matches"),
+            })
+            .optional()
+            .describe("Field-specific weight boosts for search relevance"),
+        })
+        .optional()
+        .default({})
+        .describe("Additional search configuration options"),
+      mode: z
+        .enum([
+          "memory",
+          "vector",
+          "vector-text",
+          "vector-clip-text",
+          "vector-clip-image",
+        ])
+        .optional()
+        .default("memory")
+        .describe(
+          "Search mode: 'memory' = keyword search in posts, 'vector'/'vector-text' = semantic text search in posts using text embeddings, 'vector-clip-text' = text-to-image search in media using CLIP embeddings, 'vector-clip-image' = image-to-image search in media using CLIP embeddings"
+        ),
+    })
+    .describe(
+      "Search across posts and media with multiple modes: memory/vector search posts by text, CLIP modes search media by text or image similarity"
+    ),
 
-  searchAutocomplete: z.object({
-    term: stringSchema.refine((val) => val.length > 0, {
-      message: "Search term is required and cannot be empty",
-    }).describe("Partial search term to generate autocomplete suggestions for"),
-    limit: z.number().nonnegative().optional().default(10).describe("Maximum number of autocomplete suggestions to return"),
-  }).describe("Get autocomplete suggestions based on indexed search terms from posts"),
+  searchAutocomplete: z
+    .object({
+      term: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Search term is required and cannot be empty",
+        })
+        .describe(
+          "Partial search term to generate autocomplete suggestions for"
+        ),
+      limit: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(10)
+        .describe("Maximum number of autocomplete suggestions to return"),
+    })
+    .describe(
+      "Get autocomplete suggestions based on indexed search terms from posts"
+    ),
 
-  refreshSearchIndex: z.object({}).describe("Refresh the search index with latest post data for updated search results"),
+  refreshSearchIndex: z
+    .object({})
+    .describe(
+      "Refresh the search index with latest post data for updated search results"
+    ),
 
   // Vector Search Methods
-  findPostsByText: z.object({
-    text: stringSchema.refine((val) => val.length > 0, {
-      message: "Text query is required for findPostsByText operation",
-    }).describe("Text query to find semantically similar posts"),
-    options: z.object({
-      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of posts to return"),
-      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
-      useClip: z.boolean().optional().default(false).describe("Use CLIP embeddings for multimodal search capabilities"),
-    }).optional().default({}).describe("Search configuration options"),
-  }).describe("Find posts using semantic similarity with AI text embeddings"),
+  findPostsByText: z
+    .object({
+      text: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Text query is required for findPostsByText operation",
+        })
+        .describe("Text query to find semantically similar posts"),
+      options: z
+        .object({
+          limit: z
+            .number()
+            .nonnegative()
+            .optional()
+            .default(20)
+            .describe("Maximum number of posts to return"),
+          threshold: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .default(0.1)
+            .describe(
+              "Minimum similarity threshold (0-1, higher = more similar)"
+            ),
+          useClip: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe("Use CLIP embeddings for multimodal search capabilities"),
+        })
+        .optional()
+        .default({})
+        .describe("Search configuration options"),
+    })
+    .describe("Find posts using semantic similarity with AI text embeddings"),
 
-  findImagesByText: z.object({
-    text: stringSchema.refine((val) => val.length > 0, {
-      message: "Text query is required for findImagesByText operation",
-    }).describe("Text description to find matching images"),
-    options: z.object({
-      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of images to return"),
-      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
-    }).optional().default({}).describe("Search configuration options"),
-  }).describe("Find images using text descriptions with CLIP multimodal AI embeddings"),
+  findImagesByText: z
+    .object({
+      text: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Text query is required for findImagesByText operation",
+        })
+        .describe("Text description to find matching images"),
+      options: z
+        .object({
+          limit: z
+            .number()
+            .nonnegative()
+            .optional()
+            .default(20)
+            .describe("Maximum number of images to return"),
+          threshold: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .default(0.1)
+            .describe(
+              "Minimum similarity threshold (0-1, higher = more similar)"
+            ),
+        })
+        .optional()
+        .default({})
+        .describe("Search configuration options"),
+    })
+    .describe(
+      "Find images using text descriptions with CLIP multimodal AI embeddings"
+    ),
 
-  findImagesByImage: z.object({
-    image: stringSchema.refine((val) => val.length > 0, {
-      message: "Image URL or data is required for findImagesByImage operation",
-    }).describe("Image URL or base64 data to find visually similar images"),
-    options: z.object({
-      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of images to return"),
-      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
-    }).optional().default({}).describe("Search configuration options"),
-  }).describe("Find visually similar images using CLIP image embeddings"),
+  findImagesByImage: z
+    .object({
+      image: stringSchema
+        .refine((val) => val.length > 0, {
+          message:
+            "Image URL or data is required for findImagesByImage operation",
+        })
+        .describe("Image URL or base64 data to find visually similar images"),
+      options: z
+        .object({
+          limit: z
+            .number()
+            .nonnegative()
+            .optional()
+            .default(20)
+            .describe("Maximum number of images to return"),
+          threshold: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .default(0.1)
+            .describe(
+              "Minimum similarity threshold (0-1, higher = more similar)"
+            ),
+        })
+        .optional()
+        .default({})
+        .describe("Search configuration options"),
+    })
+    .describe("Find visually similar images using CLIP image embeddings"),
 
-  findSimilarContent: z.object({
-    query: stringSchema.refine((val) => val.length > 0, {
-      message: "Query is required for findSimilarContent operation",
-    }).describe("Text query or image URL/data to find similar content"),
-    options: z.object({
-      limit: z.number().nonnegative().optional().default(20).describe("Maximum number of results to return"),
-      threshold: z.number().min(0).max(1).optional().default(0.1).describe("Minimum similarity threshold (0-1, higher = more similar)"),
-      type: z.enum(["auto", "clip"]).optional().default("auto").describe("Search type - 'auto' detects query type, 'clip' forces CLIP embeddings"),
-    }).optional().default({}).describe("Search configuration options"),
-  }).describe("Universal similarity search that automatically detects query type (text or image) and searches both posts and media"),
+  findSimilarContent: z
+    .object({
+      query: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Query is required for findSimilarContent operation",
+        })
+        .describe("Text query or image URL/data to find similar content"),
+      options: z
+        .object({
+          limit: z
+            .number()
+            .nonnegative()
+            .optional()
+            .default(20)
+            .describe("Maximum number of results to return"),
+          threshold: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .default(0.1)
+            .describe(
+              "Minimum similarity threshold (0-1, higher = more similar)"
+            ),
+          type: z
+            .enum(["auto", "clip"])
+            .optional()
+            .default("auto")
+            .describe(
+              "Search type - 'auto' detects query type, 'clip' forces CLIP embeddings"
+            ),
+        })
+        .optional()
+        .default({})
+        .describe("Search configuration options"),
+    })
+    .describe(
+      "Universal similarity search that automatically detects query type (text or image) and searches both posts and media"
+    ),
 
   // Additional Similarity Methods
-  getPostsEmbeddings: z.object({
-    useCache: booleanSchema.describe("Use cached embedding data if available for better performance"),
-  }).describe("Get AI vector embeddings for all posts used in similarity calculations"),
+  getPostsEmbeddings: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached embedding data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get AI vector embeddings for all posts used in similarity calculations"
+    ),
 
-  getPostsSimilarity: z.object({
-    useCache: booleanSchema.describe("Use cached similarity data if available for better performance"),
-  }).describe("Get the complete similarity matrix showing relationships between all posts"),
+  getPostsSimilarity: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached similarity data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get the complete similarity matrix showing relationships between all posts"
+    ),
 
-  getTopSimilarPostsHashes: z.object({
-    useCache: booleanSchema.describe("Use cached similarity data if available for better performance"),
-  }).describe("Get the most similar post pairs from the entire collection"),
+  getTopSimilarPostsHashes: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached similarity data if available for better performance"
+      ),
+    })
+    .describe("Get the most similar post pairs from the entire collection"),
 
-  getSimilarPostsSlugBySlug: z.object({
-    slug: stringSchema.refine((val) => val.length > 0, {
-      message: "Slug is required for getSimilarPostsSlugBySlug operation",
-    }).describe("Slug of the reference post to find similar content for"),
-    limit: z.number().nonnegative().optional().default(10).describe("Maximum number of similar post slugs to return"),
-  }).describe("Get list of similar post slugs for a given post using AI similarity matching"),
+  getSimilarPostsSlugBySlug: z
+    .object({
+      slug: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Slug is required for getSimilarPostsSlugBySlug operation",
+        })
+        .describe("Slug of the reference post to find similar content for"),
+      limit: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(10)
+        .describe("Maximum number of similar post slugs to return"),
+    })
+    .describe(
+      "Get list of similar post slugs for a given post using AI similarity matching"
+    ),
 
   // Media Methods
-  getR2MediaUrl: z.object({
-    path: stringSchema.refine((val) => val.length > 0, {
-      message: "Path is required for getR2MediaUrl operation",
-    }).describe("Media file path to generate optimized URL for"),
-  }).describe("Generate optimized URL for media files with automatic format conversion"),
+  getR2MediaUrl: z
+    .object({
+      path: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Path is required for getR2MediaUrl operation",
+        })
+        .describe("Media file path to generate optimized URL for"),
+    })
+    .describe(
+      "Generate optimized URL for media files with automatic format conversion"
+    ),
 
-  getAllMedia: z.object({
-    useCache: booleanSchema.describe("Use cached media data if available"),
-  }).describe("Retrieve all media files with metadata and optimized URLs"),
+  getAllMedia: z
+    .object({
+      useCache: booleanSchema.describe("Use cached media data if available"),
+    })
+    .describe("Retrieve all media files with metadata and optimized URLs"),
 
-  getAllMedias: z.object({
-    useCache: booleanSchema.describe("Use cached media data if available for better performance"),
-  }).describe("Retrieve all media files with metadata (deprecated alias for getAllMedia)"),
+  getAllMedias: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached media data if available for better performance"
+      ),
+    })
+    .describe(
+      "Retrieve all media files with metadata (deprecated alias for getAllMedia)"
+    ),
 
-  getMediaItems: z.object({
-    useCache: booleanSchema.describe("Use cached media data if available for better performance"),
-  }).describe("Get media items with formatted URLs and metadata for display"),
+  getMediaItems: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached media data if available for better performance"
+      ),
+    })
+    .describe("Get media items with formatted URLs and metadata for display"),
 
   // Media Similarity Methods
-  getMediaEmbeddings: z.object({
-    useCache: booleanSchema.describe("Use cached embedding data if available for better performance"),
-  }).describe("Get AI vector embeddings for all media files used in similarity calculations"),
+  getMediaEmbeddings: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached embedding data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get AI vector embeddings for all media files used in similarity calculations"
+    ),
 
-  getMediaSimilarity: z.object({
-    useCache: booleanSchema.describe("Use cached similarity data if available for better performance"),
-  }).describe("Get the complete similarity matrix showing relationships between all media files"),
+  getMediaSimilarity: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached similarity data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get the complete similarity matrix showing relationships between all media files"
+    ),
 
-  getMediaSimilarityByHashes: z.object({
-    hash1: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash1 is required for getMediaSimilarityByHashes operation",
-    }).describe("Hash of the first media file to compare"),
-    hash2: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash2 is required for getMediaSimilarityByHashes operation",
-    }).describe("Hash of the second media file to compare"),
-  }).describe("Calculate similarity score between two specific media files using their hash identifiers"),
+  getMediaSimilarityByHashes: z
+    .object({
+      hash1: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash1 is required for getMediaSimilarityByHashes operation",
+        })
+        .describe("Hash of the first media file to compare"),
+      hash2: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash2 is required for getMediaSimilarityByHashes operation",
+        })
+        .describe("Hash of the second media file to compare"),
+    })
+    .describe(
+      "Calculate similarity score between two specific media files using their hash identifiers"
+    ),
 
-  getTopSimilarMediaHashes: z.object({
-    useCache: booleanSchema.describe("Use cached similarity data if available for better performance"),
-  }).describe("Get the most similar media file pairs from the entire collection"),
+  getTopSimilarMediaHashes: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached similarity data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get the most similar media file pairs from the entire collection"
+    ),
 
-  getSimilarMediaHashByHash: z.object({
-    hash: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash is required for getSimilarMediaHashByHash operation",
-    }).describe("Hash of the reference media file to find similar content for"),
-    limit: z.number().nonnegative().optional().default(10).describe("Maximum number of similar media hashes to return"),
-  }).describe("Get list of similar media file hashes for a given media file using AI similarity matching"),
+  getSimilarMediaHashByHash: z
+    .object({
+      hash: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash is required for getSimilarMediaHashByHash operation",
+        })
+        .describe(
+          "Hash of the reference media file to find similar content for"
+        ),
+      limit: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(10)
+        .describe("Maximum number of similar media hashes to return"),
+    })
+    .describe(
+      "Get list of similar media file hashes for a given media file using AI similarity matching"
+    ),
 
-  getSimilarMediaByHash: z.object({
-    hash: stringSchema.refine((val) => val.length > 0, {
-      message: "Hash is required for getSimilarMediaByHash operation",
-    }).describe("Hash of the reference media file to find similar content for"),
-    count: z.number().nonnegative().optional().default(5).describe("Number of similar media files to return with full metadata"),
-  }).describe("Find media files similar to the given media file using AI embeddings, returns full media objects"),
+  getSimilarMediaByHash: z
+    .object({
+      hash: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Hash is required for getSimilarMediaByHash operation",
+        })
+        .describe(
+          "Hash of the reference media file to find similar content for"
+        ),
+      count: z
+        .number()
+        .nonnegative()
+        .optional()
+        .default(5)
+        .describe("Number of similar media files to return with full metadata"),
+    })
+    .describe(
+      "Find media files similar to the given media file using AI embeddings, returns full media objects"
+    ),
 
-  handleCloudflareRequest: z.object({
-    request: z.object({}).refine((val) => typeof val === "object", {
-      message:
-        "Request object is required for handleCloudflareRequest operation",
-    }).describe("Cloudflare request object containing transformation parameters"),
-  }).describe("Handle Cloudflare media transformation requests for optimized image delivery"),
+  handleCloudflareRequest: z
+    .object({
+      request: z
+        .object({})
+        .refine((val) => typeof val === "object", {
+          message:
+            "Request object is required for handleCloudflareRequest operation",
+        })
+        .describe(
+          "Cloudflare request object containing transformation parameters"
+        ),
+    })
+    .describe(
+      "Handle Cloudflare media transformation requests for optimized image delivery"
+    ),
 
   // File Methods
-  getSourceFilesList: z.object({
-    useCache: booleanSchema.describe("Use cached file list if available for better performance"),
-  }).describe("Get list of all source files in the repository before build processing"),
+  getSourceFilesList: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached file list if available for better performance"
+      ),
+    })
+    .describe(
+      "Get list of all source files in the repository before build processing"
+    ),
 
-  getDistFilesList: z.object({
-    useCache: booleanSchema.describe("Use cached file list if available for better performance"),
-  }).describe("Get list of all built/distribution files after processing"),
+  getDistFilesList: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached file list if available for better performance"
+      ),
+    })
+    .describe("Get list of all built/distribution files after processing"),
 
-  getFileContent: z.object({
-    path: stringSchema.refine((val) => val.length > 0, {
-      message: "Path is required for getFileContent operation",
-    }).describe("File path within the repository to read content from"),
-    useCache: booleanSchema.describe("Use cached file content if available for better performance"),
-  }).describe("Read the content of a specific file from the repository"),
+  getFileContent: z
+    .object({
+      path: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Path is required for getFileContent operation",
+        })
+        .describe("File path within the repository to read content from"),
+      useCache: booleanSchema.describe(
+        "Use cached file content if available for better performance"
+      ),
+    })
+    .describe("Read the content of a specific file from the repository"),
 
-  getGraph: z.object({
-    useCache: booleanSchema.describe("Use cached graph data if available for better performance"),
-  }).describe("Get the project dependency graph showing relationships between files and components"),
+  getGraph: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached graph data if available for better performance"
+      ),
+    })
+    .describe(
+      "Get the project dependency graph showing relationships between files and components"
+    ),
 
   // URL Methods
-  getR2Url: z.object({
-    path: z.string().optional().default("").describe("File path within the repository (optional, defaults to root)"),
-  }).describe("Generate R2 storage URL for accessing repository files with automatic revision resolution"),
+  getR2Url: z
+    .object({
+      path: z
+        .string()
+        .optional()
+        .default("")
+        .describe(
+          "File path within the repository (optional, defaults to root)"
+        ),
+    })
+    .describe(
+      "Generate R2 storage URL for accessing repository files with automatic revision resolution"
+    ),
 
-  getR2ProjectUrl: z.object({
-    path: z.string().optional().default("").describe("File path within the project folder (optional, defaults to root)"),
-  }).describe("Generate project-specific R2 URL for accessing project-level resources"),
+  getR2ProjectUrl: z
+    .object({
+      path: z
+        .string()
+        .optional()
+        .default("")
+        .describe(
+          "File path within the project folder (optional, defaults to root)"
+        ),
+    })
+    .describe(
+      "Generate project-specific R2 URL for accessing project-level resources"
+    ),
 
-  getR2SharedFolderUrl: z.object({
-    path: z.string().optional().default("").describe("File path within the shared folder (optional, defaults to root)"),
-  }).describe("Generate R2 URL for shared folder resources accessible across projects"),
+  getR2SharedFolderUrl: z
+    .object({
+      path: z
+        .string()
+        .optional()
+        .default("")
+        .describe(
+          "File path within the shared folder (optional, defaults to root)"
+        ),
+    })
+    .describe(
+      "Generate R2 URL for shared folder resources accessible across projects"
+    ),
 
-  getR2RevUrl: z.object({
-    path: z.string().optional().default("").describe("File path within the repository (optional, defaults to root)"),
-  }).describe("Generate revision-specific R2 URL for accessing repository files (alias for getR2Url)"),
+  getR2RevUrl: z
+    .object({
+      path: z
+        .string()
+        .optional()
+        .default("")
+        .describe(
+          "File path within the repository (optional, defaults to root)"
+        ),
+    })
+    .describe(
+      "Generate revision-specific R2 URL for accessing repository files (alias for getR2Url)"
+    ),
 
-  createViteProxy: z.object({
-    folder: z.string().optional().default("_repo").describe("Repository folder name for Vite proxy configuration"),
-  }).describe("Create Vite development server proxy configuration for local development"),
+  createViteProxy: z
+    .object({
+      folder: z
+        .string()
+        .optional()
+        .default("_repo")
+        .describe("Repository folder name for Vite proxy configuration"),
+    })
+    .describe(
+      "Create Vite development server proxy configuration for local development"
+    ),
 
-  getSqliteUrl: z.object({
-    useCache: booleanSchema.describe("Use cached URL if available for better performance"),
-  }).describe("Get URL for the SQLite database containing repository metadata and search indices"),
+  getSqliteUrl: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached URL if available for better performance"
+      ),
+    })
+    .describe(
+      "Get URL for the SQLite database containing repository metadata and search indices"
+    ),
 
   // API Methods
-  fetchPublicApi: z.object({
-    path: z.string().optional().default("/").describe("API endpoint path to fetch from (defaults to root)"),
-  }).describe("Fetch data from public API endpoints with automatic error handling and retries"),
+  fetchPublicApi: z
+    .object({
+      path: z
+        .string()
+        .optional()
+        .default("/")
+        .describe("API endpoint path to fetch from (defaults to root)"),
+    })
+    .describe(
+      "Fetch data from public API endpoints with automatic error handling and retries"
+    ),
 
-  fetchProjectDetails: z.object({
-    useCache: booleanSchema.describe("Use cached project details if available for better performance"),
-  }).describe("Get detailed project information including metadata, configuration, and settings"),
+  fetchProjectDetails: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached project details if available for better performance"
+      ),
+    })
+    .describe(
+      "Get detailed project information including metadata, configuration, and settings"
+    ),
 
-  fetchR2Json: z.object({
-    path: stringSchema.refine((val) => val.length > 0, {
-      message: "Path is required for fetchR2Json operation",
-    }).describe("File path in R2 storage to fetch JSON data from"),
-    opts: z.record(z.any()).optional().default({}).describe("Additional fetch options like caching, headers, and timeouts"),
-  }).describe("Fetch JSON data from R2 storage with automatic revision resolution and error handling"),
+  fetchR2Json: z
+    .object({
+      path: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Path is required for fetchR2Json operation",
+        })
+        .describe("File path in R2 storage to fetch JSON data from"),
+      opts: z
+        .record(z.any())
+        .optional()
+        .default({})
+        .describe(
+          "Additional fetch options like caching, headers, and timeouts"
+        ),
+    })
+    .describe(
+      "Fetch JSON data from R2 storage with automatic revision resolution and error handling"
+    ),
 
-  fetchJson: z.object({
-    url: z.string().refine((val) => val.length > 0, {
-      message: "URL is required for fetchJson operation",
-    }).describe("Complete URL to fetch JSON data from"),
-    opts: z.record(z.any()).optional().default({}).describe("Additional fetch options like headers, timeout, and caching"),
-  }).describe("Fetch JSON data from any URL with error handling and optional caching"),
+  fetchJson: z
+    .object({
+      url: z
+        .string()
+        .refine((val) => val.length > 0, {
+          message: "URL is required for fetchJson operation",
+        })
+        .describe("Complete URL to fetch JSON data from"),
+      opts: z
+        .record(z.any())
+        .optional()
+        .default({})
+        .describe(
+          "Additional fetch options like headers, timeout, and caching"
+        ),
+    })
+    .describe(
+      "Fetch JSON data from any URL with error handling and optional caching"
+    ),
 
-  getActiveProjectRev: z.object({
-    forceRefresh: z.boolean().optional().default(false).describe("Force refresh from API even if cached revision exists"),
-    skipDetails: z.boolean().optional().default(false).describe("Skip fetching detailed project information for faster response"),
-  }).describe("Get the active revision ID for the project with optional caching and detail control"),
+  getActiveProjectRev: z
+    .object({
+      forceRefresh: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Force refresh from API even if cached revision exists"),
+      skipDetails: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe(
+          "Skip fetching detailed project information for faster response"
+        ),
+    })
+    .describe(
+      "Get the active revision ID for the project with optional caching and detail control"
+    ),
 
-  fetchProjectActiveRev: z.object({
-    forceRefresh: z.boolean().optional().default(false).describe("Force refresh from API even if cached revision exists"),
-  }).describe("Fetch the current active revision ID for the project from the API"),
+  fetchProjectActiveRev: z
+    .object({
+      forceRefresh: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("Force refresh from API even if cached revision exists"),
+    })
+    .describe(
+      "Fetch the current active revision ID for the project from the API"
+    ),
 
-  handleOpenAiRequest: z.object({
-    request: z.object({}).refine((val) => typeof val === "object", {
-      message: "Request object is required for handleOpenAiRequest operation",
-    }).describe("OpenAI API request object containing function calls and context"),
-    options: z.record(z.any()).optional().default({}).describe("Additional options for OpenAI request processing"),
-  }).describe("Process OpenAI function calling requests with RepoMD context and tools"),
+  handleOpenAiRequest: z
+    .object({
+      request: z
+        .object({})
+        .refine((val) => typeof val === "object", {
+          message:
+            "Request object is required for handleOpenAiRequest operation",
+        })
+        .describe(
+          "OpenAI API request object containing function calls and context"
+        ),
+      options: z
+        .record(z.any())
+        .optional()
+        .default({})
+        .describe("Additional options for OpenAI request processing"),
+    })
+    .describe(
+      "Process OpenAI function calling requests with RepoMD context and tools"
+    ),
 
-  createOpenAiToolHandler: z.object({
-    options: z.record(z.any()).optional().default({}).describe("Configuration options for the OpenAI tool handler"),
-  }).describe("Create a handler for OpenAI function calling that provides access to RepoMD methods"),
+  createOpenAiToolHandler: z
+    .object({
+      options: z
+        .record(z.any())
+        .optional()
+        .default({})
+        .describe("Configuration options for the OpenAI tool handler"),
+    })
+    .describe(
+      "Create a handler for OpenAI function calling that provides access to RepoMD methods"
+    ),
 
   // Utility Methods
-  getClientStats: z.object({}).describe("Get performance statistics and usage metrics for the RepoMD client instance"),
+  getClientStats: z
+    .object({})
+    .describe(
+      "Get performance statistics and usage metrics for the RepoMD client instance"
+    ),
 
-  sortPostsByDate: z.object({
-    posts: z.array(z.any()).min(1, "Posts array cannot be empty").describe("Array of post objects to sort by date"),
-  }).describe("Sort an array of posts by their publication date (newest first)"),
+  sortPostsByDate: z
+    .object({
+      posts: z
+        .array(z.any())
+        .min(1, "Posts array cannot be empty")
+        .describe("Array of post objects to sort by date"),
+    })
+    .describe(
+      "Sort an array of posts by their publication date (newest first)"
+    ),
 
   // Project Methods
-  getReleaseInfo: z.object({
-    useCache: booleanSchema.describe("Use cached release information if available for better performance"),
-  }).describe("Get release information and version details for the current project"),
+  getReleaseInfo: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached release information if available for better performance"
+      ),
+    })
+    .describe(
+      "Get release information and version details for the current project"
+    ),
 
-  getProjectMetadata: z.object({
-    useCache: booleanSchema.describe("Use cached project metadata if available for better performance"),
-  }).describe("Get comprehensive project metadata including configuration, settings, and build information"),
+  getProjectMetadata: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached project metadata if available for better performance"
+      ),
+    })
+    .describe(
+      "Get comprehensive project metadata including configuration, settings, and build information"
+    ),
 
-  ensureLatestRev: z.object({}).describe("Ensure the latest revision is resolved and cached for subsequent operations"),
+  ensureLatestRev: z
+    .object({})
+    .describe(
+      "Ensure the latest revision is resolved and cached for subsequent operations"
+    ),
 
   // Instance Management Methods
-  destroy: z.object({}).describe("Clean up RepoMD instance resources, clear caches, and abort pending operations"),
+  destroy: z
+    .object({})
+    .describe(
+      "Clean up RepoMD instance resources, clear caches, and abort pending operations"
+    ),
 
   // Method Aliases
-  getPostsBySlug: z.object({
-    slug: stringSchema.refine((val) => val.length > 0, {
-      message: "Slug is required for getPostsBySlug operation",
-    }).describe("URL-friendly slug identifier for the post to retrieve"),
-  }).describe("Get a blog post by its slug (alias for getPostBySlug for backward compatibility)"),
+  getPostsBySlug: z
+    .object({
+      slug: stringSchema
+        .refine((val) => val.length > 0, {
+          message: "Slug is required for getPostsBySlug operation",
+        })
+        .describe("URL-friendly slug identifier for the post to retrieve"),
+    })
+    .describe(
+      "Get a blog post by its slug (alias for getPostBySlug for backward compatibility)"
+    ),
 
-  getSourceFiles: z.object({
-    useCache: booleanSchema.describe("Use cached file list if available for better performance"),
-  }).describe("Get list of source files in the repository (alias for getSourceFilesList)"),
+  getSourceFiles: z
+    .object({
+      useCache: booleanSchema.describe(
+        "Use cached file list if available for better performance"
+      ),
+    })
+    .describe(
+      "Get list of source files in the repository (alias for getSourceFilesList)"
+    ),
 
-  getOpenAiToolSpec: z.object({
-    blacklistedTools: z.array(z.string()).optional().default([]).describe("Array of function names to exclude from the tool specification"),
-  }).describe("Get OpenAI tool specification with optional filtering for project-specific configurations"),
+  getOpenAiToolSpec: z
+    .object({
+      blacklistedTools: z
+        .array(z.string())
+        .optional()
+        .default([])
+        .describe(
+          "Array of function names to exclude from the tool specification"
+        ),
+    })
+    .describe(
+      "Get OpenAI tool specification with optional filtering for project-specific configurations"
+    ),
 
   // AI Inference Methods
-  computeTextEmbedding: z.object({
-    text: stringSchema.refine((val) => val.length > 0, {
-      message: "Text is required and cannot be empty for text embedding computation",
-    }).describe("Text content to compute semantic embeddings for"),
-    instruction: z.string().nullable().optional().default(null).describe("Optional instruction to guide the embedding computation (e.g., 'Represent the document for retrieval:')"),
-  }).describe("Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks"),
+  computeTextEmbedding: z
+    .object({
+      text: stringSchema
+        .refine((val) => val.length > 0, {
+          message:
+            "Text is required and cannot be empty for text embedding computation",
+        })
+        .describe("Text content to compute semantic embeddings for"),
+      instruction: z
+        .string()
+        .nullable()
+        .optional()
+        .default(null)
+        .describe(
+          "Optional instruction to guide the embedding computation (e.g., 'Represent the document for retrieval:')"
+        ),
+    })
+    .describe(
+      "Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks"
+    ),
 
-  computeClipTextEmbedding: z.object({
-    text: stringSchema.refine((val) => val.length > 0, {
-      message: "Text is required and cannot be empty for CLIP text embedding computation",
-    }).describe("Text content to compute CLIP embeddings for, optimized for text-image matching"),
-  }).describe("Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"),
+  computeClipTextEmbedding: z
+    .object({
+      text: stringSchema
+        .refine((val) => val.length > 0, {
+          message:
+            "Text is required and cannot be empty for CLIP text embedding computation",
+        })
+        .describe(
+          "Text content to compute CLIP embeddings for, optimized for text-image matching"
+        ),
+    })
+    .describe(
+      "Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"
+    ),
 
-  computeClipImageEmbedding: z.object({
-    image: stringSchema.refine((val) => val.trim().length > 0, {
-      message: "Image is required and cannot be empty for CLIP image embedding computation",
-    }).describe("Image input as either a URL (https://...) or base64-encoded data string"),
-  }).describe("Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"),
+  computeClipImageEmbedding: z
+    .object({
+      image: stringSchema
+        .refine((val) => val.trim().length > 0, {
+          message:
+            "Image is required and cannot be empty for CLIP image embedding computation",
+        })
+        .describe(
+          "Image input as either a URL (https://...) or base64-encoded data string"
+        ),
+    })
+    .describe(
+      "Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"
+    ),
 };
 
 // Helper function to get the schema for a given function name

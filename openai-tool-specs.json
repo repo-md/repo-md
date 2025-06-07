@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2025-06-05T01:08:55.885Z",
-    "totalFunctions": 51,
-    "totalSchemas": 51,
+    "generatedAt": "2025-06-06T14:13:26.310Z",
+    "totalFunctions": 61,
+    "totalSchemas": 61,
     "generator": "Repo.md + OpenAI Tool Spec Generator",
     "version": "1.0.0"
   },
@@ -183,6 +183,155 @@
           },
           "required": [
             "slug"
+          ]
+        }
+      },
+      {
+        "name": "searchPosts",
+        "description": "Search across posts and media with multiple modes: memory/vector search posts by text, CLIP modes search media by text or image similarity",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Search query text (required for memory, vector, vector-text, vector-clip-text modes)"
+            },
+            "image": {
+              "type": "string",
+              "description": "Image URL or base64 data (required for vector-clip-image mode)"
+            },
+            "props": {
+              "type": "object",
+              "default": {},
+              "description": "Additional search configuration options"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "memory",
+                "vector",
+                "vector-text",
+                "vector-clip-text",
+                "vector-clip-image"
+              ],
+              "default": "memory",
+              "description": "Search mode: 'memory' = keyword search in posts, 'vector'/'vector-text' = semantic text search in posts using text embeddings, 'vector-clip-text' = text-to-image search in media using CLIP embeddings, 'vector-clip-image' = image-to-image search in media using CLIP embeddings"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "name": "searchAutocomplete",
+        "description": "Get autocomplete suggestions based on indexed search terms from posts",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "term": {
+              "type": "string",
+              "description": "Partial search term to generate autocomplete suggestions for"
+            },
+            "limit": {
+              "type": "number",
+              "default": 10,
+              "description": "Maximum number of autocomplete suggestions to return"
+            }
+          },
+          "required": [
+            "term"
+          ]
+        }
+      },
+      {
+        "name": "refreshSearchIndex",
+        "description": "Refresh the search index with latest post data for updated search results",
+        "parameters": {
+          "type": "object",
+          "properties": {},
+          "required": []
+        }
+      },
+      {
+        "name": "findPostsByText",
+        "description": "Find posts using semantic similarity with AI text embeddings",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text query to find semantically similar posts"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Search configuration options"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "findImagesByText",
+        "description": "Find images using text descriptions with CLIP multimodal AI embeddings",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text description to find matching images"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Search configuration options"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "findImagesByImage",
+        "description": "Find visually similar images using CLIP image embeddings",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "string",
+              "description": "Image URL or base64 data to find visually similar images"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Search configuration options"
+            }
+          },
+          "required": [
+            "image"
+          ]
+        }
+      },
+      {
+        "name": "findSimilarContent",
+        "description": "Universal similarity search that automatically detects query type (text or image) and searches both posts and media",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Text query or image URL/data to find similar content"
+            },
+            "options": {
+              "type": "object",
+              "default": {},
+              "description": "Search configuration options"
+            }
+          },
+          "required": [
+            "query"
           ]
         }
       },
@@ -860,11 +1009,67 @@
           },
           "required": []
         }
+      },
+      {
+        "name": "computeTextEmbedding",
+        "description": "Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text content to compute semantic embeddings for"
+            },
+            "instruction": {
+              "type": "string",
+              "default": null,
+              "description": "Optional instruction to guide the embedding computation (e.g., 'Represent the document for retrieval:')"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "computeClipTextEmbedding",
+        "description": "Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Text content to compute CLIP embeddings for, optimized for text-image matching"
+            }
+          },
+          "required": [
+            "text"
+          ]
+        }
+      },
+      {
+        "name": "computeClipImageEmbedding",
+        "description": "Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "image": {
+              "type": "string",
+              "description": "Image input as either a URL (https://...) or base64-encoded data string"
+            }
+          },
+          "required": [
+            "image"
+          ]
+        }
       }
     ]
   },
   "summary": {
     "functionNames": [
+      "computeClipImageEmbedding",
+      "computeClipTextEmbedding",
+      "computeTextEmbedding",
       "createOpenAiToolHandler",
       "createViteProxy",
       "destroy",
@@ -874,6 +1079,10 @@
       "fetchProjectDetails",
       "fetchPublicApi",
       "fetchR2Json",
+      "findImagesByImage",
+      "findImagesByText",
+      "findPostsByText",
+      "findSimilarContent",
       "getActiveProjectRev",
       "getAllMedia",
       "getAllMedias",
@@ -915,13 +1124,16 @@
       "getTopSimilarPostsHashes",
       "handleCloudflareRequest",
       "handleOpenAiRequest",
+      "refreshSearchIndex",
+      "searchAutocomplete",
+      "searchPosts",
       "sortPostsByDate"
     ],
     "propertyTypes": {
       "boolean": 23,
-      "string": 24,
-      "number": 7,
-      "object": 8,
+      "string": 36,
+      "number": 8,
+      "object": 13,
       "array": 2
     },
     "functionsWithDefaults": [
@@ -930,6 +1142,12 @@
       "getSimilarPostsHashByHash",
       "getSimilarPostsByHash",
       "getSimilarPostsBySlug",
+      "searchPosts",
+      "searchAutocomplete",
+      "findPostsByText",
+      "findImagesByText",
+      "findImagesByImage",
+      "findSimilarContent",
       "getPostsEmbeddings",
       "getPostsSimilarity",
       "getTopSimilarPostsHashes",
@@ -963,7 +1181,8 @@
       "getReleaseInfo",
       "getProjectMetadata",
       "getSourceFiles",
-      "getOpenAiToolSpec"
+      "getOpenAiToolSpec",
+      "computeTextEmbedding"
     ],
     "functionsWithRequired": [
       {
@@ -1007,6 +1226,36 @@
         "name": "getSimilarPostsBySlug",
         "required": [
           "slug"
+        ]
+      },
+      {
+        "name": "searchAutocomplete",
+        "required": [
+          "term"
+        ]
+      },
+      {
+        "name": "findPostsByText",
+        "required": [
+          "text"
+        ]
+      },
+      {
+        "name": "findImagesByText",
+        "required": [
+          "text"
+        ]
+      },
+      {
+        "name": "findImagesByImage",
+        "required": [
+          "image"
+        ]
+      },
+      {
+        "name": "findSimilarContent",
+        "required": [
+          "query"
         ]
       },
       {
@@ -1080,6 +1329,24 @@
         "name": "getPostsBySlug",
         "required": [
           "slug"
+        ]
+      },
+      {
+        "name": "computeTextEmbedding",
+        "required": [
+          "text"
+        ]
+      },
+      {
+        "name": "computeClipTextEmbedding",
+        "required": [
+          "text"
+        ]
+      },
+      {
+        "name": "computeClipImageEmbedding",
+        "required": [
+          "image"
         ]
       }
     ],

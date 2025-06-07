@@ -159,7 +159,7 @@ export function createPostSearch({ getAllPosts, getPostsEmbeddings, getAllMedia,
         }
         const embeddingResult = await computeClipTextEmbedding(text, debug);
         queryEmbedding = embeddingResult.embedding;
-        searchType = 'clip-text';
+        searchType = 'clip';
         if (debug) {
           console.log(`🔍 Computed CLIP text embedding for query: "${text}"`);
         }
@@ -169,7 +169,7 @@ export function createPostSearch({ getAllPosts, getPostsEmbeddings, getAllMedia,
         }
         const embeddingResult = await computeClipImageEmbedding(image, debug);
         queryEmbedding = embeddingResult.embedding;
-        searchType = 'clip-image';
+        searchType = 'clip';
         if (debug) {
           console.log("🔍 Computed CLIP image embedding for search");
         }
@@ -179,23 +179,23 @@ export function createPostSearch({ getAllPosts, getPostsEmbeddings, getAllMedia,
         throw new Error("Failed to compute valid query embedding");
       }
 
-      // Get appropriate embeddings based on search type
+      // Get appropriate embeddings based on search type - IMPORTANT: Only compare compatible embeddings
       let embeddingsMap;
       let candidateData;
       
-      if (searchType === 'clip-text' || searchType === 'clip-image') {
-        // For CLIP searches, we can search both posts and media
-        const [postsEmbeddings, mediaEmbeddings, posts, media] = await Promise.all([
-          getPostsEmbeddings ? getPostsEmbeddings() : {},
+      if (searchType === 'clip') {
+        // For CLIP searches, only use CLIP embeddings (from media)
+        // CLIP embeddings are only available for media items, not posts
+        const [mediaEmbeddings, media] = await Promise.all([
           getMediaEmbeddings ? getMediaEmbeddings() : {},
-          getAllPosts ? getAllPosts(true) : [],
           getAllMedia ? getAllMedia() : []
         ]);
         
-        embeddingsMap = { ...postsEmbeddings, ...mediaEmbeddings };
-        candidateData = [...posts.map(p => ({ ...p, type: 'post' })), ...media.map(m => ({ ...m, type: 'media' }))];
+        embeddingsMap = mediaEmbeddings;
+        candidateData = media.map(m => ({ ...m, type: 'media' }));
       } else {
-        // For text searches, only search posts
+        // For text searches, only use text embeddings (from posts)
+        // Text embeddings are available for posts
         const [postsEmbeddings, posts] = await Promise.all([
           getPostsEmbeddings ? getPostsEmbeddings() : {},
           getAllPosts ? getAllPosts(true) : []
