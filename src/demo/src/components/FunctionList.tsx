@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getMethodMeta } from '../../../lib/schemas/schemas.js';
+import { getMethodMeta, getMethodsByMode } from '../../../lib/schemas/schemas.js';
 
 // Function group color mapping
 const groupColors: Record<string, string> = {
@@ -26,6 +26,20 @@ const metaBadges: Record<string, { emoji: string; description: string }> = {
   cacheable: { emoji: '💽', description: 'Cacheable operation' },
   readonly: { emoji: '👁️', description: 'Read-only operation' }
 };
+
+// Filter mode options
+const filterModes = [
+  { value: 'all', label: 'All Methods' },
+  { value: 'publicChatMethods', label: 'Public Chat Methods' },
+  { value: 'popular', label: 'Popular Methods' },
+  { value: 'inference', label: 'AI/ML Methods' },
+  { value: 'framework', label: 'Framework Methods' },
+  { value: 'public', label: 'Public Methods' },
+  { value: 'lightweight', label: 'Lightweight Methods' },
+  { value: 'cacheable', label: 'Cacheable Methods' },
+  { value: 'readonly', label: 'Read-only Methods' }
+];
+
 interface FunctionParam {
   name: string;
   required: boolean;
@@ -58,7 +72,31 @@ const FunctionList: React.FC<FunctionListProps> = ({
 }) => {
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [filterMode, setFilterMode] = useState<string>('all');
   const hasInitialized = useRef(false);
+
+  // Get filtered methods based on selected mode
+  const getFilteredMethods = useCallback((mode: string = filterMode) => {
+    if (mode === 'all') {
+      return functions;
+    }
+    
+    const filteredMethods = getMethodsByMode(mode);
+    const filteredMethodNames = Object.keys(filteredMethods);
+    
+    // Return intersection of available functions and filtered methods
+    return functions.filter(fn => filteredMethodNames.includes(fn));
+  }, [functions, filterMode]);
+
+  // Get method counts for each filter mode
+  const getFilterModeCounts = useCallback(() => {
+    const counts: Record<string, number> = {};
+    filterModes.forEach(mode => {
+      const filtered = getFilteredMethods(mode.value);
+      counts[mode.value] = filtered.length;
+    });
+    return counts;
+  }, [getFilteredMethods]);
 
   // Handle function selection/execution
   const handleFunctionSelect = useCallback((fnName: string) => {
@@ -89,10 +127,16 @@ const FunctionList: React.FC<FunctionListProps> = ({
     }
   }, [functions, handleFunctionSelect]);
 
+  // Get methods after applying filter mode
+  const modeFilteredFunctions = getFilteredMethods();
+  
+  // Get counts for dropdown display
+  const filterModeCounts = getFilterModeCounts();
+
   // Filter functions based on search
   const filteredFunctions = searchFilter
-    ? functions.filter(fn => fn.toLowerCase().includes(searchFilter.toLowerCase()))
-    : functions;
+    ? modeFilteredFunctions.filter(fn => fn.toLowerCase().includes(searchFilter.toLowerCase()))
+    : modeFilteredFunctions;
 
   // Group functions by their prefix (post, media, etc.)
   const groupedFunctions: Record<string, string[]> = {};
@@ -132,26 +176,51 @@ const FunctionList: React.FC<FunctionListProps> = ({
     'Other'
   ];
 
+  // Count total filtered methods
+  const totalFilteredMethods = filteredFunctions.length;
+
   return (
     <div className="function-list">
-      <div className="function-filter">
-        <input
-          type="text"
-          placeholder="Search methods..."
-          value={searchFilter}
-          onChange={(e) => setSearchFilter(e.target.value)}
-          className="function-search-input"
-        />
-        {searchFilter && (
-          <button
-            type="button"
-            className="clear-search-button"
-            onClick={() => setSearchFilter('')}
+      <div className="function-filters">
+        <div className="function-filter-select">
+          <select
+            value={filterMode}
+            onChange={(e) => setFilterMode(e.target.value)}
+            className="filter-mode-select"
           >
-            ✕
-          </button>
-        )}
+            {filterModes.map(mode => (
+              <option key={mode.value} value={mode.value}>
+                {mode.label} ({filterModeCounts[mode.value] || 0})
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="function-filter">
+          <input
+            type="text"
+            placeholder="Search methods..."
+            value={searchFilter}
+            onChange={(e) => setSearchFilter(e.target.value)}
+            className="function-search-input"
+          />
+          {searchFilter && (
+            <button
+              type="button"
+              className="clear-search-button"
+              onClick={() => setSearchFilter('')}
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
+
+      {totalFilteredMethods > 0 && (
+        <div className="function-count">
+          Showing {totalFilteredMethods} of {functions.length} methods
+        </div>
+      )}
 
       {groupOrder.map(groupName => {
         const functionList = groupedFunctions[groupName];
@@ -242,6 +311,12 @@ const FunctionList: React.FC<FunctionListProps> = ({
           </div>
         );
       })}
+
+      {totalFilteredMethods === 0 && (
+        <div className="no-functions-message">
+          No methods found matching the current filters.
+        </div>
+      )}
     </div>
   );
 };

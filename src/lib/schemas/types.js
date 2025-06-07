@@ -125,13 +125,6 @@ export function getAllMethodDescriptions() {
   return descriptions;
 }
 
-// Function to get methods by category
-export function getMethodsByCategory(category) {
-  const allMethods = getAllMethodDescriptions();
-  return Object.entries(allMethods)
-    .filter(([_, meta]) => meta.category === category)
-    .reduce((acc, [name, meta]) => ({ ...acc, [name]: meta }), {});
-}
 
 // Helper function to infer category from function name
 function inferCategoryFromName(functionName) {

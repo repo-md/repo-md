@@ -1,4 +1,4 @@
-import { schemas } from "../schemas/schemas.js";
+import { schemas, getMethodsByMode } from "../schemas/schemas.js";
 
 /**
  * Check if a Zod schema is optional (has a default value or is explicitly optional)
@@ -173,11 +173,26 @@ function convertZodProperty(schema) {
 
 /**
  * Generate OpenAI Tool Specifications from Zod schemas
+ * @param {Object} options - Configuration options
+ * @param {string} options.methods - Method filter mode (default: "publicChatMethods")
+ *   - "all": Include all methods
+ *   - "publicChatMethods": Exclude internal and framework methods (default)
+ *   - "popular": Only popular methods
+ *   - "inference": Only AI/ML-powered methods
+ *   - "framework": Only framework integration methods
+ *   - "public": Only public methods (excludes internal)
+ *   - "lightweight": Exclude memory-heavy methods
+ *   - "cacheable": Only cacheable methods
+ *   - "readonly": Only read-only methods
+ * @returns {Object} OpenAI tool specification
  */
-export function createOpenAiSpecs() {
-  const functions = [];
+export function createOpenAiSpecs(options = {}) {
+  const { methods = "publicChatMethods" } = options;
 
-  for (const [functionName, schema] of Object.entries(schemas)) {
+  const functions = [];
+  const selectedSchemas = getMethodsByMode(methods);
+
+  for (const [functionName, schema] of Object.entries(selectedSchemas)) {
     const spec = zodToOpenAiSpec(schema, functionName);
     functions.push(spec);
   }
@@ -188,3 +203,5 @@ export function createOpenAiSpecs() {
   };
 }
 
+// Backward compatibility - export the default spec creation without parameters
+// export const openAiSpecs = createOpenAiSpecs();

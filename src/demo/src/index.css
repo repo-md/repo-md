@@ -91,7 +91,9 @@ body {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: calc(100vh - 60px - 80px); /* Full height minus header and config panel */
+  height: calc(
+    100vh - 60px - 80px
+  ); /* Full height minus header and config panel */
   overflow: hidden;
 }
 
@@ -198,7 +200,6 @@ body {
   min-width: 150px;
 }
 
-
 .form-group small {
   color: #666;
   font-size: 12px;
@@ -235,7 +236,7 @@ body {
   margin-left: -150px;
   opacity: 0;
   transition: opacity 0.3s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   border: 1px solid #eaeaea;
   font-size: 13px;
   line-height: 1.4;
@@ -257,7 +258,9 @@ body {
   opacity: 1;
 }
 
-input, select, button {
+input,
+select,
+button {
   padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -272,7 +275,6 @@ select {
 .strategy-select {
   width: 100%;
 }
-
 
 button {
   background-color: #4c86f9;
@@ -490,7 +492,7 @@ button:disabled {
 .initial-content {
   color: #4c86f9 !important;
   background-color: rgba(76, 134, 249, 0.05) !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: "Inter", sans-serif !important;
   line-height: 1.6;
   padding: 20px !important;
 }
@@ -662,7 +664,7 @@ button:disabled {
   padding: 1px 6px;
   border-radius: 12px;
   border: 1px solid #ddd;
-  font-family: 'Menlo', 'Monaco', monospace;
+  font-family: "Menlo", "Monaco", monospace;
   font-weight: normal;
   transition: all 0.2s;
 }
@@ -1018,4 +1020,49 @@ button:disabled {
 .meta-badge:hover {
   background-color: rgba(255, 255, 255, 1);
   transform: scale(1.1);
+}
+
+.function-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.function-filter-select {
+  width: 100%;
+}
+
+.filter-mode-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.filter-mode-select:hover {
+  border-color: #aaa;
+}
+
+.filter-mode-select:focus {
+  outline: none;
+  border-color: #4c86f9;
+  box-shadow: 0 0 0 2px rgba(76, 134, 249, 0.2);
+}
+
+.function-count {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.no-functions-message {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
 }

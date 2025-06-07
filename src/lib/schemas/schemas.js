@@ -1,6 +1,5 @@
 import "zod-metadata/register";
 import { register } from "zod-metadata";
-//alert(4);
 import zod from "zod";
 register(zod);
 import { z } from "zod";
@@ -76,6 +75,7 @@ const requestObjectSchema = z
 // Metadata interface for type safety
 /* 
 export interface MethodMeta {
+  category?: string;      // Method category
   popular?: boolean;      // Commonly used methods
   inference?: boolean;    // AI/ML-powered methods
   internal?: boolean;     // Internal/system methods
@@ -108,7 +108,12 @@ export const schemas = {
     .describe(
       "Retrieve all blog posts from the repository with metadata and content"
     )
-    .meta({ popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "posts",
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getPostBySlug: z
     .object({
@@ -117,7 +122,12 @@ export const schemas = {
       ),
     })
     .describe("Get a specific blog post by its URL slug identifier")
-    .meta({ popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "posts",
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getPostByHash: z
     .object({
@@ -126,14 +136,14 @@ export const schemas = {
       ),
     })
     .describe("Get a specific blog post by its unique hash identifier")
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "posts", readonly: true, cacheable: true }),
 
   getPostByPath: z
     .object({
       path: pathSchema.describe("File path within the repository to retrieve"),
     })
     .describe("Get a specific blog post by its file path in the repository")
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "posts", readonly: true, cacheable: true }),
 
   getRecentPosts: z
     .object({
@@ -142,7 +152,12 @@ export const schemas = {
       ),
     })
     .describe("Get the most recent blog posts sorted by date")
-    .meta({ popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "posts",
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   // Similarity Methods
   getPostsSimilarityByHashes: z
@@ -153,7 +168,12 @@ export const schemas = {
     .describe(
       "Calculate similarity score between two specific posts using their hash identifiers"
     )
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarPostsHashByHash: z
     .object({
@@ -167,7 +187,13 @@ export const schemas = {
     .describe(
       "Get list of similar post hashes for a given post using AI similarity matching"
     )
-    .meta({ inference: true, popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarPostsByHash: z
     .object({
@@ -185,6 +211,7 @@ export const schemas = {
       "Find posts similar to the given post using AI embeddings, returns full post objects"
     )
     .meta({
+      category: "similarity",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -206,6 +233,7 @@ export const schemas = {
       "Find posts similar to the given post using AI embeddings and semantic analysis"
     )
     .meta({
+      category: "similarity",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -300,6 +328,7 @@ export const schemas = {
       "Search across posts and media with multiple modes: memory/vector search posts by text, CLIP modes search media by text or image similarity"
     )
     .meta({
+      category: "search",
       popular: true,
       inference: true,
       memoryHeavy: true,
@@ -318,14 +347,19 @@ export const schemas = {
     .describe(
       "Get autocomplete suggestions based on indexed search terms from posts"
     )
-    .meta({ popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "search",
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   refreshSearchIndex: z
     .object({})
     .describe(
       "Refresh the search index with latest post data for updated search results"
     )
-    .meta({ internal: true }),
+    .meta({ category: "search", internal: true }),
 
   // Vector Search Methods
   findPostsByText: z
@@ -349,6 +383,7 @@ export const schemas = {
     })
     .describe("Find posts using semantic similarity with AI text embeddings")
     .meta({
+      category: "search",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -373,6 +408,7 @@ export const schemas = {
       "Find images using text descriptions with CLIP multimodal AI embeddings"
     )
     .meta({
+      category: "search",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -395,6 +431,7 @@ export const schemas = {
     })
     .describe("Find visually similar images using CLIP image embeddings")
     .meta({
+      category: "search",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -426,6 +463,7 @@ export const schemas = {
       "Universal similarity search that automatically detects query type (text or image) and searches both posts and media"
     )
     .meta({
+      category: "search",
       inference: true,
       popular: true,
       memoryHeavy: true,
@@ -441,6 +479,7 @@ export const schemas = {
       "Get AI vector embeddings for all posts used in similarity calculations"
     )
     .meta({
+      category: "ai",
       inference: true,
       internal: true,
       memoryHeavy: true,
@@ -456,6 +495,7 @@ export const schemas = {
       "Get the complete similarity matrix showing relationships between all posts"
     )
     .meta({
+      category: "similarity",
       inference: true,
       internal: true,
       memoryHeavy: true,
@@ -468,7 +508,12 @@ export const schemas = {
       useCache: useCacheSchema,
     })
     .describe("Get the most similar post pairs from the entire collection")
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarPostsSlugBySlug: z
     .object({
@@ -482,7 +527,12 @@ export const schemas = {
     .describe(
       "Get list of similar post slugs for a given post using AI similarity matching"
     )
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   // Media Methods
   getR2MediaUrl: z
@@ -494,14 +544,19 @@ export const schemas = {
     .describe(
       "Generate optimized URL for media files with automatic format conversion"
     )
-    .meta({ popular: true, readonly: true }),
+    .meta({ category: "media", popular: true, readonly: true }),
 
   getAllMedia: z
     .object({
       useCache: useCacheSchema,
     })
     .describe("Retrieve all media files with metadata and optimized URLs")
-    .meta({ popular: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "media",
+      popular: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getAllMedias: z
     .object({
@@ -511,6 +566,7 @@ export const schemas = {
       "Retrieve all media files with metadata (deprecated alias for getAllMedia)"
     )
     .meta({
+      category: "media",
       memoryHeavy: true,
       deprecated: true,
       readonly: true,
@@ -522,7 +578,7 @@ export const schemas = {
       useCache: useCacheSchema,
     })
     .describe("Get media items with formatted URLs and metadata for display")
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "media", readonly: true, cacheable: true }),
 
   // Media Similarity Methods
   getMediaEmbeddings: z
@@ -533,6 +589,7 @@ export const schemas = {
       "Get AI vector embeddings for all media files used in similarity calculations"
     )
     .meta({
+      category: "ai",
       inference: true,
       internal: true,
       memoryHeavy: true,
@@ -548,6 +605,7 @@ export const schemas = {
       "Get the complete similarity matrix showing relationships between all media files"
     )
     .meta({
+      category: "similarity",
       inference: true,
       internal: true,
       memoryHeavy: true,
@@ -563,7 +621,12 @@ export const schemas = {
     .describe(
       "Calculate similarity score between two specific media files using their hash identifiers"
     )
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getTopSimilarMediaHashes: z
     .object({
@@ -572,7 +635,12 @@ export const schemas = {
     .describe(
       "Get the most similar media file pairs from the entire collection"
     )
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarMediaHashByHash: z
     .object({
@@ -586,7 +654,12 @@ export const schemas = {
     .describe(
       "Get list of similar media file hashes for a given media file using AI similarity matching"
     )
-    .meta({ inference: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "similarity",
+      inference: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarMediaByHash: z
     .object({
@@ -601,6 +674,7 @@ export const schemas = {
       "Find media files similar to the given media file using AI embeddings, returns full media objects"
     )
     .meta({
+      category: "similarity",
       inference: true,
       memoryHeavy: true,
       readonly: true,
@@ -616,7 +690,7 @@ export const schemas = {
     .describe(
       "Handle Cloudflare media transformation requests for optimized image delivery"
     )
-    .meta({ internal: true, framework: true }),
+    .meta({ category: "api", internal: true, framework: true }),
 
   // File Methods
   getSourceFilesList: z
@@ -626,14 +700,14 @@ export const schemas = {
     .describe(
       "Get list of all source files in the repository before build processing"
     )
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "files", readonly: true, cacheable: true }),
 
   getDistFilesList: z
     .object({
       useCache: useCacheSchema,
     })
     .describe("Get list of all built/distribution files after processing")
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "files", readonly: true, cacheable: true }),
 
   getFileContent: z
     .object({
@@ -643,7 +717,7 @@ export const schemas = {
       useCache: useCacheSchema,
     })
     .describe("Read the content of a specific file from the repository")
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "files", readonly: true, cacheable: true }),
 
   getGraph: z
     .object({
@@ -652,7 +726,12 @@ export const schemas = {
     .describe(
       "Get the project dependency graph showing relationships between files and components"
     )
-    .meta({ memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "project",
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   // URL Methods
   getR2Url: z
@@ -668,7 +747,7 @@ export const schemas = {
     .describe(
       "Generate R2 storage URL for accessing repository files with automatic revision resolution"
     )
-    .meta({ popular: true, readonly: true }),
+    .meta({ category: "urls", popular: true, readonly: true }),
 
   getR2ProjectUrl: z
     .object({
@@ -683,7 +762,7 @@ export const schemas = {
     .describe(
       "Generate project-specific R2 URL for accessing project-level resources"
     )
-    .meta({ readonly: true }),
+    .meta({ category: "urls", readonly: true }),
 
   getR2SharedFolderUrl: z
     .object({
@@ -698,7 +777,7 @@ export const schemas = {
     .describe(
       "Generate R2 URL for shared folder resources accessible across projects"
     )
-    .meta({ readonly: true }),
+    .meta({ category: "urls", readonly: true }),
 
   getR2RevUrl: z
     .object({
@@ -713,7 +792,7 @@ export const schemas = {
     .describe(
       "Generate revision-specific R2 URL for accessing repository files (alias for getR2Url)"
     )
-    .meta({ readonly: true }),
+    .meta({ category: "urls", readonly: true }),
 
   createViteProxy: z
     .object({
@@ -726,7 +805,7 @@ export const schemas = {
     .describe(
       "Create Vite development server proxy configuration for local development"
     )
-    .meta({ framework: true }),
+    .meta({ category: "api", framework: true }),
 
   getSqliteUrl: z
     .object({
@@ -735,7 +814,12 @@ export const schemas = {
     .describe(
       "Get URL for the SQLite database containing repository metadata and search indices"
     )
-    .meta({ framework: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "api",
+      framework: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   // API Methods
   fetchPublicApi: z
@@ -749,7 +833,7 @@ export const schemas = {
     .describe(
       "Fetch data from public API endpoints with automatic error handling and retries"
     )
-    .meta({ internal: true, readonly: true }),
+    .meta({ category: "api", internal: true, readonly: true }),
 
   fetchProjectDetails: z
     .object({
@@ -758,7 +842,7 @@ export const schemas = {
     .describe(
       "Get detailed project information including metadata, configuration, and settings"
     )
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "project", readonly: true, cacheable: true }),
 
   fetchR2Json: z
     .object({
@@ -776,7 +860,7 @@ export const schemas = {
     .describe(
       "Fetch JSON data from R2 storage with automatic revision resolution and error handling"
     )
-    .meta({ internal: true, readonly: true }),
+    .meta({ category: "api", internal: true, readonly: true }),
 
   fetchJson: z
     .object({
@@ -797,7 +881,7 @@ export const schemas = {
     .describe(
       "Fetch JSON data from any URL with error handling and optional caching"
     )
-    .meta({ internal: true, readonly: true }),
+    .meta({ category: "api", internal: true, readonly: true }),
 
   getActiveProjectRev: z
     .object({
@@ -813,7 +897,7 @@ export const schemas = {
     .describe(
       "Get the active revision ID for the project with optional caching and detail control"
     )
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "project", readonly: true, cacheable: true }),
 
   fetchProjectActiveRev: z
     .object({
@@ -822,7 +906,7 @@ export const schemas = {
     .describe(
       "Fetch the current active revision ID for the project from the API"
     )
-    .meta({ readonly: true }),
+    .meta({ category: "project", readonly: true }),
 
   handleOpenAiRequest: z
     .object({
@@ -838,7 +922,7 @@ export const schemas = {
     .describe(
       "Process OpenAI function calling requests with RepoMD context and tools"
     )
-    .meta({ inference: true, framework: true }),
+    .meta({ category: "ai", inference: true, framework: true }),
 
   createOpenAiToolHandler: z
     .object({
@@ -851,7 +935,7 @@ export const schemas = {
     .describe(
       "Create a handler for OpenAI function calling that provides access to RepoMD methods"
     )
-    .meta({ inference: true, framework: true }),
+    .meta({ category: "ai", inference: true, framework: true }),
 
   // Utility Methods
   getClientStats: z
@@ -859,7 +943,7 @@ export const schemas = {
     .describe(
       "Get performance statistics and usage metrics for the RepoMD client instance"
     )
-    .meta({ internal: true, readonly: true }),
+    .meta({ category: "utility", internal: true, readonly: true }),
 
   sortPostsByDate: z
     .object({
@@ -869,7 +953,7 @@ export const schemas = {
         .describe("Array of post objects to sort by date"),
     })
     .describe("Sort an array of posts by their publication date (newest first)")
-    .meta({ readonly: true }),
+    .meta({ category: "utility", readonly: true }),
 
   // Project Methods
   getReleaseInfo: z
@@ -879,7 +963,7 @@ export const schemas = {
     .describe(
       "Get release information and version details for the current project"
     )
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "project", readonly: true, cacheable: true }),
 
   getProjectMetadata: z
     .object({
@@ -888,14 +972,14 @@ export const schemas = {
     .describe(
       "Get comprehensive project metadata including configuration, settings, and build information"
     )
-    .meta({ readonly: true, cacheable: true }),
+    .meta({ category: "project", readonly: true, cacheable: true }),
 
   ensureLatestRev: z
     .object({})
     .describe(
       "Ensure the latest revision is resolved and cached for subsequent operations"
     )
-    .meta({ internal: true }),
+    .meta({ category: "project", internal: true }),
 
   // Instance Management Methods
   destroy: z
@@ -903,7 +987,7 @@ export const schemas = {
     .describe(
       "Clean up RepoMD instance resources, clear caches, and abort pending operations"
     )
-    .meta({ internal: true }),
+    .meta({ category: "utility", internal: true }),
 
   // Method Aliases
   getPostsBySlug: z
@@ -915,7 +999,13 @@ export const schemas = {
     .describe(
       "Get a blog post by its slug (alias for getPostBySlug for backward compatibility)"
     )
-    .meta({ popular: true, deprecated: true, readonly: true, cacheable: true }),
+    .meta({
+      category: "posts",
+      popular: true,
+      deprecated: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSourceFiles: z
     .object({
@@ -925,6 +1015,7 @@ export const schemas = {
       "Get list of source files in the repository (alias for getSourceFilesList)"
     )
     .meta({
+      category: "files",
       framework: true,
       deprecated: true,
       readonly: true,
@@ -944,7 +1035,7 @@ export const schemas = {
     .describe(
       "Get OpenAI tool specification with optional filtering for project-specific configurations"
     )
-    .meta({ inference: true, framework: true, readonly: true }),
+    .meta({ category: "ai", inference: true, framework: true, readonly: true }),
 
   // AI Inference Methods
   computeTextEmbedding: z
@@ -964,7 +1055,7 @@ export const schemas = {
     .describe(
       "Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks"
     )
-    .meta({ inference: true, internal: true }),
+    .meta({ category: "ai", inference: true, internal: true }),
 
   computeClipTextEmbedding: z
     .object({
@@ -975,7 +1066,7 @@ export const schemas = {
     .describe(
       "Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"
     )
-    .meta({ inference: true, internal: true }),
+    .meta({ category: "ai", inference: true, internal: true }),
 
   computeClipImageEmbedding: z
     .object({
@@ -984,7 +1075,7 @@ export const schemas = {
     .describe(
       "Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"
     )
-    .meta({ inference: true, internal: true }),
+    .meta({ category: "ai", inference: true, internal: true }),
 };
 
 // Helper function to get the schema for a given function name
@@ -1035,9 +1126,17 @@ export const getCacheableMethods = () =>
   filterMethodsByMeta({ cacheable: true });
 export const getReadonlyMethods = () => filterMethodsByMeta({ readonly: true });
 
-// Get methods by availability context
-export function getMethodsByContext(context) {
-  switch (context) {
+// New: Get methods for public chat (excludes internal and framework, includes popular)
+export const getPublicChatMethods = () =>
+  filterMethodsByMeta((meta) => !meta.internal && !meta.framework);
+
+// New: Get methods by mode for OpenAI specs
+export function getMethodsByMode(mode = "publicChatMethods") {
+  switch (mode) {
+    case "all":
+      return schemas;
+    case "publicChatMethods":
+      return getPublicChatMethods();
     case "popular":
       return getPopularMethods();
     case "inference":
@@ -1053,8 +1152,14 @@ export function getMethodsByContext(context) {
     case "readonly":
       return getReadonlyMethods();
     default:
-      return schemas;
+      // Default to publicChatMethods
+      return getPublicChatMethods();
   }
+}
+
+// Get methods by availability context (kept for backwards compatibility)
+export function getMethodsByContext(context) {
+  return getMethodsByMode(context);
 }
 
 // Get metadata for a specific method
@@ -1079,55 +1184,22 @@ export function getAllMeta() {
 
 // Utility to get method categories
 export function getMethodCategories() {
-  const categories = {
-    posts: [],
-    media: [],
-    search: [],
-    similarity: [],
-    files: [],
-    urls: [],
-    api: [],
-    project: [],
-    utility: [],
-    ai: [],
-  };
+  const categories = {};
 
   for (const [name, schema] of Object.entries(schemas)) {
-    // Categorize methods
-    if (name.toLowerCase().includes("post")) {
-      categories.posts.push(name);
-    } else if (name.toLowerCase().includes("media")) {
-      categories.media.push(name);
-    } else if (
-      name.toLowerCase().includes("search") ||
-      name.toLowerCase().includes("autocomplete")
-    ) {
-      categories.search.push(name);
-    } else if (name.toLowerCase().includes("similar")) {
-      categories.similarity.push(name);
-    } else if (name.toLowerCase().includes("file")) {
-      categories.files.push(name);
-    } else if (name.toLowerCase().includes("url")) {
-      categories.urls.push(name);
-    } else if (
-      name.toLowerCase().includes("fetch") ||
-      name.toLowerCase().includes("api")
-    ) {
-      categories.api.push(name);
-    } else if (
-      name.toLowerCase().includes("project") ||
-      name.toLowerCase().includes("release")
-    ) {
-      categories.project.push(name);
-    } else if (
-      name.toLowerCase().includes("embedding") ||
-      name.toLowerCase().includes("clip")
-    ) {
-      categories.ai.push(name);
-    } else {
-      categories.utility.push(name);
+    const meta = schema._def?.meta || {};
+    const category = meta.category || "uncategorized";
+
+    if (!categories[category]) {
+      categories[category] = [];
     }
+    categories[category].push(name);
   }
 
   return categories;
+}
+
+// Get methods by category
+export function getMethodsByCategory(category) {
+  return filterMethodsByMeta({ category });
 }
