@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getMethodMeta } from '../../../lib/schemas/schemas.js';
 
 // Function group color mapping
 const groupColors: Record<string, string> = {
@@ -12,6 +13,18 @@ const groupColors: Record<string, string> = {
   Fetch: '#f59e0b',
   OpenAI: '#06b6d4',
   Other: '#ccc'
+};
+
+// Meta badges with emojis and descriptions
+const metaBadges: Record<string, { emoji: string; description: string }> = {
+  popular: { emoji: '⭐', description: 'Commonly used method' },
+  inference: { emoji: '🤖', description: 'AI/ML-powered method' },
+  internal: { emoji: '🔧', description: 'Internal/system method' },
+  framework: { emoji: '🏗️', description: 'Framework integration method' },
+  memoryHeavy: { emoji: '💾', description: 'Memory-intensive operation' },
+  deprecated: { emoji: '⚠️', description: 'Deprecated method' },
+  cacheable: { emoji: '💽', description: 'Cacheable operation' },
+  readonly: { emoji: '👁️', description: 'Read-only operation' }
 };
 interface FunctionParam {
   name: string;
@@ -166,6 +179,9 @@ const FunctionList: React.FC<FunctionListProps> = ({
                   ].filter(Boolean).join('\n\n') : ''
                 ].filter(Boolean).join('\n\n');
 
+                const methodMeta = getMethodMeta(fnName);
+                const activeMetas = Object.entries(methodMeta || {}).filter(([_, value]) => value === true);
+
                 return (
                   <div key={fnName} className="function-item">
                     <button
@@ -178,6 +194,23 @@ const FunctionList: React.FC<FunctionListProps> = ({
                         <div className="function-header">
                           <span className="function-dot" style={{ backgroundColor: groupColors[groupName] || '#ccc' }} />
                           <span className="function-label">{fnName}</span>
+                          {activeMetas.length > 0 && (
+                            <div className="function-meta-badges">
+                              {activeMetas.map(([metaKey]) => {
+                                const badge = metaBadges[metaKey];
+                                if (!badge) return null;
+                                return (
+                                  <span
+                                    key={metaKey}
+                                    className="meta-badge"
+                                    title={badge.description}
+                                  >
+                                    {badge.emoji}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
                         {methodDesc?.description && (
                           <div className="function-description">{methodDesc.description}</div>

@@ -1,3 +1,8 @@
+import "zod-metadata/register";
+import { register } from "zod-metadata";
+//alert(4);
+import zod from "zod";
+register(zod);
 import { z } from "zod";
 
 // Base schemas for common parameter types
@@ -107,14 +112,18 @@ export const schemas = {
 
   getPostBySlug: z
     .object({
-      slug: slugSchema.describe("URL-friendly identifier for the specific post to retrieve"),
+      slug: slugSchema.describe(
+        "URL-friendly identifier for the specific post to retrieve"
+      ),
     })
     .describe("Get a specific blog post by its URL slug identifier")
     .meta({ popular: true, readonly: true, cacheable: true }),
 
   getPostByHash: z
     .object({
-      hash: hashSchema.describe("Unique hash identifier for the specific post to retrieve"),
+      hash: hashSchema.describe(
+        "Unique hash identifier for the specific post to retrieve"
+      ),
     })
     .describe("Get a specific blog post by its unique hash identifier")
     .meta({ readonly: true, cacheable: true }),
@@ -148,7 +157,9 @@ export const schemas = {
 
   getSimilarPostsHashByHash: z
     .object({
-      hash: hashSchema.describe("Hash of the reference post to find similar content for"),
+      hash: hashSchema.describe(
+        "Hash of the reference post to find similar content for"
+      ),
       limit: limit10Schema.describe(
         "Maximum number of similar post hashes to return"
       ),
@@ -160,7 +171,9 @@ export const schemas = {
 
   getSimilarPostsByHash: z
     .object({
-      hash: hashSchema.describe("Hash of the reference post to find similar content for"),
+      hash: hashSchema.describe(
+        "Hash of the reference post to find similar content for"
+      ),
       count: limit5Schema.describe(
         "Number of similar posts to return with full metadata"
       ),
@@ -171,11 +184,19 @@ export const schemas = {
     .describe(
       "Find posts similar to the given post using AI embeddings, returns full post objects"
     )
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getSimilarPostsBySlug: z
     .object({
-      slug: slugSchema.describe("Slug of the reference post to find similar content for"),
+      slug: slugSchema.describe(
+        "Slug of the reference post to find similar content for"
+      ),
       count: limit5Schema.describe("Number of similar posts to return"),
       options: optionsSchema.describe(
         "Additional options for similarity calculation"
@@ -184,7 +205,13 @@ export const schemas = {
     .describe(
       "Find posts similar to the given post using AI embeddings and semantic analysis"
     )
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   // Search Methods
   searchPosts: z
@@ -272,7 +299,12 @@ export const schemas = {
     .describe(
       "Search across posts and media with multiple modes: memory/vector search posts by text, CLIP modes search media by text or image similarity"
     )
-    .meta({ popular: true, inference: true, memoryHeavy: true, readonly: true }),
+    .meta({
+      popular: true,
+      inference: true,
+      memoryHeavy: true,
+      readonly: true,
+    }),
 
   searchAutocomplete: z
     .object({
@@ -298,7 +330,9 @@ export const schemas = {
   // Vector Search Methods
   findPostsByText: z
     .object({
-      text: searchTextSchema.describe("Text query to find semantically similar posts"),
+      text: searchTextSchema.describe(
+        "Text query to find semantically similar posts"
+      ),
       options: z
         .object({
           limit: limit20Schema.describe("Maximum number of posts to return"),
@@ -314,11 +348,18 @@ export const schemas = {
         .describe("Search configuration options"),
     })
     .describe("Find posts using semantic similarity with AI text embeddings")
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+    }),
 
   findImagesByText: z
     .object({
-      text: searchTextSchema.describe("Text description to find matching images"),
+      text: searchTextSchema.describe(
+        "Text description to find matching images"
+      ),
       options: z
         .object({
           limit: limit20Schema.describe("Maximum number of images to return"),
@@ -331,11 +372,18 @@ export const schemas = {
     .describe(
       "Find images using text descriptions with CLIP multimodal AI embeddings"
     )
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+    }),
 
   findImagesByImage: z
     .object({
-      image: imageInputSchema.describe("Image URL or base64 data to find visually similar images"),
+      image: imageInputSchema.describe(
+        "Image URL or base64 data to find visually similar images"
+      ),
       options: z
         .object({
           limit: limit20Schema.describe("Maximum number of images to return"),
@@ -346,11 +394,18 @@ export const schemas = {
         .describe("Search configuration options"),
     })
     .describe("Find visually similar images using CLIP image embeddings")
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+    }),
 
   findSimilarContent: z
     .object({
-      query: searchTextSchema.describe("Text query or image URL/data to find similar content"),
+      query: searchTextSchema.describe(
+        "Text query or image URL/data to find similar content"
+      ),
       options: z
         .object({
           limit: limit20Schema.describe("Maximum number of results to return"),
@@ -370,7 +425,12 @@ export const schemas = {
     .describe(
       "Universal similarity search that automatically detects query type (text or image) and searches both posts and media"
     )
-    .meta({ inference: true, popular: true, memoryHeavy: true, readonly: true }),
+    .meta({
+      inference: true,
+      popular: true,
+      memoryHeavy: true,
+      readonly: true,
+    }),
 
   // Additional Similarity Methods
   getPostsEmbeddings: z
@@ -380,7 +440,13 @@ export const schemas = {
     .describe(
       "Get AI vector embeddings for all posts used in similarity calculations"
     )
-    .meta({ inference: true, internal: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      internal: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getPostsSimilarity: z
     .object({
@@ -389,7 +455,13 @@ export const schemas = {
     .describe(
       "Get the complete similarity matrix showing relationships between all posts"
     )
-    .meta({ inference: true, internal: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      internal: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getTopSimilarPostsHashes: z
     .object({
@@ -400,7 +472,9 @@ export const schemas = {
 
   getSimilarPostsSlugBySlug: z
     .object({
-      slug: slugSchema.describe("Slug of the reference post to find similar content for"),
+      slug: slugSchema.describe(
+        "Slug of the reference post to find similar content for"
+      ),
       limit: limit10Schema.describe(
         "Maximum number of similar post slugs to return"
       ),
@@ -413,7 +487,9 @@ export const schemas = {
   // Media Methods
   getR2MediaUrl: z
     .object({
-      path: pathSchema.describe("Media file path to generate optimized URL for"),
+      path: pathSchema.describe(
+        "Media file path to generate optimized URL for"
+      ),
     })
     .describe(
       "Generate optimized URL for media files with automatic format conversion"
@@ -434,7 +510,12 @@ export const schemas = {
     .describe(
       "Retrieve all media files with metadata (deprecated alias for getAllMedia)"
     )
-    .meta({ memoryHeavy: true, deprecated: true, readonly: true, cacheable: true }),
+    .meta({
+      memoryHeavy: true,
+      deprecated: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getMediaItems: z
     .object({
@@ -451,7 +532,13 @@ export const schemas = {
     .describe(
       "Get AI vector embeddings for all media files used in similarity calculations"
     )
-    .meta({ inference: true, internal: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      internal: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getMediaSimilarity: z
     .object({
@@ -460,7 +547,13 @@ export const schemas = {
     .describe(
       "Get the complete similarity matrix showing relationships between all media files"
     )
-    .meta({ inference: true, internal: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      internal: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getMediaSimilarityByHashes: z
     .object({
@@ -507,7 +600,12 @@ export const schemas = {
     .describe(
       "Find media files similar to the given media file using AI embeddings, returns full media objects"
     )
-    .meta({ inference: true, memoryHeavy: true, readonly: true, cacheable: true }),
+    .meta({
+      inference: true,
+      memoryHeavy: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   handleCloudflareRequest: z
     .object({
@@ -539,7 +637,9 @@ export const schemas = {
 
   getFileContent: z
     .object({
-      path: pathSchema.describe("File path within the repository to read content from"),
+      path: pathSchema.describe(
+        "File path within the repository to read content from"
+      ),
       useCache: useCacheSchema,
     })
     .describe("Read the content of a specific file from the repository")
@@ -613,7 +713,7 @@ export const schemas = {
     .describe(
       "Generate revision-specific R2 URL for accessing repository files (alias for getR2Url)"
     )
-    .meta({ readonly: true, deprecated: true }),
+    .meta({ readonly: true }),
 
   createViteProxy: z
     .object({
@@ -662,7 +762,9 @@ export const schemas = {
 
   fetchR2Json: z
     .object({
-      path: pathSchema.describe("File path in R2 storage to fetch JSON data from"),
+      path: pathSchema.describe(
+        "File path in R2 storage to fetch JSON data from"
+      ),
       opts: z
         .record(z.any())
         .optional()
@@ -766,9 +868,7 @@ export const schemas = {
         .min(1, "Posts array cannot be empty")
         .describe("Array of post objects to sort by date"),
     })
-    .describe(
-      "Sort an array of posts by their publication date (newest first)"
-    )
+    .describe("Sort an array of posts by their publication date (newest first)")
     .meta({ readonly: true }),
 
   // Project Methods
@@ -808,7 +908,9 @@ export const schemas = {
   // Method Aliases
   getPostsBySlug: z
     .object({
-      slug: slugSchema.describe("URL-friendly slug identifier for the post to retrieve"),
+      slug: slugSchema.describe(
+        "URL-friendly slug identifier for the post to retrieve"
+      ),
     })
     .describe(
       "Get a blog post by its slug (alias for getPostBySlug for backward compatibility)"
@@ -822,7 +924,12 @@ export const schemas = {
     .describe(
       "Get list of source files in the repository (alias for getSourceFilesList)"
     )
-    .meta({ framework: true, deprecated: true, readonly: true, cacheable: true }),
+    .meta({
+      framework: true,
+      deprecated: true,
+      readonly: true,
+      cacheable: true,
+    }),
 
   getOpenAiToolSpec: z
     .object({
@@ -842,7 +949,9 @@ export const schemas = {
   // AI Inference Methods
   computeTextEmbedding: z
     .object({
-      text: searchTextSchema.describe("Text content to compute semantic embeddings for"),
+      text: searchTextSchema.describe(
+        "Text content to compute semantic embeddings for"
+      ),
       instruction: z
         .string()
         .nullable()
@@ -855,7 +964,7 @@ export const schemas = {
     .describe(
       "Compute semantic vector embeddings for text content using all-MiniLM-L6-v2 model for similarity and retrieval tasks"
     )
-    .meta({ inference: true, memoryHeavy: true, readonly: true }),
+    .meta({ inference: true, internal: true }),
 
   computeClipTextEmbedding: z
     .object({
@@ -866,7 +975,7 @@ export const schemas = {
     .describe(
       "Compute CLIP vector embeddings for text content using MobileCLIP model, optimized for multimodal text-image similarity matching"
     )
-    .meta({ inference: true, memoryHeavy: true, readonly: true }),
+    .meta({ inference: true, internal: true }),
 
   computeClipImageEmbedding: z
     .object({
@@ -875,7 +984,7 @@ export const schemas = {
     .describe(
       "Compute CLIP vector embeddings for images using MobileCLIP model, optimized for multimodal image-text similarity matching"
     )
-    .meta({ inference: true, memoryHeavy: true, readonly: true }),
+    .meta({ inference: true, internal: true }),
 };
 
 // Helper function to get the schema for a given function name
@@ -922,7 +1031,8 @@ export const getLightweightMethods = () =>
 export const getInternalMethods = () => filterMethodsByMeta({ internal: true });
 export const getDeprecatedMethods = () =>
   filterMethodsByMeta({ deprecated: true });
-export const getCacheableMethods = () => filterMethodsByMeta({ cacheable: true });
+export const getCacheableMethods = () =>
+  filterMethodsByMeta({ cacheable: true });
 export const getReadonlyMethods = () => filterMethodsByMeta({ readonly: true });
 
 // Get methods by availability context
@@ -959,11 +1069,11 @@ export function getMethodMeta(methodName) {
 // Get all method metadata as a dictionary
 export function getAllMeta() {
   const allMeta = {};
-  
+
   for (const [name, schema] of Object.entries(schemas)) {
     allMeta[name] = schema._def?.meta || {};
   }
-  
+
   return allMeta;
 }
 
@@ -982,4 +1092,42 @@ export function getMethodCategories() {
     ai: [],
   };
 
-  for (const [name, schema] of Object.entries(schemas
+  for (const [name, schema] of Object.entries(schemas)) {
+    // Categorize methods
+    if (name.toLowerCase().includes("post")) {
+      categories.posts.push(name);
+    } else if (name.toLowerCase().includes("media")) {
+      categories.media.push(name);
+    } else if (
+      name.toLowerCase().includes("search") ||
+      name.toLowerCase().includes("autocomplete")
+    ) {
+      categories.search.push(name);
+    } else if (name.toLowerCase().includes("similar")) {
+      categories.similarity.push(name);
+    } else if (name.toLowerCase().includes("file")) {
+      categories.files.push(name);
+    } else if (name.toLowerCase().includes("url")) {
+      categories.urls.push(name);
+    } else if (
+      name.toLowerCase().includes("fetch") ||
+      name.toLowerCase().includes("api")
+    ) {
+      categories.api.push(name);
+    } else if (
+      name.toLowerCase().includes("project") ||
+      name.toLowerCase().includes("release")
+    ) {
+      categories.project.push(name);
+    } else if (
+      name.toLowerCase().includes("embedding") ||
+      name.toLowerCase().includes("clip")
+    ) {
+      categories.ai.push(name);
+    } else {
+      categories.utility.push(name);
+    }
+  }
+
+  return categories;
+}

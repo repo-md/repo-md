@@ -6,6 +6,19 @@ import { Code, Play } from 'lucide-react'
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { monokai } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import { ParameterInput, FunctionParam } from './params'
+import { getMethodMeta } from '../../../lib/schemas/schemas.js'
+
+// Meta badges with emojis and descriptions
+const metaBadges: Record<string, { emoji: string; description: string }> = {
+  popular: { emoji: '⭐', description: 'Commonly used method' },
+  inference: { emoji: '🤖', description: 'AI/ML-powered method' },
+  internal: { emoji: '🔧', description: 'Internal/system method' },
+  framework: { emoji: '🏗️', description: 'Framework integration method' },
+  memoryHeavy: { emoji: '💾', description: 'Memory-intensive operation' },
+  deprecated: { emoji: '⚠️', description: 'Deprecated method' },
+  cacheable: { emoji: '💽', description: 'Cacheable operation' },
+  readonly: { emoji: '👁️', description: 'Read-only operation' }
+};
 
 interface MethodDescription {
   name: string;
@@ -249,6 +262,31 @@ fetchData();`;
               <div className="method-info">
                 <div className="method-name">
                   {result.operation}
+                  {(() => {
+                    const methodMeta = getMethodMeta(result.operation);
+                    const activeMetas = Object.entries(methodMeta || {}).filter(([_, value]) => value === true);
+                    
+                    if (activeMetas.length > 0) {
+                      return (
+                        <div className="method-meta-badges">
+                          {activeMetas.map(([metaKey]) => {
+                            const badge = metaBadges[metaKey];
+                            if (!badge) return null;
+                            return (
+                              <span
+                                key={metaKey}
+                                className="meta-badge"
+                                title={badge.description}
+                              >
+                                {badge.emoji}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 {methodDescriptions[result.operation]?.description && (
                   <div className="method-description">
