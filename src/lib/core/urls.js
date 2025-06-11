@@ -9,7 +9,7 @@ import { createViteProxy as frameworkCreateViteProxy } from "../frameworkSnipets
 const prefix = LOG_PREFIXES.REPO_MD;
 
 // Constants
-const R2_DOMAIN = "https://static.repo.md"; // 
+const R2_DOMAIN = "https://static.repo.md"; //
 
 /**
  * Create a URL generator for a specific project
@@ -19,6 +19,8 @@ const R2_DOMAIN = "https://static.repo.md"; //
  * @param {string} config.rev - Requested revision ID
  * @param {Function} config.resolveLatestRev - Function to resolve the latest revision
  * @param {boolean} config.debug - Whether to log debug info
+ * @param {number} config.revCacheExpirySeconds - Revision cache expiry time in seconds
+ * @param {boolean} config.debug_rev_caching - Whether to log revision caching debug info
  * @returns {Object} - URL generator functions
  */
 export function createUrlGenerator(config) {
@@ -28,10 +30,33 @@ export function createUrlGenerator(config) {
     rev,
     resolveLatestRev,
     debug = false,
+    revCacheExpirySeconds = 300,
+    debug_rev_caching = false,
   } = config;
 
   // Create a mutable state variable for the active revision
   let activeRevState = initialActiveRev;
+
+  // Calculate expiry time in milliseconds
+  const REV_EXPIRY_MS = revCacheExpirySeconds * 1000;
+
+  // Revision cache state for "latest" revision expiry tracking
+  let revisionCacheState = {
+    value: initialActiveRev,
+    timestamp: initialActiveRev ? Date.now() : 0,
+    latestRevCacheExpiry: () => {
+      // Only check expiry for "latest" revision
+      if (rev !== "latest") return false;
+      return Date.now() - revisionCacheState.timestamp > REV_EXPIRY_MS;
+    },
+  };
+
+  if (debug_rev_caching) {
+    console.log(
+      `${prefix} 🕐🕐🕐🕐🕐 URL Generator revision cache configured for ${revCacheExpirySeconds} seconds (${REV_EXPIRY_MS}ms) - checks on R2 requests only`
+    );
+    console.log(`${prefix} 🕐🕐🕐🕐🕐 Received revCacheExpirySeconds parameter: ${revCacheExpirySeconds} (from config)`);
+  }
 
   /**
    * Get URL for a project resource
@@ -54,7 +79,12 @@ export function createUrlGenerator(config) {
   async function getRevisionUrl(path = "") {
     // If we have a specific revision (not "latest"), use it directly
     if (rev !== "latest") {
-      const url = getProjectUrl("/" + rev + path);
+      if (debug_rev_caching) {
+        console.log(
+          `${prefix} 🕐🕐🕐🕐🕐 Using specific revision: ${rev} (no cache expiry for R2 URL)`
+        );
+      }
+      const url = getProjectUrl(`/${rev}${path}`);
       if (debug) {
         console.log(
           `${prefix} 🔗 Generated revision URL with specific rev: ${url}`
@@ -63,9 +93,83 @@ export function createUrlGenerator(config) {
       return url;
     }
 
-    // If we already have the active revision, use it
-    if (activeRevState) {
-      const url = getProjectUrl("/" + activeRevState + path);
+    // For "latest" revision, check if we have a cached value and if it's expired
+    if (activeRevState && revisionCacheState.value) {
+      // Check if the cached revision is expired
+      if (revisionCacheState.latestRevCacheExpiry()) {
+        if (debug_rev_caching) {
+          console.log(
+            `${prefix} 🕐🕐🕐🕐🕐 Cached "latest" revision expired for R2 URL, triggering background revalidation (stale: ${activeRevState})`
+          );
+        }
+
+        // Store the old revision to compare for cache invalidation
+        const oldRev = activeRevState;
+
+        // Trigger background revalidation (don't await it)
+        resolveLatestRev()
+          .then((newRev) => {
+            if (newRev && newRev !== oldRev) {
+              // Update both state variables
+              activeRevState = newRev;
+              revisionCacheState = {
+                value: newRev,
+                timestamp: Date.now(),
+                latestRevCacheExpiry: () => {
+                  if (rev !== "latest") return false;
+                  return (
+                    Date.now() - revisionCacheState.timestamp > REV_EXPIRY_MS
+                  );
+                },
+              };
+
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Background revalidation complete for R2 URLs, new rev: ${newRev}`
+                );
+              }
+
+              // If revision changed, log cache invalidation warning
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Revision changed from ${oldRev} to ${newRev} - R2 JSON files cached with old revision may be stale`
+                );
+              }
+            } else if (newRev === oldRev) {
+              // Same revision, just update the timestamp
+              revisionCacheState.timestamp = Date.now();
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Background revalidation complete for R2 URLs, revision unchanged: ${newRev}`
+                );
+              }
+            }
+          })
+          .catch((err) => {
+            if (debug_rev_caching) {
+              console.error(
+                `${prefix} 🕐🕐🕐🕐🕐 Background revalidation error for R2 URLs: ${err.message}`
+              );
+            }
+          });
+
+        // Return URL with stale revision for this request (stale-while-revalidate)
+        const url = getProjectUrl(`/${activeRevState}${path}`);
+        if (debug) {
+          console.log(
+            `${prefix} 🔗 Generated revision URL with stale activeRev (revalidating in bg): ${url}`
+          );
+        }
+        return url;
+      }
+
+      // Not expired, use cached revision
+      if (debug_rev_caching) {
+        console.log(
+          `${prefix} 🕐🕐🕐🕐🕐 Using cached "latest" revision for R2 URL (not expired): ${activeRevState}`
+        );
+      }
+      const url = getProjectUrl(`/${activeRevState}${path}`);
       if (debug) {
         console.log(
           `${prefix} 🔗 Generated revision URL with cached activeRev: ${url}`
@@ -74,7 +178,12 @@ export function createUrlGenerator(config) {
       return url;
     }
 
-    // If we need to resolve the latest revision
+    // No cached revision, need to resolve it
+    if (debug_rev_caching) {
+      console.log(
+        `${prefix} 🕐🕐🕐🕐🕐 No cached "latest" revision for R2 URL, resolving now`
+      );
+    }
     if (debug) {
       console.log(`${prefix} 🔄 Resolving latest revision for URL generation`);
     }
@@ -86,12 +195,26 @@ export function createUrlGenerator(config) {
 
       if (!resolvedRev) {
         throw new Error(
-          `Failed to resolve latest revision for URL generation - received empty revision`
+          "Failed to resolve latest revision for URL generation - received empty revision"
         );
       }
 
-      // Update our state variable instead of trying to modify the constant parameter
+      // Update both state variables
       activeRevState = resolvedRev;
+      revisionCacheState = {
+        value: resolvedRev,
+        timestamp: Date.now(),
+        latestRevCacheExpiry: () => {
+          if (rev !== "latest") return false;
+          return Date.now() - revisionCacheState.timestamp > REV_EXPIRY_MS;
+        },
+      };
+
+      if (debug_rev_caching) {
+        console.log(
+          `${prefix} 🕐🕐🕐🕐🕐 Resolved and cached "latest" revision for R2 URLs: ${resolvedRev}`
+        );
+      }
     } catch (error) {
       if (debug) {
         console.error(
@@ -101,7 +224,7 @@ export function createUrlGenerator(config) {
       throw error;
     }
 
-    const url = getProjectUrl("/" + resolvedRev + path);
+    const url = getProjectUrl(`/${resolvedRev}${path}`);
 
     if (debug) {
       console.log(
@@ -126,7 +249,7 @@ export function createUrlGenerator(config) {
     }
     return url;
   }
- 
+
   /**
    * Get URL for the SQLite database
    * @returns {Promise<string>} - Full URL
@@ -152,7 +275,7 @@ export function createUrlGenerator(config) {
    */
   function getSharedFolderUrl(path = "") {
     const url = getProjectUrl(`/_shared${path}`);
-    
+
     if (debug) {
       console.log(`${prefix} 🔗 Generated shared folder URL: ${url}`);
     }
@@ -168,5 +291,85 @@ export function createUrlGenerator(config) {
     createViteProxy,
     // Expose method to get the current active revision
     getActiveRevState: () => activeRevState,
+    // Expose method to get revision cache stats
+    getRevisionCacheStats: () => {
+      const isExpired = rev === "latest" ? revisionCacheState.latestRevCacheExpiry() : false;
+      
+      // If cache is expired and we have a cached value, trigger background revalidation
+      if (isExpired && activeRevState && revisionCacheState.value && rev === "latest") {
+        if (debug_rev_caching) {
+          console.log(
+            `${prefix} 🕐🕐🕐🕐🕐 Cache expired detected in stats check, triggering background revalidation`
+          );
+        }
+        
+        // Store the old revision to compare for cache invalidation
+        const oldRev = activeRevState;
+
+        // Trigger background revalidation (don't await it)
+        resolveLatestRev()
+          .then((newRev) => {
+            if (newRev && newRev !== oldRev) {
+              // Update both state variables
+              activeRevState = newRev;
+              revisionCacheState = {
+                value: newRev,
+                timestamp: Date.now(),
+                latestRevCacheExpiry: () => {
+                  if (rev !== "latest") return false;
+                  return (
+                    Date.now() - revisionCacheState.timestamp > REV_EXPIRY_MS
+                  );
+                },
+              };
+
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Background revalidation complete from stats check, new rev: ${newRev}`
+                );
+              }
+
+              // If revision changed, log cache invalidation warning
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Revision changed from ${oldRev} to ${newRev} - R2 JSON files cached with old revision may be stale`
+                );
+              }
+            } else if (newRev === oldRev) {
+              // Same revision, just update the timestamp
+              revisionCacheState.timestamp = Date.now();
+              if (debug_rev_caching) {
+                console.log(
+                  `${prefix} 🕐🕐🕐🕐🕐 Background revalidation complete from stats check, revision unchanged: ${newRev}`
+                );
+              }
+            }
+          })
+          .catch((err) => {
+            if (debug_rev_caching) {
+              console.error(
+                `${prefix} 🕐🕐🕐🕐🕐 Background revalidation error from stats check: ${err.message}`
+              );
+            }
+          });
+      }
+      
+      return {
+        activeRevState,
+        revisionType: rev,
+        expiryMs: REV_EXPIRY_MS,
+        expirySeconds: revCacheExpirySeconds,
+        cacheValue: revisionCacheState.value,
+        cacheTimestamp: revisionCacheState.timestamp,
+        isExpired,
+        msUntilExpiry:
+          rev === "latest" && revisionCacheState.timestamp
+            ? Math.max(
+                0,
+                REV_EXPIRY_MS - (Date.now() - revisionCacheState.timestamp)
+              )
+            : null,
+      };
+    },
   };
 }

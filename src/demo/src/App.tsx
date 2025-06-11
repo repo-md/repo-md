@@ -50,7 +50,7 @@ try {
 } catch (err) {
   console.error('Error examining params:', err);
 }
-
+ 
 // Extract parameter metadata directly from the Zod schemas
 const extractParamsFromSchemas = () => {
   const params: Record<string, FunctionParam[]> = {};
@@ -315,10 +315,12 @@ function App() {
         strategy,
         secret: apiSecret || null,
         rev: revision || 'latest',
-        debug: true
+        debug: true,
+            debug_rev_caching : true,
+              revCacheExpirySeconds: 0.02, // 5 minutes default
       });
 
-      // Create a new instance with validated options
+      // Create a new instance with validated options 
       const instance = new RepoMD(options);
 
       // Force initialization by ensuring each service is referenced
@@ -340,7 +342,9 @@ function App() {
       // Create with default options if validation fails
       const instance = new RepoMD({
         projectId: currentProjectId,
-        debug: true
+        debug: true,
+            debug_rev_caching : true,
+              revCacheExpirySeconds: 0.02, // 5 minutes default
       });
 
       // Force initialization by ensuring each service is referenced
@@ -380,12 +384,14 @@ function App() {
           strategy,
           secret: apiSecret || null,
           rev: revision || 'latest',
-          debug: true
+          debug: true,
+            debug_rev_caching : true,
+              revCacheExpirySeconds: 0.02, // 5 minutes default
         });
 
         // Create new instance with direct property access
         const instance = new RepoMD(options);
-
+      
         // Force initialization by ensuring each service is referenced
         // This is to work around potential timing issues
         try {

@@ -49,6 +49,8 @@ class RepoMD {
     secret = null,
     debug = false,
     strategy = "auto", // auto, browser, server
+    revCacheExpirySeconds = 300, // 5 minutes default
+    debug_rev_caching = false,
   } = {}) {
     // Store configuration
     this.projectId = projectId;
@@ -57,6 +59,8 @@ class RepoMD {
     this.debug = debug;
     this.secret = secret;
     this.strategy = strategy;
+    this.revCacheExpirySeconds = revCacheExpirySeconds;
+    this.debug_rev_caching = debug_rev_caching;
     this.activeRev = null; // Store resolved latest revision ID
 
     // Initialize stats tracking
@@ -73,6 +77,13 @@ class RepoMD {
         },
         individualLoads: 0,
         allPostsLoaded: false,
+        lastUpdated: Date.now(),
+      },
+      revisionCache: {
+        type: this.rev === "latest" ? "latest" : "specific",
+        expirySeconds: this.revCacheExpirySeconds,
+        debugEnabled: this.debug_rev_caching,
+        currentRevision: this.activeRev,
         lastUpdated: Date.now(),
       },
     };
@@ -115,6 +126,8 @@ class RepoMD {
       rev,
       resolveLatestRev,
       debug,
+      revCacheExpirySeconds: this.revCacheExpirySeconds,
+      debug_rev_caching: this.debug_rev_caching,
     });
 
     // Initialize API client
@@ -139,6 +152,8 @@ class RepoMD {
             rev: this.rev,
             resolveLatestRev,
             debug: this.debug,
+            revCacheExpirySeconds: this.revCacheExpirySeconds,
+            debug_rev_caching: this.debug_rev_caching,
           });
 
           if (this.debug) {
@@ -182,7 +197,7 @@ class RepoMD {
       const { version, buildDate } = getVersionInfo();
       envizion({
         title: "Repo.md client",
-        subtitle: `Build apps and websites using markdown`, // `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
+        subtitle: "Build apps and websites using markdown", // `${strategy === "browser" ? "Browser" : "Auto"} Mode`,
         version,
         buildDate,
       });
@@ -250,6 +265,8 @@ class RepoMD {
           rev: this.rev,
           resolveLatestRev,
           debug: this.debug,
+          revCacheExpirySeconds: this.revCacheExpirySeconds,
+          debug_rev_caching: this.debug_rev_caching,
         });
 
         if (this.debug) {
@@ -415,6 +432,25 @@ class RepoMD {
   getClientStats() {
     // Update timestamp
     this.stats.posts.lastUpdated = Date.now();
+    this.stats.revisionCache.lastUpdated = Date.now();
+
+    // Update current revision info
+    this.stats.revisionCache.currentRevision = this.activeRev;
+
+    // Get detailed revision cache state from URL generator if available
+    if (this.urls && typeof this.urls.getRevisionCacheStats === "function") {
+      const cacheStats = this.urls.getRevisionCacheStats();
+      this.stats.revisionCache = {
+        ...this.stats.revisionCache,
+        currentRevision: cacheStats.activeRevState || this.activeRev,
+        cacheValue: cacheStats.cacheValue,
+        cacheTimestamp: cacheStats.cacheTimestamp,
+        isExpired: cacheStats.isExpired,
+        msUntilExpiry: cacheStats.msUntilExpiry,
+        expiryMs: cacheStats.expiryMs,
+        revisionType: cacheStats.revisionType,
+      };
+    }
 
     // Return a copy of the stats object to prevent direct modification
     return JSON.parse(JSON.stringify(this.stats));
@@ -513,7 +549,7 @@ class RepoMD {
   }
 
   // Post search methods (proxy to Search module)
-  async searchPosts(text, props = {}, mode = 'memory') {
+  async searchPosts(text, props = {}, mode = "memory") {
     return await this.search.searchPosts({ text, props, mode });
   }
 
@@ -528,83 +564,89 @@ class RepoMD {
   // Vector search methods - new public API
   async findPostsByText(text, options = {}) {
     const { limit = 20, threshold = 0.1, useClip = false } = options;
-    const mode = useClip ? 'vector-clip-text' : 'vector-text';
-    
-    const results = await this.search.searchPosts({ 
-      text, 
-      props: { limit, threshold }, 
-      mode 
+    const mode = useClip ? "vector-clip-text" : "vector-text";
+
+    const results = await this.search.searchPosts({
+      text,
+      props: { limit, threshold },
+      mode,
     });
-    
+
     // Return only posts, filter out media results
-    return results.filter(result => result.type === 'post' || result.post).map(result => ({
-      ...result,
-      content: result.post || result.content
-    }));
+    return results
+      .filter((result) => result.type === "post" || result.post)
+      .map((result) => ({
+        ...result,
+        content: result.post || result.content,
+      }));
   }
 
   async findImagesByText(text, options = {}) {
     const { limit = 20, threshold = 0.1 } = options;
-    
-    const results = await this.search.searchPosts({ 
-      text, 
-      props: { limit, threshold }, 
-      mode: 'vector-clip-text' 
+
+    const results = await this.search.searchPosts({
+      text,
+      props: { limit, threshold },
+      mode: "vector-clip-text",
     });
-    
+
     // Return only media results
-    return results.filter(result => result.type === 'media' || result.media).map(result => ({
-      ...result,
-      content: result.media || result.content
-    }));
+    return results
+      .filter((result) => result.type === "media" || result.media)
+      .map((result) => ({
+        ...result,
+        content: result.media || result.content,
+      }));
   }
 
   async findImagesByImage(image, options = {}) {
     const { limit = 20, threshold = 0.1 } = options;
-    
-    const results = await this.search.searchPosts({ 
-      image, 
-      props: { limit, threshold }, 
-      mode: 'vector-clip-image' 
+
+    const results = await this.search.searchPosts({
+      image,
+      props: { limit, threshold },
+      mode: "vector-clip-image",
     });
-    
+
     // Return only media results
-    return results.filter(result => result.type === 'media' || result.media).map(result => ({
-      ...result,
-      content: result.media || result.content
-    }));
+    return results
+      .filter((result) => result.type === "media" || result.media)
+      .map((result) => ({
+        ...result,
+        content: result.media || result.content,
+      }));
   }
 
   async findSimilarContent(query, options = {}) {
-    const { limit = 20, threshold = 0.1, type = 'auto' } = options;
-    
+    const { limit = 20, threshold = 0.1, type = "auto" } = options;
+
     // Determine search mode and params based on query type and options
     let mode;
     const searchParams = { props: { limit, threshold } };
-    
-    if (typeof query === 'string') {
-      if (query.startsWith('http') || query.startsWith('data:')) {
+
+    if (typeof query === "string") {
+      if (query.startsWith("http") || query.startsWith("data:")) {
         // Looks like an image URL or data URI
-        mode = 'vector-clip-image';
+        mode = "vector-clip-image";
         searchParams.image = query;
       } else {
         // Text query
-        mode = type === 'clip' ? 'vector-clip-text' : 'vector-text';
+        mode = type === "clip" ? "vector-clip-text" : "vector-text";
         searchParams.text = query;
       }
     } else {
-      throw new Error('Query must be a string (text or image URL/data)');
+      throw new Error("Query must be a string (text or image URL/data)");
     }
-    
+
     searchParams.mode = mode;
-    
+
     const results = await this.search.searchPosts(searchParams);
-    
+
     // Return all results with enhanced metadata
-    return results.map(result => ({
+    return results.map((result) => ({
       ...result,
       content: result.post || result.media || result.content,
-      contentType: result.type || (result.post ? 'post' : 'media')
+      contentType: result.type || (result.post ? "post" : "media"),
     }));
   }
 
@@ -645,28 +687,33 @@ class RepoMD {
 
   getOpenAiToolSpec(options = {}) {
     const { blacklistedTools = [], ...otherOptions } = options;
-    
+
     // Generate the base spec
     const baseSpec = createOpenAiSpecs();
-    
+
     // Apply project-specific configurations
     if (blacklistedTools.length > 0) {
-      const filteredFunctions = baseSpec.functions.filter(func => 
-        !blacklistedTools.includes(func.name)
+      const filteredFunctions = baseSpec.functions.filter(
+        (func) => !blacklistedTools.includes(func.name)
       );
-      
-      if (this.debug && filteredFunctions.length !== baseSpec.functions.length) {
+
+      if (
+        this.debug &&
+        filteredFunctions.length !== baseSpec.functions.length
+      ) {
         console.log(
-          `${prefix} 🚫 Filtered out ${baseSpec.functions.length - filteredFunctions.length} blacklisted tools: ${blacklistedTools.join(', ')}`
+          `${prefix} 🚫 Filtered out ${
+            baseSpec.functions.length - filteredFunctions.length
+          } blacklisted tools: ${blacklistedTools.join(", ")}`
         );
       }
-      
+
       return {
         ...baseSpec,
         functions: filteredFunctions,
       };
     }
-    
+
     return baseSpec;
   }
 
@@ -754,6 +801,11 @@ class RepoMD {
     this.media = null;
     this.project = null;
     this.files = null;
+
+    // Clean up API client timers and resources
+    if (this.api && typeof this.api.cleanup === "function") {
+      this.api.cleanup();
+    }
 
     // Clear URL generator and API client
     this.urls = null;

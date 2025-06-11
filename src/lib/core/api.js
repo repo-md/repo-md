@@ -9,7 +9,6 @@ import { fetchJson } from "../utils.js";
 const prefix = LOG_PREFIXES.REPO_MD;
 const API_DOMAIN = "api.repo.md";
 const API_BASE = `https://${API_DOMAIN}/v1`;
-const REV_EXPIRY_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 
 /**
  * Create an API client for the repo.md API
@@ -20,17 +19,15 @@ const REV_EXPIRY_MS = 60 * 60 * 1000; // 1 hour in milliseconds
  * @returns {Object} - API client functions
  */
 export function createApiClient(config) {
-  const { projectId, projectSlug, debug = false } = config;
-
-  // Simple in-memory storage for active revision with expiry tracking
-  let revisionState = {
-    value: null,
-    timestamp: 0,
-    isExpired: () => Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
-  };
+  const { 
+    projectId, 
+    projectSlug, 
+    debug = false
+  } = config;
 
   // Store the in-flight promise for getActiveProjectRev to prevent duplicate calls
   let currentRevisionPromise = null;
+
 
   /**
    * Generate the base project path used for API calls
@@ -46,10 +43,9 @@ export function createApiClient(config) {
         console.log(`${prefix} 🔍 Using project ID path: ${path}`);
       }
       return path;
-    } else {
-      // If no valid projectId is available, throw an error
-      throw new Error("No valid projectId provided for API request");
     }
+    // If no valid projectId is available, throw an error
+    throw new Error("No valid projectId provided for API request");
   }
 
   /**
@@ -65,7 +61,7 @@ export function createApiClient(config) {
       const result = await fetchJson(
         url,
         {
-          errorMessage: "Error fetching public API route: " + path,
+          errorMessage: `Error fetching public API route: ${path}`,
           useCache: true,
           returnErrorObject: true,
           ...options,
@@ -170,11 +166,6 @@ export function createApiClient(config) {
       return currentRevisionPromise;
     }
 
-    // Check in-memory state if not forcing refresh
-    if (!forceRefresh && revisionState.value && !revisionState.isExpired()) {
-      return revisionState.value;
-    }
-
     try {
       // Create a new promise for this request
       currentRevisionPromise = (async () => {
@@ -211,13 +202,6 @@ export function createApiClient(config) {
           );
         }
 
-        // Update the local state
-        revisionState = {
-          value: activeRev,
-          timestamp: Date.now(),
-          isExpired: () => Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
-        };
-
         return activeRev;
       })();
 
@@ -239,7 +223,7 @@ export function createApiClient(config) {
     }
   }
 
-  /// Ensure latest revision is resolved using stale-while-revalidate pattern
+  /// Ensure latest revision is resolved - simplified since expiry is now handled in URL generator
   async function ensureLatestRev(rev, activeRev) {
     try {
       // If we have a specific revision, just return it
@@ -252,49 +236,7 @@ export function createApiClient(config) {
         return activeRev;
       }
 
-      // Use stored revision if available
-      if (revisionState.value) {
-        // If the stored value is expired, trigger a background refresh
-        if (revisionState.isExpired()) {
-          if (debug) {
-            console.log(
-              `${prefix} 🔄 Stored revision expired, revalidating in background`
-            );
-          }
-
-          // Schedule background refresh using the faster /rev endpoint, don't await it
-          // This will update the revisionState for future calls
-          fetchProjectActiveRev()
-            .then((rev) => {
-              revisionState = {
-                value: rev,
-                timestamp: Date.now(),
-                isExpired: () =>
-                  Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
-              };
-              if (debug) {
-                console.log(
-                  `${prefix} ✅ Background refresh complete, new rev: ${rev}`
-                );
-              }
-            })
-            .catch((err) => {
-              if (debug) {
-                console.error(
-                  `${prefix} ⚠️ Background revalidation error: ${err.message}`
-                );
-              }
-            });
-
-          // Still return the stale value for this request
-          return revisionState.value;
-        }
-
-        // Return the stored value if it's not expired
-        return revisionState.value;
-      }
-
-      // If no stored value, we need to fetch it now
+      // Need to resolve "latest" revision
       if (debug) {
         console.log(
           `${prefix} 🔄 Resolving latest revision for project ${
@@ -303,8 +245,7 @@ export function createApiClient(config) {
         );
       }
 
-      // Call getActiveProjectRev but tell it to skip the project details fallback
-      // since ensureLatestRev will handle that fallback if needed
+      // Try the faster /rev endpoint first
       try {
         const latestId = await getActiveProjectRev(false, true);
 
@@ -322,40 +263,26 @@ export function createApiClient(config) {
           );
         }
 
-        // Try fetching project details directly as a last resort
-        try {
-          const projectDetails = await fetchProjectDetails();
+        // Fall back to project details
+        const projectDetails = await fetchProjectDetails();
 
-          if (!projectDetails || typeof projectDetails !== "object") {
-            throw new Error("Invalid project details response format");
-          }
+        if (!projectDetails || typeof projectDetails !== "object") {
+          throw new Error("Invalid project details response format");
+        }
 
-          const latestId = projectDetails.activeRev;
+        const latestId = projectDetails.activeRev;
 
-          if (!latestId) {
-            throw new Error(`No active revision found in project details`);
-          }
+        if (!latestId) {
+          throw new Error("No active revision found in project details");
+        }
 
-          // Update the cache
-          revisionState = {
-            value: latestId,
-            timestamp: Date.now(),
-            isExpired: () =>
-              Date.now() - revisionState.timestamp > REV_EXPIRY_MS,
-          };
-
-          if (debug) {
-            console.log(
-              `${prefix} ✅ Resolved 'latest' to revision: ${latestId} (from project details)`
-            );
-          }
-
-          return latestId;
-        } catch (detailsError) {
-          throw new Error(
-            `Could not determine latest revision ID. /rev endpoint error: ${error.message}, project details error: ${detailsError.message}`
+        if (debug) {
+          console.log(
+            `${prefix} ✅ Resolved 'latest' to revision: ${latestId} (from project details)`
           );
         }
+
+        return latestId;
       }
     } catch (error) {
       const errorMessage = `Failed to resolve latest revision: ${error.message}`;
@@ -373,5 +300,12 @@ export function createApiClient(config) {
     fetchProjectActiveRev,
     getActiveProjectRev,
     ensureLatestRev,
+    cleanup: () => {
+      // Clear any in-flight promises
+      currentRevisionPromise = null;
+      if (debug) {
+        console.log(`${prefix} 🧹 API client cleaned up`);
+      }
+    },
   };
 }
