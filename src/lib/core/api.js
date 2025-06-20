@@ -19,15 +19,10 @@ const API_BASE = `https://${API_DOMAIN}/v1`;
  * @returns {Object} - API client functions
  */
 export function createApiClient(config) {
-  const { 
-    projectId, 
-    projectSlug, 
-    debug = false
-  } = config;
+  const { projectId, projectSlug, debug = false } = config;
 
   // Store the in-flight promise for getActiveProjectRev to prevent duplicate calls
   let currentRevisionPromise = null;
-
 
   /**
    * Generate the base project path used for API calls
@@ -62,7 +57,7 @@ export function createApiClient(config) {
         url,
         {
           errorMessage: `Error fetching public API route: ${path}`,
-          useCache: true,
+          useCache: false, // the LRU memory cache  - http caching should still apply.
           returnErrorObject: true,
           ...options,
         },
@@ -292,7 +287,6 @@ export function createApiClient(config) {
       throw new Error(errorMessage);
     }
   }
-
 
   return {
     fetchPublicApi,
