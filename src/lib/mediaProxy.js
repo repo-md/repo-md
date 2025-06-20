@@ -91,7 +91,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   // R2 URLs are immutable, so we can cache them for a very long time
   const oneYear = 31536000; // seconds in a year
   newHeaders.set("Cache-Control", `public, max-age=${oneYear}, immutable`);
-  
+
   // Add Expires header for backwards compatibility
   const expiresDate = new Date();
   expiresDate.setFullYear(expiresDate.getFullYear() + 1);
@@ -100,7 +100,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   return newHeaders;
 }
 
-// Unified handler for Cloudflare requests - used in static.repo.md worker
+// Unified handler for Cloudflare requests - NOT used in static.repo.md worker
 
 export async function handleCloudflareRequest(request, getR2MediaUrl) {
   const startTime = performance.now();
@@ -187,14 +187,14 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
       errorHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
       errorHeaders.set("Expires", "0");
       errorHeaders.set("Pragma", "no-cache");
-      
+
       return new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers: errorHeaders,
       });
     }
-    
+
     // Return the response with browser-friendly headers
     return new Response(response.body, {
       status: response.status,
@@ -207,17 +207,17 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
       `${prefix} 🚫 Error proxying to asset server (${errorDuration}ms):`,
       error
     );
-    
+
     // Create error response with no-cache headers
     const errorHeaders = new Headers();
     errorHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
     errorHeaders.set("Expires", "0");
     errorHeaders.set("Pragma", "no-cache");
     errorHeaders.set("Content-Type", "text/plain");
-    
-    return new Response("Asset not found", { 
+
+    return new Response("Asset not found", {
       status: 404,
-      headers: errorHeaders
+      headers: errorHeaders,
     });
   }
 }

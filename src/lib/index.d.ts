@@ -9,6 +9,8 @@ export interface RepoMDOptions {
   secret?: string | null;
   debug?: boolean;
   strategy?: 'auto' | 'browser' | 'server';
+  debug_rev_caching?: boolean;
+  revCacheExpirySeconds?: number;
 }
 
 export type AliasesDefinition = Record<string, string>;
