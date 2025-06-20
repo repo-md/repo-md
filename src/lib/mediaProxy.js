@@ -10,7 +10,8 @@ const prefix = LOG_PREFIXES.MEDIA;
 // Helper function to find probable MIME type from file path
 function findProbableMimeType(path) {
   const ext = path.split(".").pop().toLowerCase();
-  if (DEBUG) console.log(`${prefix} 📎 Extracted extension: ${ext} from path: ${path}`);
+  if (DEBUG)
+    console.log(`${prefix} 📎 Extracted extension: ${ext} from path: ${path}`);
   const mimeTypes = {
     // Images
     jpg: "image/jpeg",
@@ -63,7 +64,9 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   // Get content type from original headers or determine from file extension
   let contentType = originalHeaders.get("Content-Type");
   if (DEBUG)
-    console.log(`${prefix} 📎 Content-Type from original headers: ${contentType}`);
+    console.log(
+      `${prefix} 📎 Content-Type from original headers: ${contentType}`
+    );
   if (!contentType || contentType === "application/octet-stream") {
     contentType = findProbableMimeType(mediaPath);
   }
@@ -71,9 +74,7 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   // Set content type
   newHeaders.set("Content-Type", contentType);
   if (DEBUG)
-    console.log(
-      `${prefix} 📎 Determined Content-Type: ${contentType}`
-    );
+    console.log(`${prefix} 📎 Determined Content-Type: ${contentType}`);
 
   // Remove or set Content-Disposition to inline for browser display
   newHeaders.delete("Content-Disposition");
@@ -86,17 +87,24 @@ function createBrowserFriendlyHeaders(originalHeaders, mediaPath) {
   //   newHeaders.set('Content-Disposition', 'attachment');
   // }
 
-  // Set cache control
-  const cacheDuration = 333;
-  newHeaders.set("Cache-Control", "public, max-age=" + cacheDuration);
+  // Set cache control for immutable R2 URLs
+  // R2 URLs are immutable, so we can cache them for a very long time
+  const oneYear = 31536000; // seconds in a year
+  newHeaders.set("Cache-Control", `public, max-age=${oneYear}, immutable`);
+  
+  // Add Expires header for backwards compatibility
+  const expiresDate = new Date();
+  expiresDate.setFullYear(expiresDate.getFullYear() + 1);
+  newHeaders.set("Expires", expiresDate.toUTCString());
 
   return newHeaders;
 }
 
-// Unified handler for Cloudflare requests
+// Unified handler for Cloudflare requests - used in static.repo.md worker
+
 export async function handleCloudflareRequest(request, getR2MediaUrl) {
   const startTime = performance.now();
-  
+
   if (DEBUG) {
     console.log(`${prefix} 🖼️ Handling request: ${request.url}`);
   }
@@ -129,13 +137,15 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
 
   // Track URL resolution time
   const urlResolveStart = performance.now();
-  
+
   // Wait for the Promise to resolve
   const r2Url = await getR2MediaUrl(mediaPath);
-  
+
   const urlResolveDuration = (performance.now() - urlResolveStart).toFixed(2);
   if (DEBUG) {
-    console.log(`${prefix} 🔀 Resolved R2 URL in ${urlResolveDuration}ms: ${r2Url}`);
+    console.log(
+      `${prefix} 🔀 Resolved R2 URL in ${urlResolveDuration}ms: ${r2Url}`
+    );
   }
 
   // Create and send the asset request
@@ -149,12 +159,14 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
   try {
     // Track fetch time
     const fetchStart = performance.now();
-    
+
     const response = await fetch(assetRequest);
-    
+
     const fetchDuration = (performance.now() - fetchStart).toFixed(2);
     if (DEBUG) {
-      console.log(`${prefix} 📦 R2 response status: ${response.status} (fetch took ${fetchDuration}ms)`);
+      console.log(
+        `${prefix} 📦 R2 response status: ${response.status} (fetch took ${fetchDuration}ms)`
+      );
     }
 
     // Create browser-friendly headers
@@ -163,9 +175,26 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
     // Calculate total processing time
     const totalDuration = (performance.now() - startTime).toFixed(2);
     if (DEBUG) {
-      console.log(`${prefix} ⏱️ Total media proxy time: ${totalDuration}ms for ${mediaPath}`);
+      console.log(
+        `${prefix} ⏱️ Total media proxy time: ${totalDuration}ms for ${mediaPath}`
+      );
     }
 
+    // Check if response is an error
+    if (response.status >= 400) {
+      // For errors, set no-cache headers
+      const errorHeaders = new Headers(headers);
+      errorHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      errorHeaders.set("Expires", "0");
+      errorHeaders.set("Pragma", "no-cache");
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: errorHeaders,
+      });
+    }
+    
     // Return the response with browser-friendly headers
     return new Response(response.body, {
       status: response.status,
@@ -174,7 +203,21 @@ export async function handleCloudflareRequest(request, getR2MediaUrl) {
     });
   } catch (error) {
     const errorDuration = (performance.now() - startTime).toFixed(2);
-    console.error(`${prefix} 🚫 Error proxying to asset server (${errorDuration}ms):`, error);
-    return new Response("Asset not found", { status: 404 });
+    console.error(
+      `${prefix} 🚫 Error proxying to asset server (${errorDuration}ms):`,
+      error
+    );
+    
+    // Create error response with no-cache headers
+    const errorHeaders = new Headers();
+    errorHeaders.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    errorHeaders.set("Expires", "0");
+    errorHeaders.set("Pragma", "no-cache");
+    errorHeaders.set("Content-Type", "text/plain");
+    
+    return new Response("Asset not found", { 
+      status: 404,
+      headers: errorHeaders
+    });
   }
 }
