@@ -96,8 +96,8 @@ class RepoMD {
     // Create resolver function for the URL generator
     const resolveLatestRev = async () => {
       try {
-        // Try to use the faster /rev endpoint directly
-        const resolvedRev = await this.api.fetchProjectActiveRev();
+        // Use getActiveProjectRev which has built-in promise caching
+        const resolvedRev = await this.api.getActiveProjectRev();
 
         // Update our cached activeRev
         this.activeRev = resolvedRev;
@@ -141,7 +141,7 @@ class RepoMD {
     if (rev === "latest" && !this.activeRev) {
       // This is non-blocking - we don't await it but start the process early
       this.api
-        .fetchProjectActiveRev()
+        .getActiveProjectRev()
         .then((resolvedRev) => {
           this.activeRev = resolvedRev;
 
