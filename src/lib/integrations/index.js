@@ -139,17 +139,8 @@ export function nextRepoMdMiddleware(options = {}) {
     debug: config.debug,
   });
   
-  const middleware = repo.createNextMiddleware(config);
-  
-  // Return both middleware and config
-  return {
-    middleware,
-    config: {
-      matcher: config.mediaUrlPrefix 
-        ? `${config.mediaUrlPrefix}:path*`
-        : '/_repo/:path*'
-    }
-  };
+  // createNextMiddleware now returns both middleware and config
+  return repo.createNextMiddleware(config);
 }
 
 /**
@@ -190,6 +181,33 @@ export function remixRepoMdLoader(options = {}) {
   });
   
   return proxyConfig.toRemixLoader();
+}
+
+/**
+ * Cloudflare Workers handler creator
+ * @param {Object|string} [options] - Configuration options or project ID
+ * @returns {Function} Cloudflare Workers request handler
+ */
+export function cloudflareRepoMdHandler(options = {}) {
+  const config = typeof options === 'string' 
+    ? { projectId: options }
+    : options;
+    
+  const projectId = getProjectIdFromEnv(config.projectId, 'Cloudflare Workers');
+  const repo = new RepoMD({ 
+    projectId,
+    debug: config.debug,
+  });
+  
+  // Return a handler function that Cloudflare Workers can use
+  return async (request) => {
+    const response = await repo.handleCloudflareRequest(request);
+    if (response) {
+      return response;
+    }
+    // If not a media request, return null or handle as needed
+    return new Response('Not Found', { status: 404 });
+  };
 }
 
 /**

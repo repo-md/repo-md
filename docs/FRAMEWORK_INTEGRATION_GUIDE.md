@@ -95,10 +95,8 @@ const repo = new RepoMD({
   debug: process.env.NODE_ENV === 'development'
 });
 
-export const middleware = repo.createNextMiddleware();
-export const config = {
-  matcher: '/_repo/:path*'
-};
+// Returns both middleware and config automatically
+export const { middleware, config } = repo.createNextMiddleware();
 ```
 
 ### Next.js Config (Rewrites)
@@ -121,17 +119,8 @@ import { RepoMD } from 'repo-md';
 
 const repo = new RepoMD({ projectId: 'your-project-id' });
 
-// Note: Next.js config doesn't have a simple instance method
-// You'll need to manually configure rewrites
 export default {
-  rewrites: async () => ({
-    beforeFiles: [
-      {
-        source: '/_repo/medias/:path*',
-        destination: `https://static.repo.md/projects/${repo.projectId}/_shared/medias/:path*`
-      }
-    ]
-  }),
+  ...repo.createNextConfig(),
   // your other config...
 };
 ```
@@ -154,6 +143,77 @@ import { RepoMD } from 'repo-md';
 const repo = new RepoMD({ projectId: 'your-project-id' });
 export const loader = repo.createRemixLoader();
 ```
+
+### Cloudflare Workers
+
+#### Direct Integration
+```javascript
+// worker.js
+import { cloudflareRepoMdHandler } from 'repo-md';
+
+const handler = cloudflareRepoMdHandler('your-project-id');
+
+export default {
+  async fetch(request, env, ctx) {
+    return handler(request);
+  }
+};
+```
+
+#### Instance-based Integration
+```javascript
+// worker.js
+import { RepoMD } from 'repo-md';
+
+const repo = new RepoMD({ projectId: 'your-project-id' });
+const handler = repo.createCloudflareHandler();
+
+export default {
+  async fetch(request, env, ctx) {
+    return handler(request);
+  }
+};
+
+// With custom 404 handling
+const customHandler = repo.createCloudflareHandler({ returnNull: true });
+
+export default {
+  async fetch(request, env, ctx) {
+    const response = await customHandler(request);
+    if (response) return response;
+    
+    // Handle non-media requests
+    return new Response('Custom 404', { status: 404 });
+  }
+};
+```
+
+## API Consistency
+
+All RepoMD instance methods follow a consistent pattern - they return everything you need, no manual configuration required:
+
+```javascript
+// Vite - returns complete proxy config
+const proxyConfig = repo.createViteProxy();
+
+// Next.js Middleware - returns both middleware and config
+const { middleware, config } = repo.createNextMiddleware();
+
+// Next.js Config - returns complete rewrites config
+const nextConfig = repo.createNextConfig();
+
+// Remix - returns complete loader function
+const loader = repo.createRemixLoader();
+
+// Cloudflare Workers - returns complete request handler
+const handler = repo.createCloudflareHandler();
+```
+
+This design ensures:
+- ✅ No manual path configuration
+- ✅ No hardcoding URLs or patterns
+- ✅ Consistent experience across frameworks
+- ✅ Everything "just works"
 
 ## Advanced Patterns
 

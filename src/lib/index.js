@@ -82,5 +82,6 @@ export {
   nextRepoMdMiddleware,
   nextRepoMdConfig,
   remixRepoMdLoader,
+  cloudflareRepoMdHandler,
   createRepoMd
 } from './integrations/index.js';

@@ -433,6 +433,28 @@ class RepoMD {
     return config.toRemixLoader();
   }
 
+  /**
+   * Create a Cloudflare Workers handler for this RepoMD instance
+   * @param {Object} options - Handler configuration options
+   * @param {boolean} [options.returnNull] - Return null for non-media requests (default: false)
+   * @returns {Function} Cloudflare Workers request handler
+   */
+  createCloudflareHandler(options = {}) {
+    const { returnNull = false } = options;
+    
+    return async (request) => {
+      const response = await this.handleCloudflareRequest(request);
+      if (response) {
+        return response;
+      }
+      // If not a media request
+      if (returnNull) {
+        return null; // Let other handlers process it
+      }
+      return new Response('Not Found', { status: 404 });
+    };
+  }
+
   // API methods (proxy to API module)
   async fetchPublicApi(path = "/") {
     return await this.api.fetchPublicApi(path);
@@ -811,17 +833,36 @@ class RepoMD {
    * @param {Object} options - Middleware configuration options
    * @param {string} [options.mediaUrlPrefix] - URL prefix for media requests
    * @param {boolean} [options.debug] - Enable debug logging
-   * @returns {Function} Next.js middleware handler
+   * @returns {Object} Object containing middleware function and config
    */
   createNextMiddleware(options = {}) {
     // Use the unified proxy configuration
     const config = this.getUnifiedProxyConfig(options);
-    return createRepoMiddleware({
+    const middleware = createRepoMiddleware({
       projectId: this.projectId,
       mediaUrlPrefix: config.mediaUrlPrefix,
       r2Url: config.r2Url,
       debug: config.debug,
     });
+    
+    return {
+      middleware,
+      config: {
+        matcher: `${config.mediaUrlPrefix}:path*`
+      }
+    };
+  }
+
+  /**
+   * Create a Next.js configuration object for this RepoMD instance
+   * @param {Object} options - Configuration options
+   * @param {string} [options.mediaUrlPrefix] - URL prefix for media requests
+   * @param {boolean} [options.debug] - Enable debug logging
+   * @returns {Object} Next.js configuration object with rewrites
+   */
+  createNextConfig(options = {}) {
+    const config = this.getUnifiedProxyConfig(options);
+    return config.toNextConfig();
   }
 
   /**

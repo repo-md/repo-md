@@ -56,12 +56,9 @@ export const { middleware, config } = nextRepoMdMiddleware('your-project-id');
 import { RepoMD } from 'repo-md';
 
 const repo = new RepoMD({ projectId: 'your-project-id' });
-const middleware = repo.createNextMiddleware();
 
-export { middleware };
-export const config = {
-  matcher: '/_repo/:path*'
-};
+// Returns both middleware and config - no manual setup needed!
+export const { middleware, config } = repo.createNextMiddleware();
 ```
 
 ### Next.js (Config)
@@ -85,14 +82,7 @@ import { RepoMD } from 'repo-md';
 const repo = new RepoMD({ projectId: 'your-project-id' });
 
 export default {
-  rewrites: async () => ({
-    beforeFiles: [
-      {
-        source: '/_repo/medias/:path*',
-        destination: `https://static.repo.md/projects/${repo.projectId}/_shared/medias/:path*`
-      }
-    ]
-  }),
+  ...repo.createNextConfig(),
   // your other Next.js config...
 };
 ```
@@ -114,6 +104,37 @@ import { RepoMD } from 'repo-md';
 
 const repo = new RepoMD({ projectId: 'your-project-id' });
 export const loader = repo.createRemixLoader();
+```
+
+### Cloudflare Workers
+
+#### Option 1: Direct Integration (Recommended)
+```javascript
+// worker.js
+import { cloudflareRepoMdHandler } from 'repo-md';
+
+const handler = cloudflareRepoMdHandler('your-project-id');
+
+export default {
+  async fetch(request, env, ctx) {
+    return handler(request);
+  }
+};
+```
+
+#### Option 2: Using RepoMD Instance
+```javascript
+// worker.js
+import { RepoMD } from 'repo-md';
+
+const repo = new RepoMD({ projectId: 'your-project-id' });
+const handler = repo.createCloudflareHandler();
+
+export default {
+  async fetch(request, env, ctx) {
+    return handler(request);
+  }
+};
 ```
 
 ## 🎯 When to Use Each Approach
@@ -275,6 +296,7 @@ The integration helpers:
 - **Vite** 3.x, 4.x, 5.x
 - **Next.js** 13.x, 14.x, 15.x
 - **Remix** 1.x, 2.x
+- **Cloudflare Workers** (all versions)
 - **Vue CLI** 4.x, 5.x
 - **Create React App** 4.x, 5.x
 

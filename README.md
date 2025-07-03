@@ -142,6 +142,20 @@ import { remixRepoMdLoader } from 'repo-md';
 export const loader = remixRepoMdLoader('your-project-id');
 ```
 
+#### Cloudflare Workers
+```javascript
+// worker.js - Direct integration (recommended)
+import { cloudflareRepoMdHandler } from 'repo-md';
+
+const handler = cloudflareRepoMdHandler('your-project-id');
+
+export default {
+  async fetch(request) {
+    return handler(request);
+  }
+};
+```
+
 ### Using with RepoMD Instance
 
 When you need more control or want to use other RepoMD features:
