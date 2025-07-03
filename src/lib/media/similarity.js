@@ -3,7 +3,8 @@
  * Provides functions for computing and retrieving media similarities
  */
 
-import { similarity as computeCosineSimilarity } from "compute-cosine-similarity";
+import computeCosineSimilarityPkg from "compute-cosine-similarity";
+const { similarity: computeCosineSimilarity } = computeCosineSimilarityPkg;
 import { LOG_PREFIXES } from "../logger.js";
 import cache from "../core/cache.js";
 

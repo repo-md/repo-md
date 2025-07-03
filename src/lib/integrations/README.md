@@ -4,8 +4,14 @@ Super simple integrations for RepoMD across all major frameworks. One line integ
 
 ## 🚀 Quick Start
 
+There are two ways to integrate RepoMD with your framework:
+
+1. **Direct Integration** - Pass the project ID directly (simplest)
+2. **Instance-based Integration** - Use an existing RepoMD instance (more control)
+
 ### Vite/Vue
 
+#### Option 1: Direct Integration (Recommended)
 ```javascript
 // vite.config.js
 import { defineConfig } from 'vite';
@@ -18,24 +24,49 @@ export default defineConfig({
 });
 ```
 
+#### Option 2: Using RepoMD Instance
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite';
+import { RepoMD } from 'repo-md';
+
+const repo = new RepoMD({ projectId: 'your-project-id' });
+
+export default defineConfig({
+  server: {
+    proxy: repo.createViteProxy()
+  }
+});
+```
+
 ### Next.js (Middleware)
 
+#### Option 1: Direct Integration (Recommended)
 ```typescript
 // middleware.ts
 import { nextRepoMdMiddleware } from 'repo-md';
 
 // The function returns both middleware and config
-const repoMd = nextRepoMdMiddleware('your-project-id');
+export const { middleware, config } = nextRepoMdMiddleware('your-project-id');
+```
 
-export const middleware = repoMd.middleware;
-export const config = repoMd.config;
+#### Option 2: Using RepoMD Instance
+```typescript
+// middleware.ts
+import { RepoMD } from 'repo-md';
 
-// Or destructure directly:
-// export const { middleware, config } = nextRepoMdMiddleware('your-project-id');
+const repo = new RepoMD({ projectId: 'your-project-id' });
+const middleware = repo.createNextMiddleware();
+
+export { middleware };
+export const config = {
+  matcher: '/_repo/:path*'
+};
 ```
 
 ### Next.js (Config)
 
+#### Option 1: Direct Integration (Recommended)
 ```javascript
 // next.config.js
 import { nextRepoMdConfig } from 'repo-md';
@@ -46,14 +77,58 @@ export default {
 };
 ```
 
+#### Option 2: Using RepoMD Instance
+```javascript
+// next.config.js
+import { RepoMD } from 'repo-md';
+
+const repo = new RepoMD({ projectId: 'your-project-id' });
+
+export default {
+  rewrites: async () => ({
+    beforeFiles: [
+      {
+        source: '/_repo/medias/:path*',
+        destination: `https://static.repo.md/projects/${repo.projectId}/_shared/medias/:path*`
+      }
+    ]
+  }),
+  // your other Next.js config...
+};
+```
+
 ### Remix
 
+#### Option 1: Direct Integration (Recommended)
 ```typescript
 // app/routes/$.tsx
 import { remixRepoMdLoader } from 'repo-md';
 
 export const loader = remixRepoMdLoader('your-project-id');
 ```
+
+#### Option 2: Using RepoMD Instance
+```typescript
+// app/routes/$.tsx
+import { RepoMD } from 'repo-md';
+
+const repo = new RepoMD({ projectId: 'your-project-id' });
+export const loader = repo.createRemixLoader();
+```
+
+## 🎯 When to Use Each Approach
+
+### Use Direct Integration When:
+- You just need the proxy functionality
+- You want the simplest setup
+- You don't need to access other RepoMD features
+- You're getting started with RepoMD
+
+### Use Instance-based Integration When:
+- You need to access other RepoMD features (posts, media, search, etc.)
+- You want to share the same instance across your app
+- You need custom configuration (debug mode, caching, etc.)
+- You're building a more complex integration
 
 ## 🔧 Configuration Options
 
@@ -75,9 +150,61 @@ Supported environment variables:
 - `VITE_REPO_MD_PROJECT_ID` - Vite
 - `REACT_APP_REPO_MD_PROJECT_ID` - Create React App
 
+## 💡 Advanced Examples
+
+### Sharing RepoMD Instance Across Your App
+
+```javascript
+// lib/repo.js - Create a shared instance
+import { RepoMD } from 'repo-md';
+
+export const repo = new RepoMD({ 
+  projectId: 'your-project-id',
+  debug: true // Enable debug logging
+});
+```
+
+```javascript
+// vite.config.js - Use the shared instance
+import { defineConfig } from 'vite';
+import { repo } from './lib/repo.js';
+
+export default defineConfig({
+  server: {
+    proxy: repo.createViteProxy()
+  }
+});
+```
+
+```javascript
+// pages/blog.js - Use the same instance for data fetching
+import { repo } from '../lib/repo.js';
+
+export async function getStaticProps() {
+  const posts = await repo.getAllPosts();
+  return {
+    props: { posts }
+  };
+}
+```
+
+### Custom Media URL Prefix
+
+```javascript
+// Direct integration with custom prefix
+viteRepoMdProxy({
+  projectId: 'your-project-id',
+  mediaUrlPrefix: '/_custom/media/' // Default: '/_repo/medias/'
+})
+
+// Instance-based with custom prefix
+const repo = new RepoMD({ projectId: 'your-project-id' });
+repo.createViteProxy('_custom') // Legacy API, sets prefix to '/_custom/medias/'
+```
+
 ## 💡 Error Messages
 
-If you forget to set the environment variable, RepoMD provides helpful error messages:
+If you forget to set the project ID, RepoMD provides helpful error messages:
 
 ```
 🚨 RepoMD Project ID Missing!

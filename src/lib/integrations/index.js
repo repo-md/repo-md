@@ -5,6 +5,7 @@
 
 import { UnifiedProxyConfig } from '../proxy/UnifiedProxyConfig.js';
 import { RepoMD } from '../RepoMd.js';
+import { getProjectIdFromEnv } from '../utils/env.js';
 
 /**
  * Auto-detect the current framework/environment
@@ -45,59 +46,6 @@ function detectFramework() {
   return null;
 }
 
-/**
- * Get project ID from environment or throw helpful error
- * @param {string} [projectId] - Optional project ID override
- * @param {string} [context] - Context for better error messages (e.g., "Next.js middleware")
- * @returns {string} The project ID
- */
-function getProjectId(projectId, context = '') {
-  // Try multiple common environment variable names
-  const envVars = {
-    'REPO_MD_PROJECT_ID': process.env.REPO_MD_PROJECT_ID,
-    'REPOMD_PROJECT_ID': process.env.REPOMD_PROJECT_ID,
-    'NEXT_PUBLIC_REPO_MD_PROJECT_ID': process.env.NEXT_PUBLIC_REPO_MD_PROJECT_ID,
-    'VITE_REPO_MD_PROJECT_ID': process.env.VITE_REPO_MD_PROJECT_ID,
-    'REACT_APP_REPO_MD_PROJECT_ID': process.env.REACT_APP_REPO_MD_PROJECT_ID,
-  };
-  
-  // Find the first defined env var
-  const envProjectId = Object.values(envVars).find(val => val);
-  const id = projectId || envProjectId;
-  
-  if (!id) {
-    const contextMsg = context ? ` in your ${context} config` : '';
-    const envVarsList = Object.keys(envVars).map(key => `  ${key}=your-project-id`).join('\n');
-    
-    throw new Error(
-      `\n🚨 RepoMD Project ID Missing!\n\n` +
-      `The REPO_MD_PROJECT_ID environment variable needs to be configured, or passed directly${contextMsg}.\n\n` +
-      `Option 1: Set an environment variable (recommended):\n${envVarsList}\n\n` +
-      `Option 2: Pass it directly${contextMsg}:\n` +
-      `  ${getExampleForContext(context)}\n\n` +
-      `Learn more: https://docs.repo.md/configuration`
-    );
-  }
-  
-  return id;
-}
-
-/**
- * Get context-specific example for error messages
- * @param {string} context - The context string
- * @returns {string} Example code snippet
- */
-function getExampleForContext(context) {
-  const examples = {
-    'Next.js middleware': `nextRepoMdMiddleware({ projectId: 'your-project-id' })`,
-    'Next.js config': `nextRepoMdConfig({ projectId: 'your-project-id' })`,
-    'Vite proxy': `viteRepoMdProxy({ projectId: 'your-project-id' })`,
-    'Remix loader': `remixRepoMdLoader({ projectId: 'your-project-id' })`,
-    'auto-detect proxy': `repoMdProxy({ projectId: 'your-project-id' })`,
-  };
-  
-  return examples[context] || `{ projectId: 'your-project-id' }`;
-}
 
 /**
  * Universal proxy configuration getter
@@ -116,7 +64,7 @@ export function repoMdProxy(options = {}) {
     ? { projectId: options }
     : options;
   
-  const projectId = getProjectId(config.projectId, 'auto-detect proxy');
+  const projectId = getProjectIdFromEnv(config.projectId, 'auto-detect proxy');
   const framework = config.framework || detectFramework();
   
   // Create the proxy configuration
@@ -165,7 +113,7 @@ export function viteRepoMdProxy(options = {}) {
     ? { projectId: options }
     : options;
     
-  const projectId = getProjectId(config.projectId, 'Vite proxy');
+  const projectId = getProjectIdFromEnv(config.projectId, 'Vite proxy');
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
     mediaUrlPrefix: config.mediaUrlPrefix,
@@ -185,7 +133,7 @@ export function nextRepoMdMiddleware(options = {}) {
     ? { projectId: options }
     : options;
     
-  const projectId = getProjectId(config.projectId, 'Next.js middleware');
+  const projectId = getProjectIdFromEnv(config.projectId, 'Next.js middleware');
   const repo = new RepoMD({ 
     projectId,
     debug: config.debug,
@@ -214,7 +162,7 @@ export function nextRepoMdConfig(options = {}) {
     ? { projectId: options }
     : options;
     
-  const projectId = getProjectId(config.projectId, 'Next.js config');
+  const projectId = getProjectIdFromEnv(config.projectId, 'Next.js config');
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
     mediaUrlPrefix: config.mediaUrlPrefix,
@@ -234,7 +182,7 @@ export function remixRepoMdLoader(options = {}) {
     ? { projectId: options }
     : options;
     
-  const projectId = getProjectId(config.projectId, 'Remix loader');
+  const projectId = getProjectIdFromEnv(config.projectId, 'Remix loader');
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
     mediaUrlPrefix: config.mediaUrlPrefix,
@@ -250,13 +198,14 @@ export function remixRepoMdLoader(options = {}) {
  * @returns {RepoMD} Configured RepoMD instance
  */
 export function createRepoMd(options = {}) {
-  const projectId = options.projectId || getProjectId();
+  const projectId = options.projectId || getProjectIdFromEnv();
   
   return new RepoMD({
     projectId,
     ...options,
   });
 }
+
 
 // Re-export the main class for convenience
 export { RepoMD };

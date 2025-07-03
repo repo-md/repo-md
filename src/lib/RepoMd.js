@@ -44,6 +44,7 @@ import { RepoNextMiddleware, createRepoMiddleware } from "./middleware/RepoNextM
 
 // Import unified proxy configuration
 import { UnifiedProxyConfig } from "./proxy/UnifiedProxyConfig.js";
+import { getProjectIdFromEnv } from "./utils/env.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
 
@@ -60,7 +61,7 @@ class RepoMD {
   } = {}) {
     // Try to get project ID from environment if not provided
     if (!projectId) {
-      projectId = this._getProjectIdFromEnv();
+      projectId = getProjectIdFromEnv(null, 'RepoMD constructor');
     }
     // Store configuration
     this.projectId = projectId;
@@ -418,6 +419,18 @@ class RepoMD {
       mediaUrlPrefix: `/${folder}/medias/`,
     });
     return config.toViteConfig();
+  }
+
+  /**
+   * Create a Remix loader function for this RepoMD instance
+   * @param {Object} options - Loader configuration options
+   * @param {string} [options.mediaUrlPrefix] - URL prefix for media requests
+   * @param {boolean} [options.debug] - Enable debug logging
+   * @returns {Function} Remix loader function
+   */
+  createRemixLoader(options = {}) {
+    const config = this.getUnifiedProxyConfig(options);
+    return config.toRemixLoader();
   }
 
   // API methods (proxy to API module)
@@ -844,44 +857,6 @@ class RepoMD {
     return this.constructor.getMethodDescription(methodName);
   }
 
-  /**
-   * Get project ID from environment variables
-   * @private
-   * @returns {string|null} The project ID or null if not found
-   */
-  _getProjectIdFromEnv() {
-    // Check if we're in a browser environment
-    if (typeof process === 'undefined' || !process.env) {
-      return null;
-    }
-
-    // Try multiple common environment variable names
-    const envVars = {
-      'REPO_MD_PROJECT_ID': process.env.REPO_MD_PROJECT_ID,
-      'REPOMD_PROJECT_ID': process.env.REPOMD_PROJECT_ID,
-      'NEXT_PUBLIC_REPO_MD_PROJECT_ID': process.env.NEXT_PUBLIC_REPO_MD_PROJECT_ID,
-      'VITE_REPO_MD_PROJECT_ID': process.env.VITE_REPO_MD_PROJECT_ID,
-      'REACT_APP_REPO_MD_PROJECT_ID': process.env.REACT_APP_REPO_MD_PROJECT_ID,
-    };
-    
-    // Find the first defined env var
-    const envProjectId = Object.values(envVars).find(val => val);
-    
-    if (!envProjectId) {
-      const envVarsList = Object.keys(envVars).map(key => `  ${key}=your-project-id`).join('\n');
-      
-      throw new Error(
-        `\n🚨 RepoMD Project ID Missing!\n\n` +
-        `The REPO_MD_PROJECT_ID environment variable needs to be configured, or passed directly to the RepoMD constructor.\n\n` +
-        `Option 1: Set an environment variable (recommended):\n${envVarsList}\n\n` +
-        `Option 2: Pass it directly to the constructor:\n` +
-        `  new RepoMD({ projectId: 'your-project-id' })\n\n` +
-        `Learn more: https://docs.repo.md/configuration`
-      );
-    }
-    
-    return envProjectId;
-  }
 
   destroy() {
     if (this.debug) {
