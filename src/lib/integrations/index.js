@@ -1,22 +1,28 @@
 /**
- * Simplified framework integrations for RepoMD
- * Provides zero-config and minimal-config options for common frameworks
+ * Framework integrations for RepoMD
+ * Central export point for all framework-specific integrations
  */
 
 import { UnifiedProxyConfig } from '../proxy/UnifiedProxyConfig.js';
 import { RepoMD } from '../RepoMd.js';
 import { getProjectIdFromEnv } from '../utils/env.js';
+import { nuxtRepoMdPlugin } from './nuxt.js';
 
 /**
  * Auto-detect the current framework/environment
  * @returns {string|null} The detected framework name
  */
-function detectFramework() {
+export function detectFramework() {
   // Check for framework-specific globals or environment variables
   if (typeof process !== 'undefined' && process.env) {
     // Next.js detection
     if (process.env.NEXT_RUNTIME || process.env.__NEXT_PRIVATE_PREBUNDLED_REACT) {
       return 'nextjs';
+    }
+    
+    // Nuxt detection
+    if (process.env.NUXT_ENV || process.env._NUXT_VERSION) {
+      return 'nuxt';
     }
     
     // Vite detection
@@ -28,6 +34,11 @@ function detectFramework() {
     if (process.env.REMIX_DEV_SERVER_WS_PORT) {
       return 'remix';
     }
+    
+    // Astro detection
+    if (process.env.ASTRO || globalThis.astroConfig) {
+      return 'astro';
+    }
   }
   
   // Browser-based detection
@@ -37,15 +48,37 @@ function detectFramework() {
       return 'vue';
     }
     
+    // Svelte detection
+    if (window.__svelte) {
+      return 'svelte';
+    }
+    
     // React detection (less reliable, as React doesn't set global markers)
     if (window.React || document.querySelector('[data-reactroot]')) {
       return 'react';
     }
   }
   
+  // Node.js framework detection
+  if (typeof global !== 'undefined') {
+    // Express detection
+    if (global.express) {
+      return 'express';
+    }
+    
+    // Fastify detection
+    if (global.fastify) {
+      return 'fastify';
+    }
+    
+    // Koa detection
+    if (global.koa) {
+      return 'koa';
+    }
+  }
+  
   return null;
 }
-
 
 /**
  * Universal proxy configuration getter
@@ -87,6 +120,13 @@ export function repoMdProxy(options = {}) {
     case 'remix':
       return proxyConfig.toRemixLoader();
       
+    case 'nuxt':
+      // Return instructions for Nuxt
+      return {
+        plugin: () => nuxtRepoMdPlugin(projectId, config),
+        instructions: 'Use nuxtRepoMdPlugin or see nuxtModuleExample for module setup',
+      };
+      
     default:
       // Return a generic object with all configurations
       return {
@@ -98,116 +138,9 @@ export function repoMdProxy(options = {}) {
         // Framework detection failed message
         _warning: framework 
           ? `Unknown framework: ${framework}` 
-          : 'Could not auto-detect framework. Use config.vite, config.next, or config.remix',
+          : 'Could not auto-detect framework. Use framework-specific exports or config.vite, config.next, config.remix',
       };
   }
-}
-
-/**
- * Vite-specific integration
- * @param {Object|string} [options] - Configuration options or project ID
- * @returns {Object} Vite server proxy configuration
- */
-export function viteRepoMdProxy(options = {}) {
-  const config = typeof options === 'string' 
-    ? { projectId: options }
-    : options;
-    
-  const projectId = getProjectIdFromEnv(config.projectId, 'Vite proxy');
-  const proxyConfig = new UnifiedProxyConfig({
-    projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
-    debug: config.debug,
-  });
-  
-  return proxyConfig.toViteConfig();
-}
-
-/**
- * Next.js middleware creator
- * @param {Object|string} [options] - Configuration options or project ID
- * @returns {Object} Next.js middleware object with middleware function and config
- */
-export function nextRepoMdMiddleware(options = {}) {
-  const config = typeof options === 'string' 
-    ? { projectId: options }
-    : options;
-    
-  const projectId = getProjectIdFromEnv(config.projectId, 'Next.js middleware');
-  const repo = new RepoMD({ 
-    projectId,
-    debug: config.debug,
-  });
-  
-  // createNextMiddleware now returns both middleware and config
-  return repo.createNextMiddleware(config);
-}
-
-/**
- * Next.js config helper
- * @param {Object|string} [options] - Configuration options or project ID
- * @returns {Object} Next.js configuration object
- */
-export function nextRepoMdConfig(options = {}) {
-  const config = typeof options === 'string' 
-    ? { projectId: options }
-    : options;
-    
-  const projectId = getProjectIdFromEnv(config.projectId, 'Next.js config');
-  const proxyConfig = new UnifiedProxyConfig({
-    projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
-    debug: config.debug,
-  });
-  
-  return proxyConfig.toNextConfig();
-}
-
-/**
- * Remix loader creator
- * @param {Object|string} [options] - Configuration options or project ID
- * @returns {Function} Remix loader function
- */
-export function remixRepoMdLoader(options = {}) {
-  const config = typeof options === 'string' 
-    ? { projectId: options }
-    : options;
-    
-  const projectId = getProjectIdFromEnv(config.projectId, 'Remix loader');
-  const proxyConfig = new UnifiedProxyConfig({
-    projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
-    debug: config.debug,
-  });
-  
-  return proxyConfig.toRemixLoader();
-}
-
-/**
- * Cloudflare Workers handler creator
- * @param {Object|string} [options] - Configuration options or project ID
- * @returns {Function} Cloudflare Workers request handler
- */
-export function cloudflareRepoMdHandler(options = {}) {
-  const config = typeof options === 'string' 
-    ? { projectId: options }
-    : options;
-    
-  const projectId = getProjectIdFromEnv(config.projectId, 'Cloudflare Workers');
-  const repo = new RepoMD({ 
-    projectId,
-    debug: config.debug,
-  });
-  
-  // Return a handler function that Cloudflare Workers can use
-  return async (request) => {
-    const response = await repo.handleCloudflareRequest(request);
-    if (response) {
-      return response;
-    }
-    // If not a media request, return null or handle as needed
-    return new Response('Not Found', { status: 404 });
-  };
 }
 
 /**
@@ -224,6 +157,18 @@ export function createRepoMd(options = {}) {
   });
 }
 
-
 // Re-export the main class for convenience
 export { RepoMD };
+
+// Export all framework-specific integrations
+export { viteRepoMdProxy, viteRepoMdPlugin } from './vite.js';
+export { nextRepoMdMiddleware, nextRepoMdConfig, withRepoMd } from './nextjs.js';
+export { remixRepoMdLoader, remixRepoMdAction, remixRepoMdRoute } from './remix.js';
+export { cloudflareRepoMdHandler, cloudflareRepoMdWorker, cloudflareRepoMdPagesFunction } from './cloudflare.js';
+export { nuxtRepoMdPlugin, nuxtRepoMdCachedHandler } from './nuxt.js';
+export { nuxtRepoMdModuleConfig, createNuxtModuleSetup, nuxtModuleExample } from './nuxt-module.mjs';
+export { svelteKitRepoMdHandle, svelteKitRepoMdSequenceHandle } from './sveltekit.js';
+export { expressRepoMdMiddleware, expressRepoMdErrorHandler } from './express.js';
+export { fastifyRepoMdPlugin } from './fastify.js';
+export { koaRepoMdMiddleware, koaRepoMdStreamingMiddleware } from './koa.js';
+export { astroRepoMdMiddleware, astroRepoMdIntegration, astroRepoMdFullIntegration } from './astro.js';

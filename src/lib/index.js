@@ -73,7 +73,7 @@ export * from './logger.js';
 export { RepoNextMiddleware, createRepoMiddleware } from './middleware/RepoNextMiddleware.js';
 
 // Unified proxy configuration exports
-export { UnifiedProxyConfig, createUnifiedProxyConfig } from './proxy/UnifiedProxyConfig.js';
+export { UnifiedProxyConfig, createUnifiedProxyConfig, REPO_MD_DEFAULTS } from './proxy/UnifiedProxyConfig.js';
 
 // Simplified integration exports
 export { 
@@ -83,5 +83,21 @@ export {
   nextRepoMdConfig,
   remixRepoMdLoader,
   cloudflareRepoMdHandler,
-  createRepoMd
+  createRepoMd,
+  // New framework integrations
+  nuxtRepoMdPlugin,
+  nuxtRepoMdCachedHandler,
+  nuxtRepoMdModuleConfig,
+  createNuxtModuleSetup,
+  nuxtModuleExample,
+  svelteKitRepoMdHandle,
+  svelteKitRepoMdSequenceHandle,
+  expressRepoMdMiddleware,
+  expressRepoMdErrorHandler,
+  fastifyRepoMdPlugin,
+  koaRepoMdMiddleware,
+  koaRepoMdStreamingMiddleware,
+  astroRepoMdMiddleware,
+  astroRepoMdIntegration,
+  astroRepoMdFullIntegration
 } from './integrations/index.js';

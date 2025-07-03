@@ -8,12 +8,15 @@ import { LOG_PREFIXES } from '../logger.js';
 const prefix = LOG_PREFIXES.REPO_MD;
 
 // Default configuration values
-const DEFAULTS = {
+export const REPO_MD_DEFAULTS = {
   mediaUrlPrefix: '/_repo/medias/',
   r2Url: 'https://static.repo.md',
   cacheMaxAge: 31536000, // 1 year in seconds
   debug: false,
 };
+
+// Keep internal reference for backward compatibility
+const DEFAULTS = REPO_MD_DEFAULTS;
 
 /**
  * Base configuration for all proxy implementations
@@ -180,13 +183,13 @@ export class UnifiedProxyConfig {
         const headers = new Headers(response.headers);
         
         if (response.ok) {
-          Object.entries(this.getCacheHeaders()).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(this.getCacheHeaders())) {
             headers.set(key, value);
-          });
+          }
         } else {
-          Object.entries(this.getErrorCacheHeaders()).forEach(([key, value]) => {
+          for (const [key, value] of Object.entries(this.getErrorCacheHeaders())) {
             headers.set(key, value);
-          });
+          }
         }
 
         return new Response(response.body, {

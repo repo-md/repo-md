@@ -46,6 +46,14 @@ import { RepoNextMiddleware, createRepoMiddleware } from "./middleware/RepoNextM
 import { UnifiedProxyConfig } from "./proxy/UnifiedProxyConfig.js";
 import { getProjectIdFromEnv } from "./utils/env.js";
 
+// Import framework integrations
+import { nuxtRepoMdPlugin } from "./integrations/nuxt.js";
+import { svelteKitRepoMdHandle } from "./integrations/sveltekit.js";
+import { expressRepoMdMiddleware } from "./integrations/express.js";
+import { fastifyRepoMdPlugin } from "./integrations/fastify.js";
+import { koaRepoMdMiddleware } from "./integrations/koa.js";
+import { astroRepoMdMiddleware } from "./integrations/astro.js";
+
 const prefix = LOG_PREFIXES.REPO_MD;
 
 class RepoMD {
@@ -874,6 +882,83 @@ class RepoMD {
     return {
       matcher: RepoNextMiddleware.getMatcher(matcher),
     };
+  }
+
+  /**
+   * Create a Nuxt plugin for this RepoMD instance
+   * @param {Object} options - Plugin configuration options
+   * @returns {Function} Nuxt/Nitro plugin function
+   */
+  createNuxtPlugin(options = {}) {
+    return nuxtRepoMdPlugin(this.projectId, {
+      ...options,
+      debug: options.debug ?? this.debug,
+    });
+  }
+
+  /**
+   * Create a SvelteKit handle function for this RepoMD instance
+   * @param {Object} options - Handle configuration options
+   * @returns {Function} SvelteKit handle function
+   */
+  createSvelteKitHandle(options = {}) {
+    return svelteKitRepoMdHandle(this.projectId, {
+      ...options,
+      debug: options.debug ?? this.debug,
+    });
+  }
+
+  /**
+   * Create an Express middleware for this RepoMD instance
+   * @param {Object} options - Middleware configuration options
+   * @returns {Function} Express middleware function
+   */
+  createExpressMiddleware(options = {}) {
+    return expressRepoMdMiddleware(this.projectId, {
+      ...options,
+      debug: options.debug ?? this.debug,
+    });
+  }
+
+  /**
+   * Create a Fastify plugin for this RepoMD instance
+   * @param {Object} options - Plugin configuration options
+   * @returns {Function} Fastify plugin function
+   */
+  createFastifyPlugin(options = {}) {
+    // Return a wrapped function that includes the projectId
+    return async (fastify, opts, done) => {
+      return fastifyRepoMdPlugin(fastify, {
+        projectId: this.projectId,
+        ...options,
+        ...opts,
+        debug: options.debug ?? opts.debug ?? this.debug,
+      }, done);
+    };
+  }
+
+  /**
+   * Create a Koa middleware for this RepoMD instance
+   * @param {Object} options - Middleware configuration options
+   * @returns {Function} Koa middleware function
+   */
+  createKoaMiddleware(options = {}) {
+    return koaRepoMdMiddleware(this.projectId, {
+      ...options,
+      debug: options.debug ?? this.debug,
+    });
+  }
+
+  /**
+   * Create an Astro middleware for this RepoMD instance
+   * @param {Object} options - Middleware configuration options
+   * @returns {Function} Astro middleware function
+   */
+  createAstroMiddleware(options = {}) {
+    return astroRepoMdMiddleware(this.projectId, {
+      ...options,
+      debug: options.debug ?? this.debug,
+    });
   }
 
   // Method documentation methods

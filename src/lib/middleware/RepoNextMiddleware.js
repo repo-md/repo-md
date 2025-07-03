@@ -6,19 +6,9 @@
 import { UnifiedProxyConfig } from '../proxy/UnifiedProxyConfig.js';
 
 export class RepoNextMiddleware {
-  constructor({
-    projectId,
-    mediaUrlPrefix = '/_repo/medias/',
-    r2Url = 'https://static.repo.md',
-    debug = false,
-  }) {
-    // Use the unified proxy configuration
-    this.config = new UnifiedProxyConfig({
-      projectId,
-      mediaUrlPrefix,
-      r2Url,
-      debug,
-    });
+  constructor(options) {
+    // Let UnifiedProxyConfig handle all defaults
+    this.config = new UnifiedProxyConfig(options);
   }
 
   /**
@@ -64,9 +54,9 @@ export class RepoNextMiddleware {
         ? this.config.getCacheHeaders() 
         : this.config.getErrorCacheHeaders();
       
-      Object.entries(cacheHeaders).forEach(([key, value]) => {
+      for (const [key, value] of Object.entries(cacheHeaders)) {
         modifiedResponse.headers.set(key, value);
-      });
+      }
       
       return modifiedResponse;
     } catch (error) {
