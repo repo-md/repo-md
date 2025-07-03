@@ -68,3 +68,19 @@ export default RepoMD;
 // Legacy exports
 export * from './frameworkSnipets.js';
 export * from './logger.js';
+
+// Next.js middleware exports
+export { RepoNextMiddleware, createRepoMiddleware } from './middleware/RepoNextMiddleware.js';
+
+// Unified proxy configuration exports
+export { UnifiedProxyConfig, createUnifiedProxyConfig } from './proxy/UnifiedProxyConfig.js';
+
+// Simplified integration exports
+export { 
+  repoMdProxy,
+  viteRepoMdProxy,
+  nextRepoMdMiddleware,
+  nextRepoMdConfig,
+  remixRepoMdLoader,
+  createRepoMd
+} from './integrations/index.js';

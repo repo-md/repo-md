@@ -39,11 +39,17 @@ import {
 } from "./schemas/index.js";
 import { applyLogging } from "./core/logger-wrapper.js";
 
+// Import Next.js middleware support
+import { RepoNextMiddleware, createRepoMiddleware } from "./middleware/RepoNextMiddleware.js";
+
+// Import unified proxy configuration
+import { UnifiedProxyConfig } from "./proxy/UnifiedProxyConfig.js";
+
 const prefix = LOG_PREFIXES.REPO_MD;
 
 class RepoMD {
   constructor({
-    projectId = "680e97604a0559a192640d2c",
+    projectId,
     projectSlug = "undefined-project-slug",
     rev = "latest", // Default to "latest"
     secret = null,
@@ -52,6 +58,10 @@ class RepoMD {
     revCacheExpirySeconds = 300, // 5 minutes default
     debug_rev_caching = false,
   } = {}) {
+    // Try to get project ID from environment if not provided
+    if (!projectId) {
+      projectId = this._getProjectIdFromEnv();
+    }
     // Store configuration
     this.projectId = projectId;
     this.projectSlug = projectSlug;
@@ -403,7 +413,11 @@ class RepoMD {
   }
 
   createViteProxy(folder = "_repo") {
-    return this.urls.createViteProxy(this.projectId, folder);
+    // For backward compatibility, still support the folder parameter
+    const config = this.getUnifiedProxyConfig({
+      mediaUrlPrefix: `/${folder}/medias/`,
+    });
+    return config.toViteConfig();
   }
 
   // API methods (proxy to API module)
@@ -758,6 +772,56 @@ class RepoMD {
     return await computeClipImageEmbedding(image, this.debug);
   }
 
+  // Unified proxy configuration
+  /**
+   * Get a unified proxy configuration for any framework
+   * @param {Object} options - Configuration options
+   * @param {string} [options.mediaUrlPrefix] - URL prefix for media requests
+   * @param {string} [options.r2Url] - CDN URL
+   * @param {number} [options.cacheMaxAge] - Cache max age in seconds
+   * @param {boolean} [options.debug] - Enable debug logging
+   * @returns {UnifiedProxyConfig} Unified proxy configuration instance
+   */
+  getUnifiedProxyConfig(options = {}) {
+    return new UnifiedProxyConfig({
+      projectId: this.projectId,
+      mediaUrlPrefix: options.mediaUrlPrefix,
+      r2Url: options.r2Url,
+      cacheMaxAge: options.cacheMaxAge,
+      debug: options.debug ?? this.debug,
+    });
+  }
+
+  // Next.js middleware integration
+  /**
+   * Create a Next.js middleware handler for this RepoMD instance
+   * @param {Object} options - Middleware configuration options
+   * @param {string} [options.mediaUrlPrefix] - URL prefix for media requests
+   * @param {boolean} [options.debug] - Enable debug logging
+   * @returns {Function} Next.js middleware handler
+   */
+  createNextMiddleware(options = {}) {
+    // Use the unified proxy configuration
+    const config = this.getUnifiedProxyConfig(options);
+    return createRepoMiddleware({
+      projectId: this.projectId,
+      mediaUrlPrefix: config.mediaUrlPrefix,
+      r2Url: config.r2Url,
+      debug: config.debug,
+    });
+  }
+
+  /**
+   * Get the Next.js middleware configuration
+   * @param {string} [matcher] - Custom matcher pattern
+   * @returns {Object} Next.js middleware config object
+   */
+  static getNextMiddlewareConfig(matcher) {
+    return {
+      matcher: RepoNextMiddleware.getMatcher(matcher),
+    };
+  }
+
   // Method documentation methods
   static getMethodDescription(methodName) {
     return getMethodDescription(methodName);
@@ -778,6 +842,45 @@ class RepoMD {
 
   getMethodDescription(methodName) {
     return this.constructor.getMethodDescription(methodName);
+  }
+
+  /**
+   * Get project ID from environment variables
+   * @private
+   * @returns {string|null} The project ID or null if not found
+   */
+  _getProjectIdFromEnv() {
+    // Check if we're in a browser environment
+    if (typeof process === 'undefined' || !process.env) {
+      return null;
+    }
+
+    // Try multiple common environment variable names
+    const envVars = {
+      'REPO_MD_PROJECT_ID': process.env.REPO_MD_PROJECT_ID,
+      'REPOMD_PROJECT_ID': process.env.REPOMD_PROJECT_ID,
+      'NEXT_PUBLIC_REPO_MD_PROJECT_ID': process.env.NEXT_PUBLIC_REPO_MD_PROJECT_ID,
+      'VITE_REPO_MD_PROJECT_ID': process.env.VITE_REPO_MD_PROJECT_ID,
+      'REACT_APP_REPO_MD_PROJECT_ID': process.env.REACT_APP_REPO_MD_PROJECT_ID,
+    };
+    
+    // Find the first defined env var
+    const envProjectId = Object.values(envVars).find(val => val);
+    
+    if (!envProjectId) {
+      const envVarsList = Object.keys(envVars).map(key => `  ${key}=your-project-id`).join('\n');
+      
+      throw new Error(
+        `\n🚨 RepoMD Project ID Missing!\n\n` +
+        `The REPO_MD_PROJECT_ID environment variable needs to be configured, or passed directly to the RepoMD constructor.\n\n` +
+        `Option 1: Set an environment variable (recommended):\n${envVarsList}\n\n` +
+        `Option 2: Pass it directly to the constructor:\n` +
+        `  new RepoMD({ projectId: 'your-project-id' })\n\n` +
+        `Learn more: https://docs.repo.md/configuration`
+      );
+    }
+    
+    return envProjectId;
   }
 
   destroy() {
@@ -831,3 +934,6 @@ export const logo = `
 
 // Export RepoMD class and OpenAI related tools
 export { RepoMD, createOpenAiSpecs };
+
+// Also export proxy configuration for direct use
+export { UnifiedProxyConfig };

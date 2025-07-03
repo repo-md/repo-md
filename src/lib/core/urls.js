@@ -4,7 +4,6 @@
  */
 
 import { LOG_PREFIXES } from "../logger.js";
-import { createViteProxy as frameworkCreateViteProxy } from "../frameworkSnipets.js";
 
 const prefix = LOG_PREFIXES.REPO_MD;
 
@@ -258,15 +257,6 @@ export function createUrlGenerator(config) {
     return await getRevisionUrl("/content.sqlite");
   }
 
-  /**
-   * Create a Vite proxy configuration for the project
-   * @param {string} projectId - Project ID
-   * @param {string} folder - Folder name for proxy path
-   * @returns {Object} - Vite proxy configuration
-   */
-  function createViteProxy(projectId, folder = "_repo") {
-    return frameworkCreateViteProxy(projectId, folder);
-  }
 
   /**
    * Get URL for a shared folder resource (not revision-specific)
@@ -288,7 +278,6 @@ export function createUrlGenerator(config) {
     getMediaUrl,
     getSqliteUrl,
     getSharedFolderUrl,
-    createViteProxy,
     // Expose method to get the current active revision
     getActiveRevState: () => activeRevState,
     // Expose method to get revision cache stats

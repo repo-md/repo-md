@@ -105,6 +105,80 @@ All details on endpoints can be found here:
 
 https://repo.md/docs
 
+## Framework Integrations
+
+RepoMD provides simplified one-line integrations for all major frameworks:
+
+### Vite/Vue
+
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite';
+import { viteRepoMdProxy } from 'repo-md';
+
+export default defineConfig({
+  server: {
+    proxy: viteRepoMdProxy('your-project-id') // That's it! 🎉
+  }
+});
+```
+
+### Next.js
+
+#### Using Middleware
+```typescript
+// middleware.ts
+import { nextRepoMdMiddleware } from 'repo-md';
+
+// Returns both middleware and config - no hardcoding needed!
+export const { middleware, config } = nextRepoMdMiddleware('your-project-id');
+```
+
+#### Using Config
+```javascript
+// next.config.js
+import { nextRepoMdConfig } from 'repo-md';
+
+export default {
+  ...nextRepoMdConfig('your-project-id'),
+  // your other Next.js config...
+};
+```
+
+### Remix
+
+```typescript
+// app/routes/$.tsx
+import { remixRepoMdLoader } from 'repo-md';
+
+export const loader = remixRepoMdLoader('your-project-id');
+```
+
+### Using Environment Variables
+
+You can also use environment variables for convenience:
+
+```javascript
+// Using process.env
+viteRepoMdProxy(process.env.MY_PROJECT_ID)
+
+// Or let RepoMD check standard env vars
+viteRepoMdProxy() // Checks REPO_MD_PROJECT_ID, VITE_REPO_MD_PROJECT_ID, etc.
+```
+
+### Advanced Configuration
+
+```javascript
+// With options
+viteRepoMdProxy({ 
+  projectId: 'your-project-id',
+  mediaUrlPrefix: '/_custom/media/',
+  debug: true
+})
+```
+
+For more details, see the [integrations documentation](src/lib/integrations/README.md).
+
 # Contributing
 
 We welcome contributions to improve the [repo.md](https://repo.md) client library! If you'd like to contribute, please feel free to submit a pull request. Whether it's fixing bugs, improving documentation, or adding new features, your help is appreciated.
