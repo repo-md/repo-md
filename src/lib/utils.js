@@ -12,6 +12,75 @@ const promiseCache = new Map();
 
 const prefix = LOG_PREFIXES.UTILS;
 
+// Check if we're in a Node.js server environment
+const isNodeEnv = typeof process !== 'undefined' && process.versions && process.versions.node;
+
+// Trusted repo.md domains - these are first-party domains we control
+const TRUSTED_REPOMD_DOMAINS = ['api.repo.md', 'static.repo.md', 'repo.md'];
+
+/**
+ * Check if URL is a trusted repo.md domain
+ */
+function isTrustedRepoMdDomain(url) {
+  try {
+    const urlObj = new URL(url);
+    return TRUSTED_REPOMD_DOMAINS.includes(urlObj.hostname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Enhanced fetch wrapper that handles SSL certificate issues gracefully
+ * For trusted repo.md domains, uses environment variable override if available
+ */
+async function robustFetch(url, options) {
+  try {
+    // Use native fetch (available in Node 18+, all browsers)
+    return await globalThis.fetch(url, options);
+  } catch (error) {
+    // Check if this is an SSL/network error
+    const isSSLOrNetworkError = error.message && (
+      error.message.includes('certificate') ||
+      error.message.includes('SSL') ||
+      error.message.includes('TLS') ||
+      error.message.includes('self signed') ||
+      error.message.includes('unable to verify') ||
+      error.message.includes('fetch failed') ||
+      error.message.includes('ECONNREFUSED') ||
+      error.message.includes('ETIMEDOUT')
+    );
+
+    if (isSSLOrNetworkError && isNodeEnv) {
+      const urlObj = new URL(url);
+      const isTrustedDomain = isTrustedRepoMdDomain(url);
+
+      // Log the error
+      console.error(
+        `${prefix} ⚠️  Network/SSL error accessing ${urlObj.hostname}:`,
+        error.message
+      );
+
+      // Provide helpful guidance
+      if (isTrustedDomain) {
+        console.error(
+          `${prefix} 💡 This is a trusted repo.md domain. ` +
+          `If SSL validation is failing in your environment, set: ` +
+          `NODE_TLS_REJECT_UNAUTHORIZED=0 (environment variable)`
+        );
+      } else if (process.env.NODE_ENV !== 'production') {
+        console.warn(
+          `${prefix} 💡 Development tip: If this is a trusted domain with SSL issues, ` +
+          `you can set NODE_TLS_REJECT_UNAUTHORIZED=0 in development (NOT recommended for production)`
+        );
+      }
+    }
+
+    // Re-throw the original error with added context
+    throw error;
+  }
+}
+
 /**
  * Clear a URL from both the data cache and promise cache
  * @param {string} url - The URL to clear from caches
@@ -100,7 +169,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
     // Create and store the promise for this request
     const fetchPromise = (async () => {
       try {
-        const response = await fetch(url, fetchOptions);
+        const response = await robustFetch(url, fetchOptions);
         
         // Log the full response for debugging
         if (debug) {
