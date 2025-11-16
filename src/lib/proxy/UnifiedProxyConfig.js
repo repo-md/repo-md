@@ -13,6 +13,7 @@ export const REPO_MD_DEFAULTS = {
   r2Url: 'https://static.repo.md',
   cacheMaxAge: 31536000, // 1 year in seconds
   debug: false,
+  projectPathPrefix: 'projects', // Default path prefix for project resources
 };
 
 // Keep internal reference for backward compatibility
@@ -28,6 +29,7 @@ export class UnifiedProxyConfig {
     r2Url = DEFAULTS.r2Url,
     cacheMaxAge = DEFAULTS.cacheMaxAge,
     debug = DEFAULTS.debug,
+    projectPathPrefix = DEFAULTS.projectPathPrefix,
   }) {
     if (!projectId) {
       throw new Error('projectId is required for proxy configuration');
@@ -38,6 +40,7 @@ export class UnifiedProxyConfig {
     this.r2Url = r2Url;
     this.cacheMaxAge = cacheMaxAge;
     this.debug = debug;
+    this.projectPathPrefix = projectPathPrefix;
 
     // Remove trailing slash from URLs
     this.mediaUrlPrefix = this.mediaUrlPrefix.replace(/\/$/, '');
@@ -52,7 +55,7 @@ export class UnifiedProxyConfig {
   getTargetUrl(mediaPath) {
     // Remove leading slash if present
     const cleanPath = mediaPath.replace(/^\//, '');
-    return `${this.r2Url}/projects/${this.projectId}/_shared/medias/${cleanPath}`;
+    return `${this.r2Url}/${this.projectPathPrefix}/${this.projectId}/_shared/medias/${cleanPath}`;
   }
 
   /**

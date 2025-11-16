@@ -87,6 +87,7 @@ export function detectFramework() {
  * @param {Object|string} [options] - Configuration options or project ID string
  * @param {string} [options.projectId] - RepoMD project ID
  * @param {string} [options.framework] - Override auto-detected framework
+ * @param {string} [options.route] - Custom route prefix for the proxy (e.g., '_repo')
  * @param {string} [options.mediaUrlPrefix] - Custom media URL prefix
  * @param {boolean} [options.debug] - Enable debug logging
  * @returns {Object} Framework-specific configuration object
@@ -100,10 +101,15 @@ export function repoMdProxy(options = {}) {
   const projectId = getProjectIdFromEnv(config.projectId, 'auto-detect proxy');
   const framework = config.framework || detectFramework();
   
+  // If route is provided, construct the mediaUrlPrefix from it
+  const mediaUrlPrefix = config.route 
+    ? `/${config.route}/medias`
+    : config.mediaUrlPrefix;
+  
   // Create the proxy configuration
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
+    mediaUrlPrefix,
     debug: config.debug,
   });
   

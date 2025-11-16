@@ -10,6 +10,7 @@ import { getProjectIdFromEnv } from '../utils/env.js';
  * Create a Remix loader for RepoMD media proxy
  * @param {Object|string} options - Configuration options or project ID string
  * @param {string} [options.projectId] - RepoMD project ID
+ * @param {string} [options.route] - Custom route prefix for the proxy (e.g., '_repo')
  * @param {string} [options.mediaUrlPrefix] - Custom media URL prefix
  * @param {string} [options.r2Url] - Custom R2 URL
  * @param {number} [options.cacheMaxAge] - Cache max age in seconds
@@ -22,9 +23,15 @@ export function remixRepoMdLoader(options = {}) {
     : options;
     
   const projectId = getProjectIdFromEnv(config.projectId, 'Remix loader');
+  
+  // If route is provided, construct the mediaUrlPrefix from it
+  const mediaUrlPrefix = config.route 
+    ? `/${config.route}/medias`
+    : config.mediaUrlPrefix;
+  
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
+    mediaUrlPrefix,
     r2Url: config.r2Url,
     cacheMaxAge: config.cacheMaxAge,
     debug: config.debug,

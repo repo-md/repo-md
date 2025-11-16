@@ -176,7 +176,7 @@ export async function fetchJson(url, opts = {}, debug = false) {
             }
           }
           
-          throw new Error(`Invalid JSON response: ${jsonError.message}`);
+          throw new Error(`Invalid JSON response from ${url}: ${jsonError.message}`);
         }
         
         const duration = (performance.now() - startTime).toFixed(2);

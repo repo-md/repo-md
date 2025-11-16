@@ -11,6 +11,7 @@ import { getProjectIdFromEnv } from '../utils/env.js';
  * Create a Next.js middleware handler for RepoMD
  * @param {Object|string} options - Configuration options or project ID string
  * @param {string} [options.projectId] - RepoMD project ID
+ * @param {string} [options.route] - Custom route prefix for the proxy (e.g., '_repo')
  * @param {string} [options.mediaUrlPrefix] - Custom media URL prefix
  * @param {boolean} [options.debug] - Enable debug logging
  * @returns {Object} Object containing middleware function and config
@@ -21,19 +22,26 @@ export function nextRepoMdMiddleware(options = {}) {
     : options;
     
   const projectId = getProjectIdFromEnv(config.projectId, 'Next.js middleware');
+  
+  // If route is provided, construct the mediaUrlPrefix from it
+  const mediaUrlPrefix = config.route 
+    ? `/${config.route}/medias`
+    : config.mediaUrlPrefix;
+  
   const repo = new RepoMD({ 
     projectId,
     debug: config.debug,
   });
   
   // createNextMiddleware returns both middleware and config
-  return repo.createNextMiddleware(config);
+  return repo.createNextMiddleware({ ...config, mediaUrlPrefix });
 }
 
 /**
  * Create a Next.js configuration object for RepoMD
  * @param {Object|string} options - Configuration options or project ID string
  * @param {string} [options.projectId] - RepoMD project ID
+ * @param {string} [options.route] - Custom route prefix for the proxy (e.g., '_repo')
  * @param {string} [options.mediaUrlPrefix] - Custom media URL prefix
  * @param {string} [options.r2Url] - Custom R2 URL
  * @param {number} [options.cacheMaxAge] - Cache max age in seconds
@@ -46,9 +54,15 @@ export function nextRepoMdConfig(options = {}) {
     : options;
     
   const projectId = getProjectIdFromEnv(config.projectId, 'Next.js config');
+  
+  // If route is provided, construct the mediaUrlPrefix from it
+  const mediaUrlPrefix = config.route 
+    ? `/${config.route}/medias`
+    : config.mediaUrlPrefix;
+  
   const proxyConfig = new UnifiedProxyConfig({
     projectId,
-    mediaUrlPrefix: config.mediaUrlPrefix,
+    mediaUrlPrefix,
     r2Url: config.r2Url,
     cacheMaxAge: config.cacheMaxAge,
     debug: config.debug,

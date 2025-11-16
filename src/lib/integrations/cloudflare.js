@@ -10,6 +10,8 @@ import { getProjectIdFromEnv } from '../utils/env.js';
  * Create a Cloudflare Workers request handler for RepoMD
  * @param {Object|string} options - Configuration options or project ID string
  * @param {string} [options.projectId] - RepoMD project ID
+ * @param {string} [options.route] - Custom route prefix for the proxy (e.g., '_repo')
+ * @param {string} [options.mediaUrlPrefix] - Custom media URL prefix
  * @param {boolean} [options.debug] - Enable debug logging
  * @param {boolean} [options.returnNull] - Return null for non-media requests
  * @returns {Function} Cloudflare Workers request handler
@@ -20,9 +22,17 @@ export function cloudflareRepoMdHandler(options = {}) {
     : options;
     
   const projectId = getProjectIdFromEnv(config.projectId, 'Cloudflare Workers');
+  
+  // If route is provided, construct the mediaUrlPrefix from it
+  const mediaUrlPrefix = config.route 
+    ? `/${config.route}/medias`
+    : config.mediaUrlPrefix;
+  
   const repo = new RepoMD({ 
     projectId,
     debug: config.debug,
+    // Note: mediaUrlPrefix is not currently supported by RepoMD for Cloudflare
+    // This is here for future compatibility when it's implemented
   });
   
   // Return a handler function that Cloudflare Workers can use
